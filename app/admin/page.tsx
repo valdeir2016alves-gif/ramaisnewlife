@@ -291,11 +291,6 @@ export default function AdminPage() {
           <p>Nenhum ramal cadastrado.</p>
         ) : (
           Object.entries(groupedContacts)
-            .sort(([deptA], [deptB]) => {
-              if (deptA === 'Contatos Regionais e Externos') return -1;
-              if (deptB === 'Contatos Regionais e Externos') return 1;
-              return deptA.localeCompare(deptB);
-            })
             .map(([department, deptContacts]) => (
             <div key={department} className={styles.departmentGroup}>
               <h3 className={styles.departmentTitle}>{getEmoji(department)} {department}</h3>

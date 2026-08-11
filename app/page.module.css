@@ -1,8 +1,8 @@
 .main {
-  max-width: 1200px;
+  max-width: 96%;
   margin: 0 auto;
   padding: 2rem;
-  padding-top: 4rem;
+  padding-top: 3rem;
 }
 
 .header {
@@ -66,18 +66,18 @@
   padding: 1rem 1rem 1rem 3rem;
   border-radius: 50px;
   border: 1px solid var(--card-border);
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.05);
   font-size: 1rem;
   color: var(--text-main);
   outline: none;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .searchInput:focus {
   border-color: var(--primary-color);
-  background: #ffffff;
-  box-shadow: 0 4px 16px rgba(13, 71, 161, 0.15);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(52, 152, 219, 0.15);
 }
 
 .loading, .noResults {
@@ -88,12 +88,26 @@
 }
 
 .content {
-  display: flex;
-  flex-direction: column;
-  gap: 3rem;
+  column-count: 1;
+  column-gap: 3rem;
+}
+
+@media (min-width: 1024px) {
+  .content {
+    column-count: 2;
+  }
+}
+
+@media (min-width: 1600px) {
+  .content {
+    column-count: 3;
+  }
 }
 
 .departmentSection {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  margin-bottom: 3rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -106,54 +120,49 @@
   display: inline-block;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
+.tableContainer {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  border: 1px solid var(--card-border);
 }
 
-.card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem;
-  border-radius: 16px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
 }
 
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 24px rgba(31, 38, 135, 0.1);
+.table th, .table td {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--card-border);
 }
 
-.cardInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.cardName {
-  font-size: 1.1rem;
+.table th {
+  background: rgba(255, 255, 255, 0.05);
   font-weight: 600;
   color: var(--text-main);
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
 }
 
-.cardNumber {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: var(--accent);
+.table td {
+  color: var(--text-main);
+  font-size: 0.95rem;
 }
 
 .whatsappLink {
-  text-decoration: underline;
-  text-decoration-color: rgba(41, 128, 185, 0.4);
-  text-underline-offset: 4px;
-  transition: all 0.2s;
+  color: var(--success);
+  text-decoration: none;
+  font-weight: 700;
+  display: inline-block;
 }
 
 .whatsappLink:hover {
-  color: #25D366; /* Cor do WhatsApp */
-  text-decoration-color: #25D366;
+  text-decoration: underline;
+  text-shadow: 0 0 8px rgba(46, 204, 113, 0.4);
 }
 
 .copyButton {

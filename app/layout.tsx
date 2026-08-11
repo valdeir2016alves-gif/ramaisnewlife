@@ -16,7 +16,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <div className="page-wrapper">
+          {children}
+          <footer className="global-footer">
+            © 2026 New Life Fibra. Todos os direitos reservados.
+          </footer>
+        </div>
+      </body>
     </html>
   );
 }

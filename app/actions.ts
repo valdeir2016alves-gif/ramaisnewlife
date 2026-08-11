@@ -18,11 +18,11 @@ export async function getContacts(query?: string): Promise<Contact[]> {
         WHERE name LIKE @query 
            OR phone LIKE @query 
            OR department LIKE @query
-        ORDER BY department, name
+        ORDER BY id ASC
       `);
       return stmt.all({ query: `%${query}%` }) as Contact[];
     } else {
-      const stmt = db.prepare('SELECT * FROM contacts ORDER BY department, name');
+      const stmt = db.prepare('SELECT * FROM contacts ORDER BY id ASC');
       return stmt.all() as Contact[];
     }
   } catch (error) {
