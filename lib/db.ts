@@ -20,6 +20,32 @@ if (process.env.NODE_ENV === 'development') {
   db = new Database(dbPath);
 }
 
+// Verificar se é um banco de dados vazio (ex: usuário montou um volume vazio no Docker)
+const tableExists = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='contacts'").get();
+
+if (!tableExists) {
+  db.close();
+  const seedPath = path.join(process.cwd(), 'ramais.db.seed');
+  if (fs.existsSync(seedPath)) {
+    console.log('Restaurando banco de dados original (seed) sobre o banco vazio...');
+    fs.copyFileSync(seedPath, dbPath);
+  } else {
+    // Se não tiver seed, pelo menos cria a tabela para não dar erro
+    const newDb = new Database(dbPath);
+    newDb.exec(`
+      CREATE TABLE IF NOT EXISTS contacts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        phone TEXT NOT NULL,
+        department TEXT NOT NULL,
+        ip TEXT
+      )
+    `);
+    newDb.close();
+  }
+  db = new Database(dbPath);
+}
+
 // Configura o banco para ser mais rápido (WAL mode)
 db.pragma('journal_mode = WAL');
 
