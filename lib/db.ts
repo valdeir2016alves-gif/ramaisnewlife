@@ -43,6 +43,8 @@ if (shouldRestore) {
   const seedPath = path.join(process.cwd(), 'ramais.db.seed');
   if (fs.existsSync(seedPath)) {
     console.log('Restaurando banco de dados original (seed) sobre o banco vazio...');
+    if (fs.existsSync(dbPath + '-wal')) fs.unlinkSync(dbPath + '-wal');
+    if (fs.existsSync(dbPath + '-shm')) fs.unlinkSync(dbPath + '-shm');
     fs.copyFileSync(seedPath, dbPath);
   } else {
     // Se não tiver seed, pelo menos cria a tabela para não dar erro
