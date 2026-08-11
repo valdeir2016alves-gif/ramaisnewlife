@@ -160,9 +160,15 @@ export default function AdminPage() {
 
   const loadContacts = async () => {
     setLoading(true);
-    const data = await getContacts();
-    setContacts(data);
-    setLoading(false);
+    try {
+      const data = await getContacts();
+      setContacts(data || []);
+    } catch (error) {
+      console.error("Failed to load contacts", error);
+      setContacts([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAdd = async (e: React.FormEvent) => {

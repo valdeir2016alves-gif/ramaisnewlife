@@ -36,9 +36,15 @@ export default function Home() {
 
   const loadContacts = async () => {
     setLoading(true);
-    const data = await getContacts();
-    setContacts(data);
-    setLoading(false);
+    try {
+      const data = await getContacts();
+      setContacts(data || []);
+    } catch (error) {
+      console.error("Failed to load contacts", error);
+      setContacts([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const groupedContacts = useMemo(() => {
