@@ -21,9 +21,24 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // Verificar se é um banco de dados vazio (ex: usuário montou um volume vazio no Docker)
-const tableExists = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='contacts'").get();
+let tableExists = false;
+try {
+  tableExists = !!db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='contacts'").get();
+} catch (e) {}
 
+let shouldRestore = false;
 if (!tableExists) {
+  shouldRestore = true;
+} else {
+  try {
+    const rowCount = db.prepare("SELECT COUNT(*) as c FROM contacts").get() as { c: number };
+    if (rowCount.c === 0) {
+      shouldRestore = true;
+    }
+  } catch(e) {}
+}
+
+if (shouldRestore) {
   db.close();
   const seedPath = path.join(process.cwd(), 'ramais.db.seed');
   if (fs.existsSync(seedPath)) {

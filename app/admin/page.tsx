@@ -180,7 +180,6 @@ export default function AdminPage() {
     
     setLoading(true);
     const result = await addContact(name, phone, department, ip);
-
     if (result.success) {
       setName('');
       setPhone('');
@@ -188,7 +187,8 @@ export default function AdminPage() {
       setIp('');
       await loadContacts();
     } else {
-      alert('Erro ao adicionar: ' + result.error);
+      alert(`Erro ao adicionar ramal: ${result.error || 'Erro desconhecido. Verifique as configurações de proxy ou permissões.'}`);
+      console.error(result.error);
     }
     setLoading(false);
   };
