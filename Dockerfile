@@ -39,10 +39,11 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy the initial database so it works out-of-the-box
-COPY --chown=nextjs:nodejs ramais.db ./ramais.db
 # Note: Since the app needs to write to the db directory, ensure it has permissions
 RUN mkdir -p /app/data && chown nextjs:nodejs /app/data
+
+# Copy the initial database so it works out-of-the-box (into data/ where permissions allow WAL creation)
+COPY --chown=nextjs:nodejs ramais.db /app/data/ramais.db
 
 # better-sqlite3 native bindings need to be present
 COPY --from=builder /app/node_modules/better-sqlite3 ./node_modules/better-sqlite3

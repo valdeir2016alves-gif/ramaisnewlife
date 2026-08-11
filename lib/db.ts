@@ -1,9 +1,13 @@
 import Database from 'better-sqlite3';
+import fs from 'fs';
 import path from 'path';
 
 // Em ambiente de desenvolvimento, queremos manter a conexão singleton para evitar "Too many open files" 
 // por causa do HMR do Next.js
-const dbPath = path.join(process.cwd(), 'ramais.db');
+const dataDir = path.join(process.cwd(), 'data');
+const dbPath = fs.existsSync(dataDir) 
+  ? path.join(dataDir, 'ramais.db') 
+  : path.join(process.cwd(), 'ramais.db');
 
 let db: Database.Database;
 
