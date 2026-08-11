@@ -63,7 +63,7 @@ if (shouldRestore) {
   db = new Database(dbPath);
 }
 
-// Configura o banco para ser mais rápido (WAL mode)
-db.pragma('journal_mode = WAL');
+// Configura o banco para usar o modo de log padrão (evita segmentation fault no Docker desktop/WSL2)
+db.pragma('journal_mode = DELETE');
 
 export default db;
