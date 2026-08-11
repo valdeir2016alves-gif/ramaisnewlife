@@ -9,13 +9,11 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
-    # IMPORTANTE SOBRE O BANCO DE DADOS:
-    # Como o SQLite salva os dados em um arquivo local (ramais.db), ao reiniciar 
-    # o container do zero, os novos ramais adicionados poderiam ser perdidos.
-    # 
-    # Para persistir os dados no servidor hospedeiro, recomendamos mapear um volume.
-    # Exemplo:
-    # volumes:
-    #   - ./dados-db:/app/data
-    # (Se fizer isso, lembre-se de alterar o caminho em lib/db.ts para 'data/ramais.db' 
-    #  e mover seu ramais.db original para essa pasta).
+    # IMPORTANTE: Usamos um Docker Named Volume (ramais_data) para armazenar os dados.
+    # Isso garante que o banco de dados seja salvo permanentemente sem causar
+    # erros de "Segmentation Fault" (código 139) que ocorrem ao usar pastas do Windows.
+    volumes:
+      - ramais_data:/app/data
+
+volumes:
+  ramais_data:
