@@ -6,20 +6,19 @@ import { getContacts, Contact } from './actions';
 import styles from './page.module.css';
 
 const departmentEmojis: Record<string, string> = {
-  'Contatos Regionais e Externos': '📞',
+  'Contatos Regionais e Externos': '🌍',
   'Estoque': '📦',
   'Suporte Técnico': '💻',
   'Caixa': '💰',
   'Cancelamento': '🚫',
-  'Comercial': '📈',
+  'Comercial': '🤝',
   'Renovações': '🔄',
-  'Recuperação de Crédito': '🛡️',
-  'Financeiro': '📊',
-  'RH': '🧑‍💼',
+  'Recuperação de Crédito': '💸',
+  'Financeiro / RH': '💼',
   'SAC': '🎧',
-  'NOC': '📡',
+  'NOC': '🖥️',
   'Imobiliária': '🏠',
-  'Gerência': '💼'
+  'Gerência': '👑'
 };
 
 const getEmoji = (dept: string) => departmentEmojis[dept] || '🏢';
