@@ -25,9 +25,9 @@ export async function getContacts(query?: string): Promise<Contact[]> {
       const stmt = db.prepare('SELECT * FROM contacts ORDER BY id ASC');
       return stmt.all() as Contact[];
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to fetch contacts:', error);
-    return [];
+    throw new Error('Database Error: ' + error.message);
   }
 }
 
