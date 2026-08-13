@@ -1,5 +1,5 @@
 .main {
-  max-width: 1400px;
+  max-width: 1800px;
   margin: 0 auto;
   padding: 2rem;
 }
@@ -89,9 +89,15 @@
   }
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 1024px) {
   .content {
     column-count: 3;
+  }
+}
+
+@media (min-width: 1400px) {
+  .content {
+    column-count: 4;
   }
 }
 
