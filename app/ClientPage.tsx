@@ -119,7 +119,11 @@ export default function ClientPage({ initialContacts }: { initialContacts: Conta
                   const whatsappLink = isWhatsApp ? `https://wa.me/55${onlyNumbers}` : null;
 
                   return (
-                    <div key={contact.id} className={styles.contactItem}>
+                    <div 
+                      key={contact.id} 
+                      className={styles.contactItem}
+                      style={contact.name === 'WhatsApp Filtro' ? { gridColumn: '2' } : {}}
+                    >
                       <span className={styles.chevron}>›</span>
                       <span className={styles.contactName}>{contact.name}</span>
                       {isWhatsApp ? (
