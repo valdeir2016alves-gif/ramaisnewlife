@@ -34,8 +34,8 @@ export default function ClientPage({ initialContacts }: { initialContacts: Conta
           <Image 
             src="/logo.png" 
             alt="New Life" 
-            width={180} 
-            height={70} 
+            width={280} 
+            height={110} 
             priority
             style={{ objectFit: 'contain' }}
           />
