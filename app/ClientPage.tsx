@@ -37,12 +37,12 @@ export default function ClientPage({ initialContacts }: { initialContacts: Conta
             width={380} 
             height={150} 
             priority
-            style={{ objectFit: 'contain' }}
+            style={{ objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
           />
         </div>
         <div className={styles.headerText}>
-          ramais dos setores de <strong>são gabriel</strong><br />
-          em breve teremos de <strong>bagé e passo fundo</strong>
+          Diretório de Ramais — <strong>Unidade São Gabriel</strong><br />
+          <span style={{ fontSize: '0.9em', opacity: 0.8 }}>Em breve: Expansão para as unidades de <strong>Bagé</strong> e <strong>Passo Fundo</strong></span>
         </div>
         <div className={styles.searchContainer}>
           <input
