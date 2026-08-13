@@ -14,10 +14,10 @@ export default function ClientPage({ initialContacts }: { initialContacts: Conta
 
     if (city === 'bage') {
       contactsToFilter = [
-        { id: 9001, name: "Tainá", phone: "6010", department: "FINANCEIRO", ip: "" },
-        { id: 9002, name: "Eduarda", phone: "6011", department: "FINANCEIRO", ip: "" },
-        { id: 9003, name: "Laura", phone: "6012", department: "FINANCEIRO", ip: "" },
-        { id: 9004, name: "Alex", phone: "6013", department: "ESTOQUE", ip: "" }
+        { id: 9001, name: "Thaissa", phone: "6011", department: "Comercial", ip: "" },
+        { id: 9002, name: "Leandro", phone: "6012", department: "Gerência", ip: "" },
+        { id: 9003, name: "Júlia", phone: "6014", department: "Caixa", ip: "" },
+        { id: 9004, name: "Alex", phone: "6013", department: "Estoque", ip: "" }
       ];
     } else if (city !== 'sao_gabriel') {
       return {};
