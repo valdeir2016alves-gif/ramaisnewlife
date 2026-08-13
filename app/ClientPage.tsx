@@ -34,11 +34,15 @@ export default function ClientPage({ initialContacts }: { initialContacts: Conta
           <Image 
             src="/logo.png" 
             alt="New Life" 
-            width={280} 
-            height={110} 
+            width={380} 
+            height={150} 
             priority
             style={{ objectFit: 'contain' }}
           />
+        </div>
+        <div className={styles.headerText}>
+          ramais dos setores de <strong>são gabriel</strong><br />
+          em breve teremos de <strong>bagé e passo fundo</strong>
         </div>
         <div className={styles.searchContainer}>
           <input
