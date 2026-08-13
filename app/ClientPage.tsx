@@ -123,6 +123,7 @@ export default function ClientPage({ initialContacts }: { initialContacts: Conta
                     <div 
                       key={contact.id} 
                       className={styles.contactItem}
+                      style={isWhatsApp ? { gridColumn: '1 / -1' } : {}}
                     >
                       <span className={styles.chevron}>›</span>
                       <span className={styles.contactName}>{contact.name}</span>
