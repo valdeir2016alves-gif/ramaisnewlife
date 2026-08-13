@@ -104,7 +104,7 @@ export default function ClientPage({ initialContacts }: { initialContacts: Conta
           Object.entries(groupedContacts).map(([department, deptContacts]) => (
             <div key={department} className={styles.departmentSection}>
               <span className={styles.departmentSubtitle}>{department}</span>
-              <h2 className={styles.departmentTitle}>Contatos e Ramais</h2>
+              <h2 className={styles.departmentTitle}>Colaborador(a) e Ramais</h2>
               
               <div className={deptContacts.length > 6 ? styles.contactListMulti : styles.contactList}>
                 {deptContacts.map((contact) => {
