@@ -19,7 +19,13 @@ export default function ClientPage({ initialContacts }: { initialContacts: Conta
         { id: 9003, name: "Júlia", phone: "6014", department: "Caixa", ip: "" },
         { id: 9004, name: "Alex", phone: "6013", department: "Estoque", ip: "" }
       ];
-    } else if (city !== 'sao_gabriel') {
+    } else if (city === 'sao_gabriel') {
+      contactsToFilter = [
+        ...initialContacts,
+        { id: 9005, name: "WhatsApp NOC", phone: "(55) 9672-2575", department: "NOC", ip: "" },
+        { id: 9006, name: "WhatsApp Filtro", phone: "(55) 9669-6951", department: "Suporte Técnico", ip: "" }
+      ];
+    } else {
       return {};
     }
 
