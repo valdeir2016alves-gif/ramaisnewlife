@@ -23,7 +23,8 @@ export default function ClientPage({ initialContacts }: { initialContacts: Conta
       contactsToFilter = [
         ...initialContacts,
         { id: 9005, name: "WhatsApp NOC", phone: "(55) 9672-2575", department: "NOC", ip: "" },
-        { id: 9006, name: "WhatsApp Filtro", phone: "(55) 9669-6951", department: "Suporte Técnico", ip: "" }
+        { id: 9006, name: "WhatsApp Filtro", phone: "(55) 9669-6951", department: "Suporte Técnico", ip: "" },
+        { id: 9007, name: "WhatsApp Suporte Empresarial", phone: "(55) 9996-4340", department: "Suporte Técnico", ip: "" }
       ];
     } else {
       return {};
@@ -122,7 +123,6 @@ export default function ClientPage({ initialContacts }: { initialContacts: Conta
                     <div 
                       key={contact.id} 
                       className={styles.contactItem}
-                      style={contact.name === 'WhatsApp Filtro' ? { gridColumn: '2' } : {}}
                     >
                       <span className={styles.chevron}>›</span>
                       <span className={styles.contactName}>{contact.name}</span>
