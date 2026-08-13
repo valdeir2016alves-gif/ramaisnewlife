@@ -23,8 +23,8 @@ export default function ClientPage({ initialContacts }: { initialContacts: Conta
       contactsToFilter = [
         ...initialContacts,
         { id: 9005, name: "WhatsApp NOC", phone: "(55) 9672-2575", department: "NOC", ip: "" },
-        { id: 9006, name: "WhatsApp Filtro", phone: "(55) 9669-6951", department: "Suporte Técnico", ip: "" },
-        { id: 9007, name: "WhatsApp Suporte Empresarial", phone: "(55) 9996-4340", department: "Suporte Técnico", ip: "" }
+        { id: 9006, name: "Suporte (Filtro)", phone: "(55) 9669-6951", department: "Suporte Técnico", ip: "" },
+        { id: 9007, name: "Plantão (Empresarial)", phone: "(55) 9996-4340", department: "Suporte Técnico", ip: "" }
       ];
     } else {
       return {};
@@ -115,7 +115,7 @@ export default function ClientPage({ initialContacts }: { initialContacts: Conta
               
               <div className={deptContacts.length > 6 ? styles.contactListMulti : styles.contactList}>
                 {deptContacts.map((contact) => {
-                  const isWhatsApp = contact.name.toLowerCase().includes('whatsapp');
+                  const isWhatsApp = contact.name.toLowerCase().includes('whatsapp') || [9005, 9006, 9007].includes(contact.id);
                   const onlyNumbers = contact.phone.replace(/\D/g, '');
                   const whatsappLink = isWhatsApp ? `https://wa.me/55${onlyNumbers}` : null;
 
