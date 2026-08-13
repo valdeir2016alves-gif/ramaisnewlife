@@ -3,8 +3,7 @@ FROM node:20-bookworm-slim AS base
 # Install dependencies only when needed
 FROM base AS deps
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
-# We also need build tools for better-sqlite3
-RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
+# Sem dependências nativas para JSON
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
@@ -42,12 +41,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 # Note: Since the app needs to write to the db directory, ensure it has permissions
 RUN mkdir -p /app/data
 
-# Copy the initial database so it works out-of-the-box (into data/ where permissions allow WAL creation)
-COPY ramais.db /app/data/ramais.db
-COPY ramais.db /app/ramais.db.seed
-
-# better-sqlite3 native bindings need to be present
-COPY --from=builder /app/node_modules/better-sqlite3 ./node_modules/better-sqlite3
+# Copy the initial JSON database
+COPY ramais.json /app/data/ramais.json
+COPY ramais.json /app/ramais.json.seed
 
 EXPOSE 3000
 
