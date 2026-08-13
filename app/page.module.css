@@ -78,33 +78,67 @@
   color: var(--text-muted);
 }
 
+.cityTabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+.cityTab {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  color: var(--text-muted);
+  padding: 0.8rem 2rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cityTab:hover {
+  border-color: var(--card-border-hover);
+  color: var(--text-main);
+}
+
+.cityTabActive {
+  background: rgba(72, 202, 228, 0.1);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  box-shadow: 0 0 15px rgba(72, 202, 228, 0.2);
+}
+
 .content {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 2rem;
+  column-count: 1;
+  column-gap: 2rem;
 }
 
 @media (min-width: 768px) {
   .content {
-    grid-template-columns: repeat(2, 1fr);
+    column-count: 2;
   }
 }
 
 @media (min-width: 1024px) {
   .content {
-    grid-template-columns: repeat(3, 1fr);
+    column-count: 3;
   }
 }
 
 @media (min-width: 1400px) {
   .content {
-    grid-template-columns: repeat(4, 1fr);
+    column-count: 4;
   }
 }
 
 .departmentSection {
-  display: flex;
-  flex-direction: column;
+  break-inside: avoid;
+  page-break-inside: avoid;
+  margin-bottom: 2rem;
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: 12px;

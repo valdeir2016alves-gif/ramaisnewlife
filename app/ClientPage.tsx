@@ -7,8 +7,11 @@ import styles from './page.module.css';
 
 export default function ClientPage({ initialContacts }: { initialContacts: Contact[] }) {
   const [search, setSearch] = useState('');
+  const [city, setCity] = useState('sao_gabriel');
 
   const groupedContacts = useMemo(() => {
+    // If not São Gabriel, return empty for now (soon to be populated)
+    if (city !== 'sao_gabriel') return {};
     const filtered = initialContacts.filter(
       (c) =>
         c.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -59,9 +62,34 @@ export default function ClientPage({ initialContacts }: { initialContacts: Conta
         </div>
       </header>
 
+      <div className={styles.cityTabs}>
+        <button 
+          className={`${styles.cityTab} ${city === 'sao_gabriel' ? styles.cityTabActive : ''}`}
+          onClick={() => setCity('sao_gabriel')}
+        >
+          São Gabriel
+        </button>
+        <button 
+          className={`${styles.cityTab} ${city === 'bage' ? styles.cityTabActive : ''}`}
+          onClick={() => setCity('bage')}
+        >
+          Bagé
+        </button>
+        <button 
+          className={`${styles.cityTab} ${city === 'passo_fundo' ? styles.cityTabActive : ''}`}
+          onClick={() => setCity('passo_fundo')}
+        >
+          Passo Fundo
+        </button>
+      </div>
+
       <section className={styles.content}>
         {Object.keys(groupedContacts).length === 0 ? (
-          <div className={styles.noResults}>Nenhum ramal encontrado.</div>
+          <div className={styles.noResults}>
+            {city === 'sao_gabriel' 
+              ? 'Nenhum ramal encontrado.' 
+              : 'Em breve: ramais desta unidade estarão disponíveis.'}
+          </div>
         ) : (
           Object.entries(groupedContacts).map(([department, deptContacts]) => (
             <div key={department} className={styles.departmentSection}>
