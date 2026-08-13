@@ -173,6 +173,13 @@
   gap: 0.8rem;
 }
 
+.contactListMulti {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 1.5rem;
+  row-gap: 0.8rem;
+}
+
 .contactItem {
   display: flex;
   align-items: center;

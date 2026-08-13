@@ -55,8 +55,7 @@ export default function ClientPage({ initialContacts }: { initialContacts: Conta
           />
         </div>
         <div className={styles.headerText}>
-          Diretório de Ramais — <strong>Unidade São Gabriel</strong><br />
-          <span style={{ fontSize: '0.9em', opacity: 0.8 }}>Em breve: Expansão para as unidades de <strong>Bagé</strong> e <strong>Passo Fundo</strong></span>
+          Diretório de Ramais internos das Unidades <strong>São Gabriel, Bagé e Passo Fundo</strong>
         </div>
         <div className={styles.searchContainer}>
           <input
@@ -107,7 +106,7 @@ export default function ClientPage({ initialContacts }: { initialContacts: Conta
               <span className={styles.departmentSubtitle}>{department}</span>
               <h2 className={styles.departmentTitle}>Contatos e Ramais</h2>
               
-              <div className={styles.contactList}>
+              <div className={deptContacts.length > 6 ? styles.contactListMulti : styles.contactList}>
                 {deptContacts.map((contact) => {
                   const isWhatsApp = contact.name.toLowerCase().includes('whatsapp');
                   const onlyNumbers = contact.phone.replace(/\D/g, '');
