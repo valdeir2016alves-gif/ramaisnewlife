@@ -10,9 +10,20 @@ export default function ClientPage({ initialContacts }: { initialContacts: Conta
   const [city, setCity] = useState('sao_gabriel');
 
   const groupedContacts = useMemo(() => {
-    // If not São Gabriel, return empty for now (soon to be populated)
-    if (city !== 'sao_gabriel') return {};
-    const filtered = initialContacts.filter(
+    let contactsToFilter = initialContacts;
+
+    if (city === 'bage') {
+      contactsToFilter = [
+        { id: 9001, name: "Tainá", phone: "6010", department: "FINANCEIRO", ip: "" },
+        { id: 9002, name: "Eduarda", phone: "6011", department: "FINANCEIRO", ip: "" },
+        { id: 9003, name: "Laura", phone: "6012", department: "FINANCEIRO", ip: "" },
+        { id: 9004, name: "Alex", phone: "6013", department: "ESTOQUE", ip: "" }
+      ];
+    } else if (city !== 'sao_gabriel') {
+      return {};
+    }
+
+    const filtered = contactsToFilter.filter(
       (c) =>
         c.name.toLowerCase().includes(search.toLowerCase()) ||
         c.phone.toLowerCase().includes(search.toLowerCase()) ||
@@ -28,7 +39,7 @@ export default function ClientPage({ initialContacts }: { initialContacts: Conta
     });
 
     return groups;
-  }, [initialContacts, search]);
+  }, [initialContacts, search, city]);
 
   return (
     <main className={styles.main}>
