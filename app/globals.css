@@ -1,12 +1,13 @@
 :root {
-  --primary-color: #3498db; /* Azul mais claro para destaque no fundo escuro */
-  --primary-hover: #2980b9;
-  --bg-color: #0b1325; /* Fundo azul escuro profundo */
-  --card-bg: rgba(255, 255, 255, 0.05); /* Glassmorphism escuro */
-  --card-border: rgba(255, 255, 255, 0.1);
-  --text-main: #f8f9fa; /* Texto claro */
-  --text-muted: #adb5bd;
-  --accent: #f1c40f; /* Destaque levemente dourado/amarelo combinando com a imagem */
+  --primary-color: #48cae4; /* Ciano estilo tech para títulos */
+  --primary-hover: #00b4d8;
+  --bg-color: #060e17; /* Fundo extremamente escuro igual a referência */
+  --card-bg: rgba(255, 255, 255, 0.02); /* Fundo sutil para os cards */
+  --card-border: rgba(255, 255, 255, 0.08); /* Borda bem discreta */
+  --card-border-hover: rgba(72, 202, 228, 0.4); /* Brilho ciano na borda */
+  --text-main: #f1f5f9; /* Texto claro */
+  --text-muted: #94a3b8; /* Texto cinza secundário */
+  --accent: #00b4d8; 
   --success: #2ecc71;
   
   --font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -21,9 +22,7 @@
 body {
   font-family: var(--font-family);
   background: var(--bg-color);
-  background-image: 
-    radial-gradient(circle at 15% 50%, rgba(241, 196, 15, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 85% 30%, rgba(52, 152, 219, 0.1) 0%, transparent 50%);
+  /* Sem gradientes complexos no fundo para focar na limpeza das caixas */
   background-attachment: fixed;
   color: var(--text-main);
   min-height: 100vh;

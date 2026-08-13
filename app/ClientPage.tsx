@@ -1,51 +1,15 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import Image from 'next/image';
-import { getContacts, Contact } from './actions';
+import { Contact } from './actions';
 import styles from './page.module.css';
 
-const departmentEmojis: Record<string, string> = {
-  'Contatos Regionais e Externos': '🌍',
-  'Estoque': '📦',
-  'Suporte Técnico': '💻',
-  'Caixa': '💰',
-  'Cancelamento': '🚫',
-  'Comercial': '🤝',
-  'Renovações': '🔄',
-  'Recuperação de Crédito': '💸',
-  'Financeiro / RH': '💼',
-  'SAC': '🎧',
-  'NOC': '🖥️',
-  'Imobiliária': '🏠',
-  'Gerência': '👑'
-};
-
-const getEmoji = (dept: string) => departmentEmojis[dept] || '🏢';
-
 export default function ClientPage({ initialContacts }: { initialContacts: Contact[] }) {
-  const [contacts, setContacts] = useState<Contact[]>(initialContacts);
   const [search, setSearch] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [copiedId, setCopiedId] = useState<number | null>(null);
-
-  // Removido useEffect pois já recebemos initialContacts
-
-  const loadContacts = async () => {
-    setLoading(true);
-    try {
-      const data = await getContacts();
-      setContacts(data || []);
-    } catch (error) {
-      console.error("Failed to load contacts", error);
-      setContacts([]);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const groupedContacts = useMemo(() => {
-    const filtered = contacts.filter(
+    const filtered = initialContacts.filter(
       (c) =>
         c.name.toLowerCase().includes(search.toLowerCase()) ||
         c.phone.toLowerCase().includes(search.toLowerCase()) ||
@@ -61,17 +25,11 @@ export default function ClientPage({ initialContacts }: { initialContacts: Conta
     });
 
     return groups;
-  }, [contacts, search]);
-
-  const handleCopy = (phone: string, id: number) => {
-    navigator.clipboard.writeText(phone);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
-  };
+  }, [initialContacts, search]);
 
   return (
     <main className={styles.main}>
-      <header className={`${styles.header} glass`}>
+      <header className={styles.header}>
         <div className={styles.logoContainer}>
           <Image 
             src="/logo.png" 
@@ -79,14 +37,13 @@ export default function ClientPage({ initialContacts }: { initialContacts: Conta
             width={180} 
             height={70} 
             priority
-            style={{ objectFit: 'contain', marginBottom: '0.5rem' }}
+            style={{ objectFit: 'contain' }}
           />
-          <p className={styles.subtitle}>Lista de Ramais</p>
         </div>
         <div className={styles.searchContainer}>
           <input
             type="text"
-            placeholder="Pesquisar por nome, setor ou número..."
+            placeholder="Pesquisar ramal, nome ou setor..."
             className={styles.searchInput}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -99,86 +56,34 @@ export default function ClientPage({ initialContacts }: { initialContacts: Conta
       </header>
 
       <section className={styles.content}>
-        {loading ? (
-          <div className={styles.loading}>Carregando ramais...</div>
-        ) : Object.keys(groupedContacts).length === 0 ? (
+        {Object.keys(groupedContacts).length === 0 ? (
           <div className={styles.noResults}>Nenhum ramal encontrado.</div>
         ) : (
           Object.entries(groupedContacts).map(([department, deptContacts]) => (
             <div key={department} className={styles.departmentSection}>
-              <h2 className={styles.departmentTitle}>{getEmoji(department)} {department}</h2>
-              <div className={styles.tableContainer}>
-                <table className={styles.table}>
-                  <thead>
-                    <tr>
-                      {department === 'Contatos Regionais e Externos' ? (
-                        <>
-                          <th>Localidade / Canal</th>
-                          <th>Número</th>
-                        </>
-                      ) : department === 'Suporte Técnico' ? (
-                        <>
-                          <th>Ramal</th>
-                          <th>Colaborador(a)</th>
-                          <th>Ramal</th>
-                          <th>Colaborador(a)</th>
-                        </>
+              <span className={styles.departmentSubtitle}>{department}</span>
+              <h2 className={styles.departmentTitle}>Contatos e Ramais</h2>
+              
+              <div className={styles.contactList}>
+                {deptContacts.map((contact) => {
+                  const isWhatsApp = contact.name.toLowerCase().includes('whatsapp');
+                  const onlyNumbers = contact.phone.replace(/\D/g, '');
+                  const whatsappLink = isWhatsApp ? `https://wa.me/55${onlyNumbers}` : null;
+
+                  return (
+                    <div key={contact.id} className={styles.contactItem}>
+                      <span className={styles.chevron}>›</span>
+                      <span className={styles.contactName}>{contact.name}</span>
+                      {isWhatsApp ? (
+                        <a href={whatsappLink!} target="_blank" rel="noopener noreferrer" className={styles.whatsappLink}>
+                          {contact.phone}
+                        </a>
                       ) : (
-                        <>
-                          <th>Ramal</th>
-                          <th>Colaborador(a)</th>
-                        </>
+                        <span className={styles.contactPhone}>{contact.phone}</span>
                       )}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {department === 'Suporte Técnico' ? (
-                      Array.from({ length: Math.ceil(deptContacts.length / 2) }).map((_, i) => {
-                        const left = deptContacts[i];
-                        const right = deptContacts[i + Math.ceil(deptContacts.length / 2)];
-                        
-                        return (
-                          <tr key={i}>
-                            <td>{left?.phone || '-'}</td>
-                            <td>{left?.name || '-'}</td>
-                            <td>{right?.phone || '-'}</td>
-                            <td>{right?.name || '-'}</td>
-                          </tr>
-                        );
-                      })
-                    ) : (
-                      deptContacts.map((contact) => {
-                        const isWhatsApp = contact.name.toLowerCase().includes('whatsapp');
-                        const onlyNumbers = contact.phone.replace(/\D/g, '');
-                        const whatsappLink = isWhatsApp ? `https://wa.me/55${onlyNumbers}` : null;
-                        
-                        return (
-                          <tr key={contact.id}>
-                            {department === 'Contatos Regionais e Externos' ? (
-                              <>
-                                <td>{contact.name}</td>
-                                <td>
-                                  {isWhatsApp ? (
-                                    <a href={whatsappLink!} target="_blank" rel="noopener noreferrer" className={styles.whatsappLink}>
-                                      {contact.phone}
-                                    </a>
-                                  ) : (
-                                    contact.phone
-                                  )}
-                                </td>
-                              </>
-                            ) : (
-                              <>
-                                <td>{contact.phone}</td>
-                                <td>{contact.name}</td>
-                              </>
-                            )}
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ))
