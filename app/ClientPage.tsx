@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import { Contact } from './actions';
 import styles from './page.module.css';
@@ -8,6 +8,23 @@ import styles from './page.module.css';
 export default function ClientPage({ initialContacts }: { initialContacts: Contact[] }) {
   const [search, setSearch] = useState('');
   const [city, setCity] = useState('sao_gabriel');
+  const [theme, setTheme] = useState('dark');
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      setTheme(savedTheme);
+    }
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
 
   const groupedContacts = useMemo(() => {
     let contactsToFilter = initialContacts;
@@ -58,24 +75,33 @@ export default function ClientPage({ initialContacts }: { initialContacts: Conta
             width={380} 
             height={150} 
             priority
-            style={{ objectFit: 'contain', filter: 'brightness(0) invert(1)' }}
+            style={{ objectFit: 'contain', filter: 'var(--logo-filter)' }}
           />
         </div>
         <div className={styles.headerText}>
           Diretório de Ramais internos das Unidades <strong>São Gabriel, Bagé e Passo Fundo</strong>
         </div>
-        <div className={styles.searchContainer}>
-          <input
-            type="text"
-            placeholder="Pesquisar ramal, nome ou setor..."
-            className={styles.searchInput}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.searchIcon}>
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
+        <div className={styles.headerRight}>
+          <div className={styles.searchContainer}>
+            <input
+              type="text"
+              placeholder="Pesquisar ramal, nome ou setor..."
+              className={styles.searchInput}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.searchIcon}>
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </div>
+          <button 
+            onClick={toggleTheme} 
+            className={styles.themeToggle}
+            title={theme === 'dark' ? 'Mudar para Tema Claro' : 'Mudar para Tema Escuro'}
+          >
+            {theme === 'dark' ? '☀️' : '🌙'}
+          </button>
         </div>
       </header>
 

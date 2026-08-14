@@ -1,6 +1,7 @@
 :root {
   --primary-color: #48cae4; /* Ciano estilo tech para títulos */
   --primary-hover: #00b4d8;
+  --sector-title-color: #ffffff; /* Texto dos setores fica branco no escuro */
   --bg-color: #060e17; /* Fundo extremamente escuro igual a referência */
   --card-bg: rgba(255, 255, 255, 0.02); /* Fundo sutil para os cards */
   --card-border: rgba(255, 255, 255, 0.08); /* Borda bem discreta */
@@ -9,8 +10,26 @@
   --text-muted: #94a3b8; /* Texto cinza secundário */
   --accent: #00b4d8; 
   --success: #2ecc71;
+  --logo-filter: brightness(0) invert(1);
+  --header-bg: transparent;
   
   --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+[data-theme="light"] {
+  --primary-color: #0077b6; /* Azul escuro no tema claro para botões etc */
+  --primary-hover: #023e8a;
+  --sector-title-color: #023e8a; /* Azul escuro para legibilidade do setor */
+  --bg-color: #f1f5f9; /* Fundo claro sutil */
+  --card-bg: #ffffff; /* Cards brancos */
+  --card-border: #cbd5e1; /* Borda cinza clara */
+  --card-border-hover: #023e8a; /* Azul na borda ao passar o mouse */
+  --text-main: #0f172a; /* Texto escuro */
+  --text-muted: #64748b; /* Texto cinza secundário escurecido */
+  --accent: #0077b6;
+  --success: #16a34a; /* Verde mais forte para contraste no claro */
+  --logo-filter: none; /* Logo com cores originais */
+  --header-bg: #ffffff;
 }
 
 * {
