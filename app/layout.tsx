@@ -7,6 +7,9 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Ramais - New Life",
   description: "Lista de ramais internos e externos",
+  icons: {
+    icon: "/logo.png",
+  },
 };
 
 export default function RootLayout({
