@@ -132,7 +132,7 @@ export default function ClientPage({ initialContacts }: { initialContacts: Conta
                                      [9005, 9006, 9007].includes(contact.id);
                   
                   const onlyNumbers = contact.phone.replace(/\D/g, '');
-                  const isWhatsAppNumber = onlyNumbers.length >= 10;
+                  const isWhatsAppNumber = onlyNumbers.length >= 11;
                   const whatsappLink = isWhatsAppNumber ? `https://wa.me/55${onlyNumbers}` : null;
 
                   return (
