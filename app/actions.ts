@@ -34,30 +34,6 @@ const ensureDefaultContacts = (contacts: Contact[]): boolean => {
     }
   });
 
-  let maxId = contacts.length > 0 ? Math.max(...contacts.map(c => c.id)) : 0;
-  const getId = () => ++maxId;
-
-  const defaultContacts = [
-    { name: "WhatsApp NOC", phone: "(55) 9672-2575", department: "NOC", ip: "", city: "sao_gabriel" },
-    { name: "Suporte (Filtro)", phone: "(55) 9669-6951", department: "Suporte Técnico", ip: "", city: "sao_gabriel" },
-    { name: "Plantão (Empresarial)", phone: "(55) 9996-4340", department: "Suporte Técnico", ip: "", city: "sao_gabriel" },
-    { name: "Thaissa", phone: "6011", department: "Comercial", ip: "", city: "bage" },
-    { name: "Leandro", phone: "6012", department: "Gerência", ip: "", city: "bage" },
-    { name: "Júlia", phone: "6014", department: "Caixa", ip: "", city: "bage" },
-    { name: "Alex", phone: "6013", department: "Estoque", ip: "", city: "bage" },
-    { name: "Anne", phone: "2020", department: "Financeiro", ip: "", city: "passo_fundo" },
-    { name: "Felipe", phone: "2029", department: "Estoque", ip: "", city: "passo_fundo" },
-    { name: "Jam", phone: "2030", department: "Comercial", ip: "", city: "passo_fundo" }
-  ];
-
-  defaultContacts.forEach(dc => {
-    const exists = contacts.find(c => c.name === dc.name && c.department === dc.department);
-    if (!exists) {
-      contacts.push({ ...dc, id: getId() });
-      changed = true;
-    }
-  });
-
   return changed;
 };
 
