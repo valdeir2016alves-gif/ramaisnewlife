@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: "Ramais - New Life",
   description: "Lista de ramais internos e externos",
   icons: {
-    icon: "/logo-white.png",
+    icon: "/favicon.png",
   },
 };
 
