@@ -43,6 +43,12 @@ export default function ClientPage({ initialContacts }: { initialContacts: Conta
         { id: 9006, name: "Suporte (Filtro)", phone: "(55) 9669-6951", department: "Suporte Técnico", ip: "" },
         { id: 9007, name: "Plantão (Empresarial)", phone: "(55) 9996-4340", department: "Suporte Técnico", ip: "" }
       ];
+    } else if (city === 'passo_fundo') {
+      contactsToFilter = [
+        { id: 9008, name: "Anne", phone: "2020", department: "Financeiro", ip: "" },
+        { id: 9009, name: "Felipe", phone: "2029", department: "Estoque", ip: "" },
+        { id: 9010, name: "Jam", phone: "2030", department: "Comercial", ip: "" }
+      ];
     } else {
       return {};
     }
@@ -129,7 +135,7 @@ export default function ClientPage({ initialContacts }: { initialContacts: Conta
       <section className={styles.content}>
         {Object.keys(groupedContacts).length === 0 ? (
           <div className={styles.noResults}>
-            {city === 'sao_gabriel' 
+            {search.trim() !== '' || city !== 'passo_fundo' 
               ? 'Nenhum ramal encontrado.' 
               : 'Em breve'}
           </div>
