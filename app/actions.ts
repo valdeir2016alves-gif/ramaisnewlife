@@ -21,6 +21,46 @@ const getDbPath = () => {
 
 const getSeedPath = () => path.join(process.cwd(), 'ramais.json.seed');
 
+const ensureDefaultContacts = (contacts: Contact[]): boolean => {
+  let changed = false;
+
+  contacts.forEach(c => {
+    if (c.department === 'Contatos Regionais e Externos' && c.city !== 'all') {
+      c.city = 'all';
+      changed = true;
+    } else if (!c.city) {
+      c.city = 'sao_gabriel';
+      changed = true;
+    }
+  });
+
+  let maxId = contacts.length > 0 ? Math.max(...contacts.map(c => c.id)) : 0;
+  const getId = () => ++maxId;
+
+  const defaultContacts = [
+    { name: "WhatsApp NOC", phone: "(55) 9672-2575", department: "NOC", ip: "", city: "sao_gabriel" },
+    { name: "Suporte (Filtro)", phone: "(55) 9669-6951", department: "Suporte Técnico", ip: "", city: "sao_gabriel" },
+    { name: "Plantão (Empresarial)", phone: "(55) 9996-4340", department: "Suporte Técnico", ip: "", city: "sao_gabriel" },
+    { name: "Thaissa", phone: "6011", department: "Comercial", ip: "", city: "bage" },
+    { name: "Leandro", phone: "6012", department: "Gerência", ip: "", city: "bage" },
+    { name: "Júlia", phone: "6014", department: "Caixa", ip: "", city: "bage" },
+    { name: "Alex", phone: "6013", department: "Estoque", ip: "", city: "bage" },
+    { name: "Anne", phone: "2020", department: "Financeiro", ip: "", city: "passo_fundo" },
+    { name: "Felipe", phone: "2029", department: "Estoque", ip: "", city: "passo_fundo" },
+    { name: "Jam", phone: "2030", department: "Comercial", ip: "", city: "passo_fundo" }
+  ];
+
+  defaultContacts.forEach(dc => {
+    const exists = contacts.find(c => c.name === dc.name && c.department === dc.department);
+    if (!exists) {
+      contacts.push({ ...dc, id: getId() });
+      changed = true;
+    }
+  });
+
+  return changed;
+};
+
 const readData = (): Contact[] => {
   const dbPath = getDbPath();
   
@@ -36,7 +76,13 @@ const readData = (): Contact[] => {
 
   try {
     const content = fs.readFileSync(dbPath, 'utf-8');
-    return JSON.parse(content) as Contact[];
+    const parsed = JSON.parse(content) as Contact[];
+    const changed = ensureDefaultContacts(parsed);
+    if (changed) {
+      // save injected right away to persist them
+      fs.writeFileSync(dbPath, JSON.stringify(parsed, null, 2), 'utf-8');
+    }
+    return parsed;
   } catch (error) {
     console.error('Erro ao ler ramais.json:', error);
     return [];
