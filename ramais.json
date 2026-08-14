@@ -4,363 +4,495 @@
     "name": "WhatsApp Central",
     "phone": "0800 647 6190",
     "department": "Contatos Regionais e Externos",
-    "ip": ""
+    "ip": "",
+    "city": "all"
   },
   {
     "id": 55,
     "name": "São Gabriel – RS",
     "phone": "(55) 3112-0041",
     "department": "Contatos Regionais e Externos",
-    "ip": ""
+    "ip": "",
+    "city": "all"
   },
   {
     "id": 56,
     "name": "Bagé – RS",
     "phone": "(53) 2018-1566",
     "department": "Contatos Regionais e Externos",
-    "ip": ""
+    "ip": "",
+    "city": "all"
   },
   {
     "id": 57,
     "name": "Passo Fundo – RS",
     "phone": "(54) 3310-1008",
     "department": "Contatos Regionais e Externos",
-    "ip": ""
+    "ip": "",
+    "city": "all"
   },
   {
     "id": 58,
     "name": "Imobiliária SG (Fixo)",
     "phone": "(55) 3237-2626",
     "department": "Contatos Regionais e Externos",
-    "ip": ""
+    "ip": "",
+    "city": "all"
   },
   {
     "id": 59,
     "name": "Cristian",
     "phone": "4026",
     "department": "Estoque",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 60,
     "name": "André (Coordenador)",
     "phone": "4049",
     "department": "Suporte Técnico",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 61,
     "name": "Erick",
     "phone": "4046",
     "department": "Suporte Técnico",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 62,
     "name": "Matheus",
     "phone": "4041",
     "department": "Suporte Técnico",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 63,
     "name": "Vinicius",
     "phone": "4047",
     "department": "Suporte Técnico",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 64,
     "name": "Marco",
     "phone": "4042",
     "department": "Suporte Técnico",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 65,
     "name": "Eniton",
     "phone": "4048",
     "department": "Suporte Técnico",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 66,
     "name": "Otávio",
     "phone": "4043",
     "department": "Suporte Técnico",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 67,
     "name": "Paulo",
     "phone": "4050",
     "department": "Suporte Técnico",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 68,
     "name": "Eliel",
     "phone": "4044",
     "department": "Suporte Técnico",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 69,
     "name": "Pedro",
     "phone": "4061",
     "department": "Suporte Técnico",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 70,
     "name": "João",
     "phone": "4045",
     "department": "Suporte Técnico",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 71,
     "name": "Guilherme",
     "phone": "4062",
     "department": "Suporte Técnico",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 72,
     "name": "Luiz",
     "phone": "4065",
     "department": "Suporte Técnico",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 73,
     "name": "-",
     "phone": "4040",
     "department": "Suporte Técnico",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 74,
     "name": "Alice",
     "phone": "4021",
     "department": "Caixa",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 75,
     "name": "Deise",
     "phone": "4059",
     "department": "Cancelamento",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 76,
     "name": "Gessiane",
     "phone": "4023",
     "department": "Cancelamento",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 77,
     "name": "Luana",
     "phone": "4027",
     "department": "Renovações",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 78,
     "name": "Lisiane",
     "phone": "4029",
     "department": "Renovações",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 79,
     "name": "Marcielli",
     "phone": "4067",
     "department": "Renovações",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 80,
     "name": "Rhayssa (Vendas)",
     "phone": "4052",
     "department": "Comercial",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 81,
     "name": "Claiton (Vendas)",
     "phone": "4054",
     "department": "Comercial",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 82,
     "name": "Camila (Agendamento)",
     "phone": "4025",
     "department": "Comercial",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 83,
     "name": "Ingridy (Ampliação / Troca)",
     "phone": "4053",
     "department": "Comercial",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 84,
     "name": "Laiz (Ampliação / Troca)",
     "phone": "4022",
     "department": "Comercial",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 85,
     "name": "Max (Gerência)",
     "phone": "4055",
     "department": "Comercial",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 86,
     "name": "Mayara",
     "phone": "4024",
     "department": "Recuperação de Crédito",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 87,
     "name": "Mayara (Financeiro)",
     "phone": "4030",
     "department": "Financeiro / RH",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 88,
     "name": "Jessica (Financeiro)",
     "phone": "4035",
     "department": "Financeiro / RH",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 89,
     "name": "Litiele (Financeiro)",
     "phone": "4056",
     "department": "Financeiro / RH",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 90,
     "name": "Charlize (Financeiro)",
     "phone": "4028",
     "department": "Financeiro / RH",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 91,
     "name": "Lucinha (RH)",
     "phone": "4034",
     "department": "Financeiro / RH",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 92,
     "name": "Victória",
     "phone": "4032",
     "department": "SAC",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 93,
     "name": "Kailany",
     "phone": "4058",
     "department": "SAC",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 94,
     "name": "Leandra",
     "phone": "4033",
     "department": "SAC",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 95,
     "name": "Julia Marcon",
     "phone": "4037",
     "department": "SAC",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 96,
     "name": "Milanni",
     "phone": "4031",
     "department": "SAC",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 97,
     "name": "Deise",
     "phone": "4059",
     "department": "SAC",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 98,
     "name": "Pâmela",
     "phone": "4038",
     "department": "SAC",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 99,
     "name": "Luane/Gessiane",
     "phone": "4023",
     "department": "SAC",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 100,
     "name": "Yasmin",
     "phone": "4039",
     "department": "SAC",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 101,
     "name": "Ellen",
     "phone": "4057",
     "department": "SAC",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 102,
     "name": "Jhonatan / Bruno / Valdeir",
     "phone": "4001",
     "department": "NOC",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 103,
     "name": "-",
     "phone": "4060",
     "department": "Imobiliária",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 104,
     "name": "Giovana",
     "phone": "(55) 3237-2626",
     "department": "Imobiliária",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
   },
   {
     "id": 105,
     "name": "Giovana",
     "phone": "(55) 99650-5008",
     "department": "Imobiliária",
-    "ip": ""
+    "ip": "",
+    "city": "sao_gabriel"
+  },
+  {
+    "name": "WhatsApp NOC",
+    "phone": "(55) 9672-2575",
+    "department": "NOC",
+    "ip": "",
+    "city": "sao_gabriel",
+    "id": 106
+  },
+  {
+    "name": "Suporte (Filtro)",
+    "phone": "(55) 9669-6951",
+    "department": "Suporte Técnico",
+    "ip": "",
+    "city": "sao_gabriel",
+    "id": 107
+  },
+  {
+    "name": "Plantão (Empresarial)",
+    "phone": "(55) 9996-4340",
+    "department": "Suporte Técnico",
+    "ip": "",
+    "city": "sao_gabriel",
+    "id": 108
+  },
+  {
+    "name": "Thaissa",
+    "phone": "6011",
+    "department": "Comercial",
+    "ip": "",
+    "city": "bage",
+    "id": 109
+  },
+  {
+    "name": "Leandro",
+    "phone": "6012",
+    "department": "Gerência",
+    "ip": "",
+    "city": "bage",
+    "id": 110
+  },
+  {
+    "name": "Júlia",
+    "phone": "6014",
+    "department": "Caixa",
+    "ip": "",
+    "city": "bage",
+    "id": 111
+  },
+  {
+    "name": "Alex",
+    "phone": "6013",
+    "department": "Estoque",
+    "ip": "",
+    "city": "bage",
+    "id": 112
+  },
+  {
+    "name": "Anne",
+    "phone": "2020",
+    "department": "Financeiro",
+    "ip": "",
+    "city": "passo_fundo",
+    "id": 113
+  },
+  {
+    "name": "Felipe",
+    "phone": "2029",
+    "department": "Estoque",
+    "ip": "",
+    "city": "passo_fundo",
+    "id": 114
+  },
+  {
+    "name": "Jam",
+    "phone": "2030",
+    "department": "Comercial",
+    "ip": "",
+    "city": "passo_fundo",
+    "id": 115
   }
 ]

@@ -29,7 +29,7 @@ function EditableRow({
   onDelete 
 }: { 
   contact: Contact; 
-  onSave: (id: number, name: string, phone: string, department: string, ip: string) => Promise<void>; 
+  onSave: (id: number, name: string, phone: string, department: string, ip: string, city: string) => Promise<void>; 
   onDelete: (id: number) => Promise<void>;
 }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -37,6 +37,7 @@ function EditableRow({
   const [phone, setPhone] = useState(contact.phone);
   const [ip, setIp] = useState(contact.ip || '');
   const [department, setDepartment] = useState(contact.department);
+  const [city, setCity] = useState(contact.city || 'sao_gabriel');
   const [loading, setLoading] = useState(false);
 
   const handleSave = async () => {
@@ -45,7 +46,7 @@ function EditableRow({
       return;
     }
     setLoading(true);
-    await onSave(contact.id, name, phone, department, ip);
+    await onSave(contact.id, name, phone, department, ip, city);
     setLoading(false);
     setIsEditing(false);
   };
@@ -69,6 +70,17 @@ function EditableRow({
             placeholder="Setor"
             style={{ marginTop: '0.5rem', fontSize: '0.85rem' }}
           />
+          <select
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            className={styles.inputInline}
+            style={{ marginTop: '0.5rem', fontSize: '0.85rem' }}
+          >
+            <option value="sao_gabriel">São Gabriel</option>
+            <option value="bage">Bagé</option>
+            <option value="passo_fundo">Passo Fundo</option>
+            <option value="all">Global (Todas as Unidades)</option>
+          </select>
         </td>
         <td>
           <input 
@@ -99,6 +111,7 @@ function EditableRow({
               setName(contact.name);
               setPhone(contact.phone);
               setDepartment(contact.department);
+              setCity(contact.city || 'sao_gabriel');
               setIp(contact.ip || '');
             }} className={styles.btnSecondary} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }} disabled={loading}>
               Cancelar
@@ -145,6 +158,8 @@ export default function AdminPage() {
   const [phone, setPhone] = useState('');
   const [department, setDepartment] = useState('');
   const [ip, setIp] = useState('');
+  const [newCity, setNewCity] = useState('sao_gabriel');
+  const [adminCity, setAdminCity] = useState('sao_gabriel');
   
   const [loading, setLoading] = useState(false);
 
@@ -179,7 +194,7 @@ export default function AdminPage() {
     }
     
     setLoading(true);
-    const result = await addContact(name, phone, department, ip);
+    const result = await addContact(name, phone, department, ip, newCity);
     if (result.success) {
       setName('');
       setPhone('');
@@ -193,8 +208,8 @@ export default function AdminPage() {
     setLoading(false);
   };
 
-  const handleUpdateRow = async (id: number, newName: string, newPhone: string, newDepartment: string, newIp: string) => {
-    const result = await updateContact(id, newName, newPhone, newDepartment, newIp);
+  const handleUpdateRow = async (id: number, newName: string, newPhone: string, newDepartment: string, newIp: string, updatedCity: string) => {
+    const result = await updateContact(id, newName, newPhone, newDepartment, newIp, updatedCity);
     if (result.success) {
       await loadContacts();
     } else {
@@ -229,14 +244,20 @@ export default function AdminPage() {
 
   const groupedContacts = useMemo(() => {
     const groups: Record<string, Contact[]> = {};
-    contacts.forEach((c) => {
+    const filtered = contacts.filter(c => {
+      const cCity = c.city || 'sao_gabriel';
+      if (adminCity === 'all') return cCity === 'all';
+      return cCity === adminCity || cCity === 'all';
+    });
+    
+    filtered.forEach((c) => {
       if (!groups[c.department]) {
         groups[c.department] = [];
       }
       groups[c.department].push(c);
     });
     return groups;
-  }, [contacts]);
+  }, [contacts, adminCity]);
 
   if (!isAuthenticated) {
     return (
@@ -297,6 +318,16 @@ export default function AdminPage() {
             onChange={(e) => setIp(e.target.value)} 
             className={styles.input}
           />
+          <select
+            value={newCity}
+            onChange={(e) => setNewCity(e.target.value)}
+            className={styles.input}
+          >
+            <option value="sao_gabriel">São Gabriel</option>
+            <option value="bage">Bagé</option>
+            <option value="passo_fundo">Passo Fundo</option>
+            <option value="all">Global (Todas as Unidades)</option>
+          </select>
           <div className={styles.actionButtons}>
             <button type="submit" className={styles.btnPrimary} disabled={loading}>
               {loading ? 'Adicionando...' : 'Adicionar'}
@@ -306,6 +337,24 @@ export default function AdminPage() {
       </section>
 
       <section className={styles.listSection}>
+        <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <button 
+            className={adminCity === 'sao_gabriel' ? styles.btnPrimary : styles.btnSecondary}
+            onClick={() => setAdminCity('sao_gabriel')}
+          >São Gabriel</button>
+          <button 
+            className={adminCity === 'bage' ? styles.btnPrimary : styles.btnSecondary}
+            onClick={() => setAdminCity('bage')}
+          >Bagé</button>
+          <button 
+            className={adminCity === 'passo_fundo' ? styles.btnPrimary : styles.btnSecondary}
+            onClick={() => setAdminCity('passo_fundo')}
+          >Passo Fundo</button>
+          <button 
+            className={adminCity === 'all' ? styles.btnPrimary : styles.btnSecondary}
+            onClick={() => setAdminCity('all')}
+          >Global</button>
+        </div>
         <h2>Ramais Cadastrados</h2>
         {Object.keys(groupedContacts).length === 0 ? (
           <p>Nenhum ramal cadastrado.</p>

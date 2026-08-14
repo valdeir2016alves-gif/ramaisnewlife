@@ -27,33 +27,12 @@ export default function ClientPage({ initialContacts }: { initialContacts: Conta
   };
 
   const groupedContacts = useMemo(() => {
-    let contactsToFilter = initialContacts;
-
-    if (city === 'bage') {
-      contactsToFilter = [
-        { id: 9001, name: "Thaissa", phone: "6011", department: "Comercial", ip: "" },
-        { id: 9002, name: "Leandro", phone: "6012", department: "Gerência", ip: "" },
-        { id: 9003, name: "Júlia", phone: "6014", department: "Caixa", ip: "" },
-        { id: 9004, name: "Alex", phone: "6013", department: "Estoque", ip: "" }
-      ];
-    } else if (city === 'sao_gabriel') {
-      contactsToFilter = [
-        ...initialContacts,
-        { id: 9005, name: "WhatsApp NOC", phone: "(55) 9672-2575", department: "NOC", ip: "" },
-        { id: 9006, name: "Suporte (Filtro)", phone: "(55) 9669-6951", department: "Suporte Técnico", ip: "" },
-        { id: 9007, name: "Plantão (Empresarial)", phone: "(55) 9996-4340", department: "Suporte Técnico", ip: "" }
-      ];
-    } else if (city === 'passo_fundo') {
-      contactsToFilter = [
-        { id: 9008, name: "Anne", phone: "2020", department: "Financeiro", ip: "" },
-        { id: 9009, name: "Felipe", phone: "2029", department: "Estoque", ip: "" },
-        { id: 9010, name: "Jam", phone: "2030", department: "Comercial", ip: "" }
-      ];
-    } else {
-      return {};
-    }
-
-    const filtered = contactsToFilter.filter(
+    const filtered = initialContacts.filter((c) => {
+      const cCity = c.city || 'sao_gabriel';
+      // If contact is global, it appears in all cities
+      if (cCity === 'all') return true;
+      return cCity === city;
+    }).filter(
       (c) =>
         c.name.toLowerCase().includes(search.toLowerCase()) ||
         c.phone.toLowerCase().includes(search.toLowerCase()) ||
