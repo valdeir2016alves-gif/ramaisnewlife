@@ -126,7 +126,10 @@ export default function ClientPage({ initialContacts }: { initialContacts: Conta
               
               <div className={deptContacts.length > 6 ? styles.contactListMulti : styles.contactList}>
                 {deptContacts.map((contact) => {
-                  const isWhatsApp = contact.name.toLowerCase().includes('whatsapp') || [9005, 9006, 9007].includes(contact.id);
+                  const isWhatsApp = contact.name.toLowerCase().includes('whatsapp') || 
+                                     contact.name.toLowerCase().includes('filtro') || 
+                                     contact.name.toLowerCase().includes('empresarial') || 
+                                     [9005, 9006, 9007].includes(contact.id);
                   const onlyNumbers = contact.phone.replace(/\D/g, '');
                   const whatsappLink = isWhatsApp ? `https://wa.me/55${onlyNumbers}` : null;
 
