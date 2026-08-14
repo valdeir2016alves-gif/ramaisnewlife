@@ -10,7 +10,7 @@
   --text-muted: #94a3b8; /* Texto cinza secundário */
   --accent: #00b4d8; 
   --success: #2ecc71;
-  --logo-filter: none; /* A logo já é branca, então no escuro não precisa de filtro */
+  --logo-filter: brightness(0) invert(1);
   --header-bg: transparent;
   
   --font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -28,7 +28,7 @@
   --text-muted: #64748b; /* Texto cinza secundário escurecido */
   --accent: #0077b6;
   --success: #16a34a; /* Verde mais forte para contraste no claro */
-  --logo-filter: brightness(0); /* Transforma a logo branca em preta no tema claro */
+  --logo-filter: none; /* Logo com cores originais */
   --header-bg: #ffffff;
 }
 
