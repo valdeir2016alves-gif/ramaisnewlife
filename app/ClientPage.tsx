@@ -126,22 +126,24 @@ export default function ClientPage({ initialContacts }: { initialContacts: Conta
               
               <div className={deptContacts.length > 6 ? styles.contactListMulti : styles.contactList}>
                 {deptContacts.map((contact) => {
-                  const isWhatsApp = contact.name.toLowerCase().includes('whatsapp') || 
+                  const isFullWidth = contact.name.toLowerCase().includes('whatsapp') || 
                                      contact.name.toLowerCase().includes('filtro') || 
                                      contact.name.toLowerCase().includes('empresarial') || 
                                      [9005, 9006, 9007].includes(contact.id);
+                  
                   const onlyNumbers = contact.phone.replace(/\D/g, '');
-                  const whatsappLink = isWhatsApp ? `https://wa.me/55${onlyNumbers}` : null;
+                  const isWhatsAppNumber = onlyNumbers.length >= 10;
+                  const whatsappLink = isWhatsAppNumber ? `https://wa.me/55${onlyNumbers}` : null;
 
                   return (
                     <div 
                       key={contact.id} 
                       className={styles.contactItem}
-                      style={isWhatsApp ? { gridColumn: '1 / -1' } : {}}
+                      style={isFullWidth ? { gridColumn: '1 / -1' } : {}}
                     >
                       <span className={styles.chevron}>›</span>
                       <span className={styles.contactName}>{contact.name}</span>
-                      {isWhatsApp ? (
+                      {isWhatsAppNumber ? (
                         <a href={whatsappLink!} target="_blank" rel="noopener noreferrer" className={styles.whatsappLink}>
                           {contact.phone}
                         </a>
