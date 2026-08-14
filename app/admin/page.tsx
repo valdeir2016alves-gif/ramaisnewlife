@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { getContacts, addContact, deleteContact, updateContact, Contact } from '../actions';
+import { getContacts, addContact, deleteContact, updateContact, renameDepartment, Contact } from '../actions';
 import styles from './admin.module.css';
 
 const departmentEmojis: Record<string, string> = {
@@ -213,6 +213,20 @@ export default function AdminPage() {
     }
   };
 
+  const handleRenameDepartment = async (oldDepartment: string) => {
+    const newDepartment = prompt(`Renomear o setor "${oldDepartment}" para:`, oldDepartment);
+    if (newDepartment && newDepartment.trim() !== '' && newDepartment !== oldDepartment) {
+      setLoading(true);
+      const result = await renameDepartment(oldDepartment, newDepartment.trim());
+      if (result.success) {
+        await loadContacts();
+      } else {
+        alert('Erro ao renomear setor: ' + result.error);
+      }
+      setLoading(false);
+    }
+  };
+
   const groupedContacts = useMemo(() => {
     const groups: Record<string, Contact[]> = {};
     contacts.forEach((c) => {
@@ -299,7 +313,17 @@ export default function AdminPage() {
           Object.entries(groupedContacts)
             .map(([department, deptContacts]) => (
             <div key={department} className={styles.departmentGroup}>
-              <h3 className={styles.departmentTitle}>{getEmoji(department)} {department}</h3>
+              <h3 className={styles.departmentTitle}>
+                {getEmoji(department)} {department}
+                <button 
+                  onClick={() => handleRenameDepartment(department)}
+                  className={styles.btnSecondary}
+                  style={{ marginLeft: '1rem', padding: '0.2rem 0.5rem', fontSize: '0.8rem' }}
+                  disabled={loading}
+                >
+                  ✎ Editar Nome
+                </button>
+              </h3>
               <div className={styles.tableContainer}>
                 <table className={styles.table}>
                   <thead>

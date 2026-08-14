@@ -104,3 +104,23 @@ export async function updateContact(id: number, name: string, phone: string, dep
     return { success: false, error: error.message };
   }
 }
+
+export async function renameDepartment(oldDepartment: string, newDepartment: string) {
+  try {
+    const contacts = readData();
+    let updated = false;
+    contacts.forEach(c => {
+      if (c.department === oldDepartment) {
+        c.department = newDepartment;
+        updated = true;
+      }
+    });
+    if (updated) {
+      writeData(contacts);
+    }
+    return { success: true };
+  } catch (error: any) {
+    console.error('Failed to rename department:', error);
+    return { success: false, error: error.message };
+  }
+}
