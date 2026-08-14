@@ -131,7 +131,7 @@ export default function ClientPage({ initialContacts }: { initialContacts: Conta
           <div className={styles.noResults}>
             {city === 'sao_gabriel' 
               ? 'Nenhum ramal encontrado.' 
-              : 'Em breve: ramais desta unidade estarão disponíveis.'}
+              : 'Em breve'}
           </div>
         ) : (
           Object.entries(groupedContacts).map(([department, deptContacts]) => (
