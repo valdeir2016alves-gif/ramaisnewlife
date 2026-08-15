@@ -10,6 +10,7 @@ export interface Contact {
   department: string;
   ip: string;
   city?: string;
+  phoneModel?: string;
 }
 
 const getDbPath = () => {
@@ -88,11 +89,11 @@ export async function getContacts(query?: string): Promise<Contact[]> {
   }
 }
 
-export async function addContact(name: string, phone: string, department: string, ip: string = '', city: string = 'sao_gabriel') {
+export async function addContact(name: string, phone: string, department: string, ip: string = '', city: string = 'sao_gabriel', phoneModel: string = '') {
   try {
     const contacts = readData();
     const newId = contacts.length > 0 ? Math.max(...contacts.map(c => c.id)) + 1 : 1;
-    const newContact: Contact = { id: newId, name, phone, department, ip, city };
+    const newContact: Contact = { id: newId, name, phone, department, ip, city, phoneModel };
     contacts.push(newContact);
     writeData(contacts);
     return { success: true, contact: newContact };
@@ -114,12 +115,12 @@ export async function deleteContact(id: number) {
   }
 }
 
-export async function updateContact(id: number, name: string, phone: string, department: string, ip: string = '', city: string = 'sao_gabriel') {
+export async function updateContact(id: number, name: string, phone: string, department: string, ip: string = '', city: string = 'sao_gabriel', phoneModel: string = '') {
   try {
     const contacts = readData();
     const index = contacts.findIndex(c => c.id === id);
     if (index !== -1) {
-      contacts[index] = { id, name, phone, department, ip, city };
+      contacts[index] = { id, name, phone, department, ip, city, phoneModel };
       writeData(contacts);
     }
     return { success: true };

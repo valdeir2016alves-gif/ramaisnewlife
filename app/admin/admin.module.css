@@ -89,8 +89,18 @@
 
 .formRow {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr auto;
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
+}
+.formRow .actionButtons {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+}
+.input option,
+.inputInline option {
+  background-color: var(--bg-color, #0f172a);
+  color: var(--text-main, #f1f5f9);
 }
 
 @media (max-width: 768px) {

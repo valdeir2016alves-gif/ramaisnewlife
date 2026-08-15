@@ -29,7 +29,7 @@ function EditableRow({
   onDelete 
 }: { 
   contact: Contact; 
-  onSave: (id: number, name: string, phone: string, department: string, ip: string, city: string) => Promise<void>; 
+  onSave: (id: number, name: string, phone: string, department: string, ip: string, city: string, phoneModel: string) => Promise<void>; 
   onDelete: (id: number) => Promise<void>;
 }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -38,6 +38,7 @@ function EditableRow({
   const [ip, setIp] = useState(contact.ip || '');
   const [department, setDepartment] = useState(contact.department);
   const [city, setCity] = useState(contact.city || 'sao_gabriel');
+  const [phoneModel, setPhoneModel] = useState(contact.phoneModel || '');
   const [loading, setLoading] = useState(false);
 
   const handleSave = async () => {
@@ -46,7 +47,7 @@ function EditableRow({
       return;
     }
     setLoading(true);
-    await onSave(contact.id, name, phone, department, ip, city);
+    await onSave(contact.id, name, phone, department, ip, city, phoneModel);
     setLoading(false);
     setIsEditing(false);
   };
@@ -101,6 +102,17 @@ function EditableRow({
           />
         </td>
         <td>
+          <select
+            value={phoneModel}
+            onChange={(e) => setPhoneModel(e.target.value)}
+            className={styles.inputInline}
+          >
+            <option value="">Selecione o Modelo</option>
+            <option value="intelbras ata 200">Intelbras ATA 200</option>
+            <option value="Telefone IP Intelbras TIP 125i">Telefone IP Intelbras TIP 125i</option>
+          </select>
+        </td>
+        <td>
           <div className={styles.tableActions}>
             <button onClick={handleSave} className={styles.btnPrimary} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }} disabled={loading}>
               {loading ? '...' : 'Salvar'}
@@ -113,6 +125,7 @@ function EditableRow({
               setDepartment(contact.department);
               setCity(contact.city || 'sao_gabriel');
               setIp(contact.ip || '');
+              setPhoneModel(contact.phoneModel || '');
             }} className={styles.btnSecondary} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }} disabled={loading}>
               Cancelar
             </button>
@@ -127,6 +140,7 @@ function EditableRow({
       <td>{contact.name}</td>
       <td>{contact.phone}</td>
       <td>{contact.ip || '-'}</td>
+      <td>{contact.phoneModel || '-'}</td>
       <td>
         <div className={styles.tableActions}>
           <button 
@@ -158,6 +172,7 @@ export default function AdminPage() {
   const [phone, setPhone] = useState('');
   const [department, setDepartment] = useState('');
   const [ip, setIp] = useState('');
+  const [phoneModel, setPhoneModel] = useState('');
   const [newCity, setNewCity] = useState('sao_gabriel');
   const [adminCity, setAdminCity] = useState('sao_gabriel');
   
@@ -194,12 +209,13 @@ export default function AdminPage() {
     }
     
     setLoading(true);
-    const result = await addContact(name, phone, department, ip, newCity);
+    const result = await addContact(name, phone, department, ip, newCity, phoneModel);
     if (result.success) {
       setName('');
       setPhone('');
       setDepartment('');
       setIp('');
+      setPhoneModel('');
       await loadContacts();
     } else {
       alert(`Erro ao adicionar ramal: ${result.error || 'Erro desconhecido. Verifique as configurações de proxy ou permissões.'}`);
@@ -208,8 +224,8 @@ export default function AdminPage() {
     setLoading(false);
   };
 
-  const handleUpdateRow = async (id: number, newName: string, newPhone: string, newDepartment: string, newIp: string, updatedCity: string) => {
-    const result = await updateContact(id, newName, newPhone, newDepartment, newIp, updatedCity);
+  const handleUpdateRow = async (id: number, newName: string, newPhone: string, newDepartment: string, newIp: string, updatedCity: string, updatedPhoneModel: string) => {
+    const result = await updateContact(id, newName, newPhone, newDepartment, newIp, updatedCity, updatedPhoneModel);
     if (result.success) {
       await loadContacts();
     } else {
@@ -328,6 +344,15 @@ export default function AdminPage() {
             <option value="passo_fundo">Passo Fundo</option>
             <option value="all">Global (Todas as Unidades)</option>
           </select>
+          <select
+            value={phoneModel}
+            onChange={(e) => setPhoneModel(e.target.value)}
+            className={styles.input}
+          >
+            <option value="">Selecione o Modelo</option>
+            <option value="intelbras ata 200">Intelbras ATA 200</option>
+            <option value="Telefone IP Intelbras TIP 125i">Telefone IP Intelbras TIP 125i</option>
+          </select>
           <div className={styles.actionButtons}>
             <button type="submit" className={styles.btnPrimary} disabled={loading}>
               {loading ? 'Adicionando...' : 'Adicionar'}
@@ -380,6 +405,7 @@ export default function AdminPage() {
                       <th>Nome</th>
                       <th>Número</th>
                       <th>IP</th>
+                      <th>Modelo</th>
                       <th>Ações</th>
                     </tr>
                   </thead>
