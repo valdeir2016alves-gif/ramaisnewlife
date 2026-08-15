@@ -111,6 +111,7 @@ function EditableRow({
             <option value="Intelbras ATA 200">Intelbras ATA 200</option>
             <option value="Telefone IP Intelbras TIP 125i">Telefone IP Intelbras TIP 125i</option>
             <option value="Telefone IP Intelbras TIP 200">Telefone IP Intelbras TIP 200</option>
+            <option value="Telefone Sem Fio TS 2510">Telefone Sem Fio TS 2510</option>
           </select>
         </td>
         <td>
@@ -354,6 +355,7 @@ export default function AdminPage() {
             <option value="Intelbras ATA 200">Intelbras ATA 200</option>
             <option value="Telefone IP Intelbras TIP 125i">Telefone IP Intelbras TIP 125i</option>
             <option value="Telefone IP Intelbras TIP 200">Telefone IP Intelbras TIP 200</option>
+            <option value="Telefone Sem Fio TS 2510">Telefone Sem Fio TS 2510</option>
           </select>
           <div className={styles.actionButtons}>
             <button type="submit" className={styles.btnPrimary} disabled={loading}>
