@@ -141,7 +141,22 @@ function EditableRow({
     <tr>
       <td>{contact.name}</td>
       <td>{contact.phone}</td>
-      <td>{contact.ip || '-'}</td>
+      <td>
+        {contact.ip ? (
+          <a 
+            href={`http://${contact.ip}`} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            style={{ color: 'var(--primary-color)', textDecoration: 'none' }}
+            onMouseOver={(e) => e.currentTarget.style.textDecoration = 'underline'}
+            onMouseOut={(e) => e.currentTarget.style.textDecoration = 'none'}
+          >
+            {contact.ip}
+          </a>
+        ) : (
+          '-'
+        )}
+      </td>
       <td>{contact.phoneModel || '-'}</td>
       <td>
         <div className={styles.tableActions}>
