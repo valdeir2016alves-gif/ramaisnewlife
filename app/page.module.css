@@ -180,16 +180,6 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
-.departmentSectionImoveis {
-  background: rgba(0, 119, 182, 0.1) !important;
-  border-color: rgba(0, 119, 182, 0.3);
-}
-
-.departmentSectionImoveis:hover {
-  border-color: rgba(0, 119, 182, 0.6);
-  box-shadow: 0 4px 20px rgba(0, 119, 182, 0.2);
-}
-
 .departmentHeader {
   display: flex;
   justify-content: space-between;
