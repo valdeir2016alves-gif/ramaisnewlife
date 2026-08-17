@@ -185,7 +185,10 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
                                      [9005, 9006, 9007].includes(contact.id);
                   
                   const onlyNumbers = contact.phone.replace(/\D/g, '');
-                  const isWhatsAppNumber = onlyNumbers.length >= 10;
+                  const isWhatsAppNumber = onlyNumbers.length >= 11 || 
+                                         (onlyNumbers.length === 10 && onlyNumbers[2] === '9') || 
+                                         contact.name.toLowerCase().includes('whatsapp') ||
+                                         contact.name.toLowerCase().includes('whats');
                   const whatsappLink = isWhatsAppNumber ? `https://wa.me/55${onlyNumbers}` : null;
 
                   return (
