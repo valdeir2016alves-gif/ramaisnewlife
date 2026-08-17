@@ -18,7 +18,8 @@ const departmentEmojis: Record<string, string> = {
   'SAC': '🎧',
   'NOC': '📡',
   'Imobiliária': '🏠',
-  'Gerência': '💼'
+  'Gerência': '💼',
+  'Agendamento': '📅'
 };
 
 const getEmoji = (dept: string) => departmentEmojis[dept] || '🏢';
