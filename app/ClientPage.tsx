@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { Contact } from './actions';
 import styles from './page.module.css';
 
-import { submitReport } from './actions';
+import { submitReport, registerVisit } from './actions';
 
 export default function ClientPage({ initialContacts, lastUpdated }: { initialContacts: Contact[], lastUpdated: string }) {
   const [search, setSearch] = useState('');
@@ -38,6 +38,11 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
       setTheme(savedTheme);
+    }
+    // Register visit only once per session
+    if (!sessionStorage.getItem('visited')) {
+      registerVisit().catch(console.error);
+      sessionStorage.setItem('visited', 'true');
     }
   }, []);
 

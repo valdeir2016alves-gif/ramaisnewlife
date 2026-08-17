@@ -359,3 +359,70 @@ export async function deleteUser(id: number) {
     return { success: false, error: error.message };
   }
 }
+
+export interface DailyStats {
+  date: string;
+  visits: number;
+}
+
+const ANALYTICS_FILE = path.join(process.cwd(), 'data', 'analytics.json');
+
+function getAnalyticsFilePath() {
+  const dataDir = path.join(process.cwd(), 'data');
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+  }
+  return ANALYTICS_FILE;
+}
+
+function readAnalytics(): DailyStats[] {
+  try {
+    const filePath = getAnalyticsFilePath();
+    if (!fs.existsSync(filePath)) {
+      return [];
+    }
+    const data = fs.readFileSync(filePath, 'utf8');
+    return JSON.parse(data);
+  } catch (error) {
+    console.error('Error reading analytics:', error);
+    return [];
+  }
+}
+
+function writeAnalytics(data: DailyStats[]) {
+  try {
+    const filePath = getAnalyticsFilePath();
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+  } catch (error) {
+    console.error('Error writing analytics:', error);
+  }
+}
+
+export async function registerVisit() {
+  try {
+    const stats = readAnalytics();
+    const today = new Date().toISOString().split('T')[0];
+    
+    const todayStat = stats.find(s => s.date === today);
+    if (todayStat) {
+      todayStat.visits += 1;
+    } else {
+      stats.push({ date: today, visits: 1 });
+    }
+    
+    // Keep only last 30 days
+    if (stats.length > 30) {
+      stats.shift();
+    }
+    
+    writeAnalytics(stats);
+    return { success: true };
+  } catch (error) {
+    return { success: false };
+  }
+}
+
+export async function getAnalytics() {
+  return readAnalytics();
+}
+

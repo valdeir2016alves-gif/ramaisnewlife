@@ -1,7 +1,12 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { getContacts, addContact, deleteContact, updateContact, renameDepartment, Contact, getReports, deleteReport, Report, authenticateUser, getUsers as fetchUsers, addUser as createUser, updateUser as editUser, deleteUser as removeUser, User } from '../actions';
+import { 
+  getContacts, addContact, deleteContact, updateContact, renameDepartment, Contact, 
+  getReports, deleteReport, Report, authenticateUser, getUsers as fetchUsers, 
+  addUser as createUser, updateUser as editUser, deleteUser as removeUser, User,
+  getAnalytics, DailyStats
+} from '../actions';
 import styles from './admin.module.css';
 
 const departmentEmojis: Record<string, string> = {
@@ -197,9 +202,10 @@ export default function AdminPage() {
   const [phoneModel, setPhoneModel] = useState('');
   const [newCity, setNewCity] = useState('sao_gabriel');
   const [adminCity, setAdminCity] = useState('sao_gabriel');
-  const [activeTab, setActiveTab] = useState<'ramais' | 'reports' | 'users'>('ramais');
+  const [activeTab, setActiveTab] = useState<'ramais' | 'reports' | 'users' | 'stats'>('ramais');
   const [reports, setReports] = useState<Report[]>([]);
   const [systemUsers, setSystemUsers] = useState<Omit<User, 'password'>[]>([]);
+  const [stats, setStats] = useState<DailyStats[]>([]);
   
   const [loading, setLoading] = useState(false);
 
@@ -215,6 +221,7 @@ export default function AdminPage() {
       loadContacts();
       if (result.user.role === 'admin') {
         loadUsers();
+        loadStats();
       }
     } else {
       alert(result.error || 'Credenciais incorretas!');
@@ -224,6 +231,11 @@ export default function AdminPage() {
   const loadUsers = async () => {
     const users = await fetchUsers();
     setSystemUsers(users);
+  };
+
+  const loadStats = async () => {
+    const data = await getAnalytics();
+    setStats(data);
   };
 
   const loadContacts = async () => {
@@ -376,12 +388,20 @@ export default function AdminPage() {
             Relatórios de Erro {reports.length > 0 && `(${reports.length})`}
           </button>
           {canEdit && (
-            <button 
-              className={activeTab === 'users' ? styles.btnPrimary : styles.btnSecondary}
-              onClick={() => setActiveTab('users')}
-            >
-              Usuários
-            </button>
+            <>
+              <button 
+                className={activeTab === 'users' ? styles.btnPrimary : styles.btnSecondary}
+                onClick={() => setActiveTab('users')}
+              >
+                Usuários
+              </button>
+              <button 
+                className={activeTab === 'stats' ? styles.btnPrimary : styles.btnSecondary}
+                onClick={() => setActiveTab('stats')}
+              >
+                Acessos
+              </button>
+            </>
           )}
           <a href="/" className={styles.link} style={{ marginLeft: '1rem' }}>Voltar ao Site</a>
           <button 
@@ -681,6 +701,43 @@ export default function AdminPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </section>
+      ) : activeTab === 'stats' && canEdit ? (
+        <section className={styles.listSection}>
+          <div className={styles.tableHeader}>
+            <h2>Estatísticas de Acesso (Últimos 30 dias)</h2>
+            <button onClick={loadStats} className={styles.btnSecondary} disabled={loading}>
+              Atualizar
+            </button>
+          </div>
+          <div className={styles.tableContainer} style={{ padding: '2rem' }}>
+            {stats.length === 0 ? (
+              <p style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Nenhum dado de acesso registrado ainda.</p>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'flex-end', height: '250px', gap: '8px', overflowX: 'auto', paddingTop: '20px', paddingBottom: '30px' }}>
+                {stats.map((s, i) => {
+                  const maxVisits = Math.max(...stats.map(x => x.visits), 1);
+                  const heightPercentage = (s.visits / maxVisits) * 100;
+                  return (
+                    <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, minWidth: '30px' }}>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '4px' }}>{s.visits}</div>
+                      <div style={{ 
+                        width: '100%', 
+                        height: `${heightPercentage}%`, 
+                        backgroundColor: 'var(--primary-color)',
+                        borderRadius: '4px 4px 0 0',
+                        minHeight: '4px',
+                        transition: 'height 0.3s ease'
+                      }}></div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '8px', transform: 'rotate(-45deg)', transformOrigin: 'top left', whiteSpace: 'nowrap' }}>
+                        {s.date.split('-').reverse().slice(0, 2).join('/')}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </section>
       ) : null}
