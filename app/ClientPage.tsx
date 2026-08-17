@@ -81,8 +81,8 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
           <Image 
             src="/logo.png" 
             alt="New Life" 
-            width={480} 
-            height={190} 
+            width={320} 
+            height={126} 
             priority
             style={{ objectFit: 'contain', filter: 'var(--logo-filter)' }}
           />
