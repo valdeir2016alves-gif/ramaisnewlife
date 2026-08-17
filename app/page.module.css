@@ -252,3 +252,173 @@
 .whatsappLink:hover {
   opacity: 0.8;
 }
+
+.instructionsButton {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  color: var(--text-main);
+  padding: 0 1rem;
+  height: 44px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.instructionsButton:hover {
+  border-color: var(--primary-color);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.footer {
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--card-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.reportLink {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: opacity 0.2s ease;
+}
+
+.reportLink:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background: var(--bg-color);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--card-border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.modalHeader h3 {
+  margin: 0;
+  color: var(--primary-color);
+  font-size: 1.25rem;
+}
+
+.closeButton {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  line-height: 1;
+  border-radius: 50%;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.closeButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+}
+
+.modalBody {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.instructionItem {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.instructionIcon {
+  font-size: 1.5rem;
+  background: rgba(13, 71, 161, 0.1);
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.instructionItem strong {
+  display: block;
+  color: var(--text-main);
+  margin-bottom: 0.25rem;
+  font-size: 1.05rem;
+}
+
+.instructionItem p {
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.instructionItem span {
+  background: var(--card-border);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  color: var(--primary-color);
+  font-family: monospace;
+  font-weight: bold;
+}
+

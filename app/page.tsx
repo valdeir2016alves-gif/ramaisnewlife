@@ -1,9 +1,10 @@
 export const dynamic = 'force-dynamic';
 
-import { getContacts } from './actions';
+import { getContacts, getLastUpdated } from './actions';
 import ClientPage from './ClientPage';
 
 export default async function Home() {
   const contacts = await getContacts();
-  return <ClientPage initialContacts={contacts} />;
+  const lastUpdated = await getLastUpdated();
+  return <ClientPage initialContacts={contacts} lastUpdated={lastUpdated} />;
 }

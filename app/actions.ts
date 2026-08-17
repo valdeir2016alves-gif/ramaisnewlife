@@ -22,6 +22,19 @@ const getDbPath = () => {
 
 const getSeedPath = () => path.join(process.cwd(), 'ramais.json.seed');
 
+export async function getLastUpdated(): Promise<string> {
+  try {
+    const dbPath = getDbPath();
+    if (fs.existsSync(dbPath)) {
+      const stats = fs.statSync(dbPath);
+      return stats.mtime.toLocaleDateString('pt-BR');
+    }
+    return new Date().toLocaleDateString('pt-BR');
+  } catch (e) {
+    return new Date().toLocaleDateString('pt-BR');
+  }
+}
+
 const ensureDefaultContacts = (contacts: Contact[]): boolean => {
   let changed = false;
 

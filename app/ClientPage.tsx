@@ -5,10 +5,11 @@ import Image from 'next/image';
 import { Contact } from './actions';
 import styles from './page.module.css';
 
-export default function ClientPage({ initialContacts }: { initialContacts: Contact[] }) {
+export default function ClientPage({ initialContacts, lastUpdated }: { initialContacts: Contact[], lastUpdated: string }) {
   const [search, setSearch] = useState('');
   const [city, setCity] = useState('sao_gabriel');
   const [theme, setTheme] = useState('dark');
+  const [showInstructions, setShowInstructions] = useState(false);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -80,6 +81,13 @@ export default function ClientPage({ initialContacts }: { initialContacts: Conta
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
           </div>
+          <button 
+            onClick={() => setShowInstructions(true)} 
+            className={styles.instructionsButton}
+            title="Instruções de Uso"
+          >
+            ❓ Instruções
+          </button>
           <button 
             onClick={toggleTheme} 
             className={styles.themeToggle}
@@ -158,6 +166,40 @@ export default function ClientPage({ initialContacts }: { initialContacts: Conta
           ))
         )}
       </section>
+
+      <footer className={styles.footer}>
+        <p>Atualizado em: {lastUpdated}</p>
+        <a href="mailto:suporte@newlife.com.br" className={styles.reportLink}>
+          Encontrou um ramal errado? Avise aqui!
+        </a>
+      </footer>
+
+      {showInstructions && (
+        <div className={styles.modalOverlay} onClick={() => setShowInstructions(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3>Instruções de Atendimento</h3>
+              <button className={styles.closeButton} onClick={() => setShowInstructions(false)}>✕</button>
+            </div>
+            <div className={styles.modalBody}>
+              <div className={styles.instructionItem}>
+                <div className={styles.instructionIcon}>📞</div>
+                <div>
+                  <strong>Puxar Ligação:</strong>
+                  <p>Digite <span>*8</span> e aguarde a ligação ser puxada.</p>
+                </div>
+              </div>
+              <div className={styles.instructionItem}>
+                <div className={styles.instructionIcon}>🔄</div>
+                <div>
+                  <strong>Transferir Ligação:</strong>
+                  <p>Digite <span>*2</span>, aguarde a voz automática falar "transferir", digite o ramal desejado e aguarde.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
