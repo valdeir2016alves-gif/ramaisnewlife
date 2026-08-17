@@ -613,7 +613,34 @@ export default function AdminPage() {
                 {systemUsers.map((u) => (
                   <tr key={u.id}>
                     <td>{u.username}</td>
-                    <td>{u.role === 'admin' ? 'Administrador' : 'Leitura'}</td>
+                    <td>
+                      <select 
+                        value={u.role}
+                        onChange={async (e) => {
+                          const newRole = e.target.value as 'admin' | 'readonly';
+                          if (confirm(`Mudar nível de acesso de ${u.username} para ${newRole === 'admin' ? 'Administrador' : 'Leitura'}?`)) {
+                            setLoading(true);
+                            const res = await editUser(u.id, u.username, undefined, newRole);
+                            setLoading(false);
+                            if (res.success) {
+                              loadUsers();
+                              if (u.username === currentUser.username && newRole === 'readonly') {
+                                // If user demoted themselves (which is blocked by disabled prop below, but just in case)
+                                window.location.reload();
+                              }
+                            } else {
+                              alert('Erro: ' + res.error);
+                            }
+                          }
+                        }}
+                        className={styles.inputInline}
+                        disabled={loading || u.username === currentUser.username}
+                        style={{ padding: '0.3rem', margin: 0, width: '100%', fontSize: '0.9rem' }}
+                      >
+                        <option value="admin">Administrador</option>
+                        <option value="readonly">Leitura</option>
+                      </select>
+                    </td>
                     <td>
                       <div className={styles.tableActions}>
                         <button 
