@@ -426,3 +426,16 @@ export async function getAnalytics() {
   return readAnalytics();
 }
 
+
+import { exec } from 'child_process';
+export async function pingIp(ip: string): Promise<boolean> {
+  if (!ip || !/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(ip)) return false;
+  return new Promise((resolve) => {
+    const isWin = process.platform === 'win32';
+    const cmd = isWin ? `ping -n 1 -w 1000 ${ip}` : `ping -c 1 -W 1 ${ip}`;
+    exec(cmd, (error) => {
+      resolve(!error);
+    });
+  });
+}
+
