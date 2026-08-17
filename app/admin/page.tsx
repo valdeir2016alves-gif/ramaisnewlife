@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { getContacts, addContact, deleteContact, updateContact, renameDepartment, Contact } from '../actions';
+import { getContacts, addContact, deleteContact, updateContact, renameDepartment, Contact, getReports, deleteReport, Report } from '../actions';
 import styles from './admin.module.css';
 
 const departmentEmojis: Record<string, string> = {
@@ -192,6 +192,8 @@ export default function AdminPage() {
   const [phoneModel, setPhoneModel] = useState('');
   const [newCity, setNewCity] = useState('sao_gabriel');
   const [adminCity, setAdminCity] = useState('sao_gabriel');
+  const [activeTab, setActiveTab] = useState<'ramais' | 'reports'>('ramais');
+  const [reports, setReports] = useState<Report[]>([]);
   
   const [loading, setLoading] = useState(false);
 
@@ -209,7 +211,9 @@ export default function AdminPage() {
     setLoading(true);
     try {
       const data = await getContacts();
+      const reportsData = await getReports();
       setContacts(data || []);
+      setReports(reportsData || []);
     } catch (error) {
       console.error("Failed to load contacts", error);
       setContacts([]);
@@ -257,6 +261,17 @@ export default function AdminPage() {
         await loadContacts();
       } else {
         alert('Erro ao excluir: ' + result.error);
+      }
+    }
+  };
+
+  const handleDeleteReportRow = async (id: number) => {
+    if (confirm('Marcar este relato como resolvido/excluído?')) {
+      const result = await deleteReport(id);
+      if (result.success) {
+        await loadContacts();
+      } else {
+        alert('Erro ao excluir relato: ' + result.error);
       }
     }
   };
@@ -316,11 +331,27 @@ export default function AdminPage() {
   return (
     <main className={styles.container}>
       <header className={styles.header}>
-        <h1 className={styles.title}>Gerenciar Ramais</h1>
-        <a href="/" className={styles.link}>Voltar para o site principal</a>
+        <h1 className={styles.title}>Admin Panel</h1>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <button 
+            className={activeTab === 'ramais' ? styles.btnPrimary : styles.btnSecondary}
+            onClick={() => setActiveTab('ramais')}
+          >
+            Ramais
+          </button>
+          <button 
+            className={activeTab === 'reports' ? styles.btnPrimary : styles.btnSecondary}
+            onClick={() => setActiveTab('reports')}
+          >
+            Relatórios de Erro {reports.length > 0 && `(${reports.length})`}
+          </button>
+          <a href="/" className={styles.link} style={{ marginLeft: '1rem' }}>Voltar ao Site</a>
+        </div>
       </header>
 
-      <section className={`${styles.addSection} glass`}>
+      {activeTab === 'ramais' ? (
+        <>
+          <section className={`${styles.addSection} glass`}>
         <h2>Adicionar Novo Ramal</h2>
         <form onSubmit={handleAdd} className={styles.formRow}>
           <input 
@@ -444,6 +475,47 @@ export default function AdminPage() {
           ))
         )}
       </section>
+      </>
+      ) : (
+        <section className={styles.listSection}>
+          <h2>Relatórios de Ramais com Problema</h2>
+          {reports.length === 0 ? (
+            <p>Nenhum relato encontrado. Tudo certo por aqui!</p>
+          ) : (
+            <div className={styles.tableContainer}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>Data</th>
+                    <th>Reportado por</th>
+                    <th>Ramal</th>
+                    <th>Problema</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reports.map((r) => (
+                    <tr key={r.id}>
+                      <td>{new Date(r.date).toLocaleString('pt-BR')}</td>
+                      <td>{r.name || 'Anônimo'}</td>
+                      <td>{r.ramal}</td>
+                      <td>{r.message}</td>
+                      <td>
+                        <button 
+                          onClick={() => handleDeleteReportRow(r.id)} 
+                          className={styles.btnDanger}
+                        >
+                          Resolver / Excluir
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      )}
     </main>
   );
 }

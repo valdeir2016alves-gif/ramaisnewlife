@@ -5,11 +5,34 @@ import Image from 'next/image';
 import { Contact } from './actions';
 import styles from './page.module.css';
 
+import { submitReport } from './actions';
+
 export default function ClientPage({ initialContacts, lastUpdated }: { initialContacts: Contact[], lastUpdated: string }) {
   const [search, setSearch] = useState('');
   const [city, setCity] = useState('sao_gabriel');
   const [theme, setTheme] = useState('dark');
   const [showInstructions, setShowInstructions] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportName, setReportName] = useState('');
+  const [reportRamal, setReportRamal] = useState('');
+  const [reportMessage, setReportMessage] = useState('');
+  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
+
+  const handleReportSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingReport(true);
+    const result = await submitReport(reportName, reportRamal, reportMessage);
+    setIsSubmittingReport(false);
+    if (result.success) {
+      alert('Relato enviado com sucesso! A equipe responsável irá verificar.');
+      setShowReportModal(false);
+      setReportName('');
+      setReportRamal('');
+      setReportMessage('');
+    } else {
+      alert('Erro ao enviar o relato. Tente novamente mais tarde.');
+    }
+  };
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -169,9 +192,9 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
 
       <footer className={styles.footer}>
         <p>Atualizado em: {lastUpdated}</p>
-        <a href="mailto:suporte@newlife.com.br" className={styles.reportLink}>
+        <button onClick={() => setShowReportModal(true)} className={styles.reportLinkBtn}>
           Encontrou um ramal errado? Avise aqui!
-        </a>
+        </button>
       </footer>
 
       {showInstructions && (
@@ -197,6 +220,54 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showReportModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowReportModal(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3>Reportar Ramal Errado</h3>
+              <button className={styles.closeButton} onClick={() => setShowReportModal(false)}>✕</button>
+            </div>
+            <form onSubmit={handleReportSubmit} className={styles.modalBody}>
+              <div className={styles.formGroup}>
+                <label>Seu Nome / Setor (Opcional)</label>
+                <input 
+                  type="text" 
+                  value={reportName} 
+                  onChange={(e) => setReportName(e.target.value)} 
+                  className={styles.modalInput}
+                  placeholder="Ex: João (Suporte)"
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Qual ramal está com problema?</label>
+                <input 
+                  type="text" 
+                  value={reportRamal} 
+                  onChange={(e) => setReportRamal(e.target.value)} 
+                  className={styles.modalInput}
+                  placeholder="Ex: Ramal 4050 do TI"
+                  required
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label>O que está errado?</label>
+                <textarea 
+                  value={reportMessage} 
+                  onChange={(e) => setReportMessage(e.target.value)} 
+                  className={styles.modalInput}
+                  placeholder="Ex: O ramal não chama, ou está na mesa errada..."
+                  rows={3}
+                  required
+                />
+              </div>
+              <button type="submit" className={styles.btnPrimary} disabled={isSubmittingReport}>
+                {isSubmittingReport ? 'Enviando...' : 'Enviar Relato'}
+              </button>
+            </form>
           </div>
         </div>
       )}

@@ -162,3 +162,77 @@ export async function renameDepartment(oldDepartment: string, newDepartment: str
     return { success: false, error: error.message };
   }
 }
+
+export interface Report {
+  id: number;
+  date: string;
+  name: string;
+  ramal: string;
+  message: string;
+}
+
+const getReportsPath = () => {
+  const dataDir = path.join(process.cwd(), 'data');
+  return fs.existsSync(dataDir) 
+    ? path.join(dataDir, 'reports.json') 
+    : path.join(process.cwd(), 'reports.json');
+};
+
+const readReports = (): Report[] => {
+  const dbPath = getReportsPath();
+  if (!fs.existsSync(dbPath)) return [];
+  try {
+    const content = fs.readFileSync(dbPath, 'utf-8');
+    return JSON.parse(content) as Report[];
+  } catch (error) {
+    console.error('Erro ao ler reports.json:', error);
+    return [];
+  }
+};
+
+const writeReports = (data: Report[]) => {
+  const dbPath = getReportsPath();
+  fs.writeFileSync(dbPath, JSON.stringify(data, null, 2), 'utf-8');
+};
+
+export async function submitReport(name: string, ramal: string, message: string) {
+  try {
+    const reports = readReports();
+    const newId = reports.length > 0 ? Math.max(...reports.map(r => r.id)) + 1 : 1;
+    const newReport: Report = {
+      id: newId,
+      date: new Date().toISOString(),
+      name,
+      ramal,
+      message
+    };
+    reports.push(newReport);
+    writeReports(reports);
+    return { success: true };
+  } catch (error: any) {
+    console.error('Failed to submit report:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function getReports(): Promise<Report[]> {
+  try {
+    return readReports();
+  } catch (error: any) {
+    console.error('Failed to fetch reports:', error);
+    return [];
+  }
+}
+
+export async function deleteReport(id: number) {
+  try {
+    const reports = readReports();
+    const newReports = reports.filter(r => r.id !== id);
+    writeReports(newReports);
+    return { success: true };
+  } catch (error: any) {
+    console.error('Failed to delete report:', error);
+    return { success: false, error: error.message };
+  }
+}
+
