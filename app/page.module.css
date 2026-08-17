@@ -180,6 +180,22 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
+.departmentHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.departmentHeaderLeft {
+  flex: 1;
+}
+
+.departmentLogo {
+  flex-shrink: 0;
+  margin-left: 1rem;
+}
+
 .departmentSubtitle {
   font-size: 1.2rem;
   font-weight: 700;
@@ -196,7 +212,7 @@
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 1px;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0;
 }
 
 .contactList {

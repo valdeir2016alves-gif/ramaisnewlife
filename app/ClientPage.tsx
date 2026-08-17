@@ -152,8 +152,23 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
         ) : (
           Object.entries(groupedContacts).map(([department, deptContacts]) => (
             <div key={department} className={styles.departmentSection}>
-              <span className={styles.departmentSubtitle}>{department}</span>
-              <h2 className={styles.departmentTitle}>Colaborador(a) e Ramais</h2>
+              <div className={styles.departmentHeader}>
+                <div className={styles.departmentHeaderLeft}>
+                  <span className={styles.departmentSubtitle}>{department}</span>
+                  <h2 className={styles.departmentTitle}>Colaborador(a) e Ramais</h2>
+                </div>
+                {(department.toLowerCase().includes('imóveis') || department.toLowerCase().includes('imobiliária')) && (
+                  <div className={styles.departmentLogo}>
+                    <Image 
+                      src="/logo-imoveis.png" 
+                      alt="New Life Imóveis" 
+                      width={80} 
+                      height={60} 
+                      style={{ objectFit: 'contain' }}
+                    />
+                  </div>
+                )}
+              </div>
               
               <div className={deptContacts.length > 6 ? styles.contactListMulti : styles.contactList}>
                 {deptContacts.map((contact) => {
