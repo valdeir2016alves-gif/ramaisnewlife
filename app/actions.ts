@@ -426,36 +426,3 @@ export async function getAnalytics() {
   return readAnalytics();
 }
 
-
-import * as net from 'net';
-export async function pingIp(ip: string): Promise<boolean> {
-  if (!ip || !/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(ip)) return false;
-  return new Promise((resolve) => {
-    const socket = new net.Socket();
-    let resolved = false;
-
-    const finish = (result: boolean) => {
-      if (!resolved) {
-        resolved = true;
-        socket.destroy();
-        resolve(result);
-      }
-    };
-
-    socket.setTimeout(2000);
-    
-    socket.on('connect', () => finish(true));
-    socket.on('timeout', () => finish(false));
-    socket.on('error', (err: any) => {
-      // ECONNREFUSED means the device is alive but port is closed
-      if (err.code === 'ECONNREFUSED') {
-        finish(true);
-      } else {
-        finish(false);
-      }
-    });
-
-    socket.connect(80, ip);
-  });
-}
-

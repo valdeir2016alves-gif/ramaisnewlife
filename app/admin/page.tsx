@@ -5,7 +5,7 @@ import {
   getContacts, addContact, deleteContact, updateContact, renameDepartment, Contact, 
   getReports, deleteReport, Report, authenticateUser, getUsers as fetchUsers, 
   addUser as createUser, updateUser as editUser, deleteUser as removeUser, User,
-  getAnalytics, DailyStats, pingIp
+  getAnalytics, DailyStats
 } from '../actions';
 import styles from './admin.module.css';
 
@@ -33,14 +33,12 @@ function EditableRow({
   contact, 
   onSave, 
   onDelete,
-  canEdit,
-  pingStatus
+  canEdit
 }: { 
   contact: Contact; 
   onSave: (id: number, name: string, phone: string, department: string, ip: string, city: string, phoneModel: string) => Promise<void>; 
   onDelete: (id: number) => Promise<void>;
   canEdit: boolean;
-  pingStatus?: boolean | 'loading';
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(contact.name);
@@ -152,31 +150,16 @@ function EditableRow({
       <td>{contact.phone}</td>
       <td>
         {contact.ip ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            {pingStatus !== undefined && (
-              <span 
-                title={pingStatus === 'loading' ? 'Verificando...' : pingStatus ? 'Online' : 'Offline'}
-                style={{ 
-                  display: 'inline-block', 
-                  width: '8px', 
-                  height: '8px', 
-                  borderRadius: '50%', 
-                  backgroundColor: pingStatus === 'loading' ? '#fbbf24' : pingStatus ? '#10b981' : '#ef4444',
-                  boxShadow: pingStatus === true ? '0 0 5px #10b981' : 'none'
-                }}
-              />
-            )}
-            <a 
-              href={`http://${contact.ip}`} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              style={{ color: 'var(--primary-color)', textDecoration: 'none' }}
-              onMouseOver={(e) => e.currentTarget.style.textDecoration = 'underline'}
-              onMouseOut={(e) => e.currentTarget.style.textDecoration = 'none'}
-            >
-              {contact.ip}
-            </a>
-          </div>
+          <a 
+            href={`http://${contact.ip}`} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            style={{ color: 'var(--primary-color)', textDecoration: 'none' }}
+            onMouseOver={(e) => e.currentTarget.style.textDecoration = 'underline'}
+            onMouseOut={(e) => e.currentTarget.style.textDecoration = 'none'}
+          >
+            {contact.ip}
+          </a>
         ) : (
           '-'
         )}
@@ -223,7 +206,6 @@ export default function AdminPage() {
   const [reports, setReports] = useState<Report[]>([]);
   const [systemUsers, setSystemUsers] = useState<Omit<User, 'password'>[]>([]);
   const [stats, setStats] = useState<DailyStats[]>([]);
-  const [pingStatuses, setPingStatuses] = useState<Record<number, boolean | 'loading'>>({});
   
   const [loading, setLoading] = useState(false);
 
@@ -263,17 +245,6 @@ export default function AdminPage() {
       const reportsData = await getReports();
       setContacts(data || []);
       setReports(reportsData || []);
-
-      if (data) {
-        // Run pings in background
-        data.forEach(async (c) => {
-          if (c.ip && /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(c.ip)) {
-            setPingStatuses(prev => ({ ...prev, [c.id]: 'loading' }));
-            const isOnline = await pingIp(c.ip);
-            setPingStatuses(prev => ({ ...prev, [c.id]: isOnline }));
-          }
-        });
-      }
     } catch (error) {
       console.error("Failed to load contacts", error);
       setContacts([]);
@@ -565,7 +536,6 @@ export default function AdminPage() {
                         onSave={handleUpdateRow} 
                         onDelete={handleDeleteRow} 
                         canEdit={canEdit}
-                        pingStatus={pingStatuses[contact.id]}
                       />
                     ))}
                   </tbody>
