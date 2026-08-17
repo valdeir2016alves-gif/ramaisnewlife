@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { getContacts, addContact, deleteContact, updateContact, renameDepartment, Contact, getReports, deleteReport, Report } from '../actions';
+import { getContacts, addContact, deleteContact, updateContact, renameDepartment, Contact, getReports, deleteReport, Report, authenticateUser, getUsers as fetchUsers, addUser as createUser, updateUser as editUser, deleteUser as removeUser, User } from '../actions';
 import styles from './admin.module.css';
 
 const departmentEmojis: Record<string, string> = {
@@ -26,11 +26,13 @@ const getEmoji = (dept: string) => departmentEmojis[dept] || '🏢';
 function EditableRow({ 
   contact, 
   onSave, 
-  onDelete 
+  onDelete,
+  canEdit
 }: { 
   contact: Contact; 
   onSave: (id: number, name: string, phone: string, department: string, ip: string, city: string, phoneModel: string) => Promise<void>; 
   onDelete: (id: number) => Promise<void>;
+  canEdit: boolean;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(contact.name);
@@ -52,7 +54,7 @@ function EditableRow({
     setIsEditing(false);
   };
 
-  if (isEditing) {
+  if (isEditing && canEdit) {
     return (
       <tr>
         <td>
@@ -121,7 +123,6 @@ function EditableRow({
             </button>
             <button onClick={() => {
               setIsEditing(false);
-              // Reset values
               setName(contact.name);
               setPhone(contact.phone);
               setDepartment(contact.department);
@@ -158,31 +159,34 @@ function EditableRow({
         )}
       </td>
       <td>{contact.phoneModel || '-'}</td>
-      <td>
-        <div className={styles.tableActions}>
-          <button 
-            onClick={() => setIsEditing(true)} 
-            className={styles.btnSecondary}
-            disabled={loading}
-          >
-            Editar
-          </button>
-          <button 
-            onClick={() => onDelete(contact.id)} 
-            className={styles.btnDanger}
-            disabled={loading}
-          >
-            Excluir
-          </button>
-        </div>
-      </td>
+      {canEdit && (
+        <td>
+          <div className={styles.tableActions}>
+            <button 
+              onClick={() => setIsEditing(true)} 
+              className={styles.btnSecondary}
+              disabled={loading}
+            >
+              Editar
+            </button>
+            <button 
+              onClick={() => onDelete(contact.id)} 
+              className={styles.btnDanger}
+              disabled={loading}
+            >
+              Excluir
+            </button>
+          </div>
+        </td>
+      )}
     </tr>
   );
 }
 
 export default function AdminPage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState('');
+  const [currentUser, setCurrentUser] = useState<Omit<User, 'password'> | null>(null);
+  const [loginUsername, setLoginUsername] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
   
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [name, setName] = useState('');
@@ -192,19 +196,33 @@ export default function AdminPage() {
   const [phoneModel, setPhoneModel] = useState('');
   const [newCity, setNewCity] = useState('sao_gabriel');
   const [adminCity, setAdminCity] = useState('sao_gabriel');
-  const [activeTab, setActiveTab] = useState<'ramais' | 'reports'>('ramais');
+  const [activeTab, setActiveTab] = useState<'ramais' | 'reports' | 'users'>('ramais');
   const [reports, setReports] = useState<Report[]>([]);
+  const [systemUsers, setSystemUsers] = useState<Omit<User, 'password'>[]>([]);
   
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const canEdit = currentUser?.role === 'admin';
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === 'srv2504@new') {
-      setIsAuthenticated(true);
+    setLoading(true);
+    const result = await authenticateUser(loginUsername, loginPassword);
+    setLoading(false);
+    if (result.success && result.user) {
+      setCurrentUser(result.user);
       loadContacts();
+      if (result.user.role === 'admin') {
+        loadUsers();
+      }
     } else {
-      alert('Senha incorreta!');
+      alert(result.error || 'Credenciais incorretas!');
     }
+  };
+
+  const loadUsers = async () => {
+    const users = await fetchUsers();
+    setSystemUsers(users);
   };
 
   const loadContacts = async () => {
@@ -307,21 +325,32 @@ export default function AdminPage() {
     return groups;
   }, [contacts, adminCity]);
 
-  if (!isAuthenticated) {
+  if (!currentUser) {
     return (
       <main className={styles.container}>
         <div className={`${styles.loginBox} glass`}>
           <h1 className={styles.title}>Admin - Ramais</h1>
-          <p className={styles.subtitle}>Digite a senha para acessar</p>
+          <p className={styles.subtitle}>Digite seu usuário e senha para acessar</p>
           <form onSubmit={handleLogin} className={styles.form}>
+            <input
+              type="text"
+              placeholder="Usuário"
+              value={loginUsername}
+              onChange={(e) => setLoginUsername(e.target.value)}
+              className={styles.input}
+              required
+            />
             <input
               type="password"
               placeholder="Senha"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={loginPassword}
+              onChange={(e) => setLoginPassword(e.target.value)}
               className={styles.input}
+              required
             />
-            <button type="submit" className={styles.btnPrimary}>Entrar</button>
+            <button type="submit" className={styles.btnPrimary} disabled={loading}>
+              {loading ? 'Entrando...' : 'Entrar'}
+            </button>
           </form>
         </div>
       </main>
@@ -332,7 +361,7 @@ export default function AdminPage() {
     <main className={styles.container}>
       <header className={styles.header}>
         <h1 className={styles.title}>Admin Panel</h1>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <button 
             className={activeTab === 'ramais' ? styles.btnPrimary : styles.btnSecondary}
             onClick={() => setActiveTab('ramais')}
@@ -345,29 +374,45 @@ export default function AdminPage() {
           >
             Relatórios de Erro {reports.length > 0 && `(${reports.length})`}
           </button>
+          {canEdit && (
+            <button 
+              className={activeTab === 'users' ? styles.btnPrimary : styles.btnSecondary}
+              onClick={() => setActiveTab('users')}
+            >
+              Usuários
+            </button>
+          )}
           <a href="/" className={styles.link} style={{ marginLeft: '1rem' }}>Voltar ao Site</a>
+          <button 
+            onClick={() => setCurrentUser(null)} 
+            className={styles.btnDanger}
+            style={{ marginLeft: 'auto' }}
+          >
+            Sair ({currentUser.username})
+          </button>
         </div>
       </header>
 
       {activeTab === 'ramais' ? (
         <>
-          <section className={`${styles.addSection} glass`}>
-        <h2>Adicionar Novo Ramal</h2>
-        <form onSubmit={handleAdd} className={styles.formRow}>
-          <input 
-            type="text" 
-            placeholder="Nome (ex: João Silva)" 
-            value={name} 
-            onChange={(e) => setName(e.target.value)} 
-            className={styles.input}
-          />
-          <input 
-            type="text" 
-            placeholder="Número (ex: 4050)" 
-            value={phone} 
-            onChange={(e) => setPhone(e.target.value)} 
-            className={styles.input}
-          />
+          {canEdit && (
+            <section className={`${styles.addSection} glass`}>
+              <h2>Adicionar Novo Ramal</h2>
+              <form onSubmit={handleAdd} className={styles.formRow}>
+                <input 
+                  type="text" 
+                  placeholder="Nome (ex: João Silva)" 
+                  value={name} 
+                  onChange={(e) => setName(e.target.value)} 
+                  className={styles.input}
+                />
+                <input 
+                  type="text" 
+                  placeholder="Número (ex: 4050)" 
+                  value={phone} 
+                  onChange={(e) => setPhone(e.target.value)} 
+                  className={styles.input}
+                />
           <input 
             type="text" 
             placeholder="Setor (ex: Suporte Técnico)" 
@@ -410,6 +455,7 @@ export default function AdminPage() {
           </div>
         </form>
       </section>
+      )}
 
       <section className={styles.listSection}>
         <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap', justifyContent: 'center' }}>
@@ -439,14 +485,16 @@ export default function AdminPage() {
             <div key={department} className={styles.departmentGroup}>
               <h3 className={styles.departmentTitle}>
                 {getEmoji(department)} {department}
-                <button 
-                  onClick={() => handleRenameDepartment(department)}
-                  className={styles.btnSecondary}
-                  style={{ marginLeft: '1rem', padding: '0.2rem 0.5rem', fontSize: '0.8rem' }}
-                  disabled={loading}
-                >
-                  ✎ Editar Nome
-                </button>
+                {canEdit && (
+                  <button 
+                    onClick={() => handleRenameDepartment(department)}
+                    className={styles.btnSecondary}
+                    style={{ marginLeft: '1rem', padding: '0.2rem 0.5rem', fontSize: '0.8rem' }}
+                    disabled={loading}
+                  >
+                    ✎ Editar Nome
+                  </button>
+                )}
               </h3>
               <div className={styles.tableContainer}>
                 <table className={styles.table}>
@@ -456,7 +504,7 @@ export default function AdminPage() {
                       <th>Número</th>
                       <th>IP</th>
                       <th>Modelo</th>
-                      <th>Ações</th>
+                      {canEdit && <th>Ações</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -466,6 +514,7 @@ export default function AdminPage() {
                         contact={contact} 
                         onSave={handleUpdateRow} 
                         onDelete={handleDeleteRow} 
+                        canEdit={canEdit}
                       />
                     ))}
                   </tbody>
@@ -476,7 +525,7 @@ export default function AdminPage() {
         )}
       </section>
       </>
-      ) : (
+      ) : activeTab === 'reports' ? (
         <section className={styles.listSection}>
           <h2>Relatórios de Ramais com Problema</h2>
           {reports.length === 0 ? (
@@ -490,7 +539,7 @@ export default function AdminPage() {
                     <th>Reportado por</th>
                     <th>Ramal</th>
                     <th>Problema</th>
-                    <th>Ações</th>
+                    {canEdit && <th>Ações</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -500,14 +549,16 @@ export default function AdminPage() {
                       <td>{r.name || 'Anônimo'}</td>
                       <td>{r.ramal}</td>
                       <td>{r.message}</td>
-                      <td>
-                        <button 
-                          onClick={() => handleDeleteReportRow(r.id)} 
-                          className={styles.btnDanger}
-                        >
-                          Resolver / Excluir
-                        </button>
-                      </td>
+                      {canEdit && (
+                        <td>
+                          <button 
+                            onClick={() => handleDeleteReportRow(r.id)} 
+                            className={styles.btnDanger}
+                          >
+                            Resolver / Excluir
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -515,7 +566,96 @@ export default function AdminPage() {
             </div>
           )}
         </section>
-      )}
+      ) : activeTab === 'users' && canEdit ? (
+        <section className={styles.listSection}>
+          <h2>Gerenciar Usuários</h2>
+          <div className={`${styles.addSection} glass`} style={{ marginBottom: '2rem' }}>
+            <h3>Adicionar Usuário</h3>
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              const form = e.target as HTMLFormElement;
+              const user = (form.elements.namedItem('username') as HTMLInputElement).value;
+              const pass = (form.elements.namedItem('password') as HTMLInputElement).value;
+              const role = (form.elements.namedItem('role') as HTMLSelectElement).value as 'admin' | 'readonly';
+              
+              if (!user || !pass) return alert('Preencha os campos!');
+              setLoading(true);
+              const result = await createUser(user, pass, role);
+              setLoading(false);
+              if (result.success) {
+                alert('Usuário criado!');
+                form.reset();
+                loadUsers();
+              } else {
+                alert('Erro: ' + result.error);
+              }
+            }} className={styles.formRow}>
+              <input type="text" name="username" placeholder="Nome de Usuário" className={styles.input} required />
+              <input type="password" name="password" placeholder="Senha" className={styles.input} required />
+              <select name="role" className={styles.input} required>
+                <option value="readonly">Somente Leitura</option>
+                <option value="admin">Administrador</option>
+              </select>
+              <button type="submit" className={styles.btnPrimary} disabled={loading}>Criar</button>
+            </form>
+          </div>
+          
+          <div className={styles.tableContainer}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Usuário</th>
+                  <th>Nível de Acesso</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {systemUsers.map((u) => (
+                  <tr key={u.id}>
+                    <td>{u.username}</td>
+                    <td>{u.role === 'admin' ? 'Administrador' : 'Leitura'}</td>
+                    <td>
+                      <div className={styles.tableActions}>
+                        <button 
+                          onClick={async () => {
+                            const newPass = prompt(`Nova senha para ${u.username} (deixe em branco para não alterar):`);
+                            if (newPass !== null) {
+                              setLoading(true);
+                              const res = await editUser(u.id, u.username, newPass || undefined, undefined);
+                              setLoading(false);
+                              if (res.success) alert('Senha atualizada!');
+                              else alert('Erro: ' + res.error);
+                            }
+                          }}
+                          className={styles.btnSecondary}
+                          disabled={loading}
+                        >
+                          Trocar Senha
+                        </button>
+                        <button 
+                          onClick={async () => {
+                            if (confirm(`Excluir usuário ${u.username}?`)) {
+                              setLoading(true);
+                              const res = await removeUser(u.id);
+                              setLoading(false);
+                              if (res.success) loadUsers();
+                              else alert('Erro: ' + res.error);
+                            }
+                          }} 
+                          className={styles.btnDanger}
+                          disabled={loading || u.username === currentUser.username}
+                        >
+                          Excluir
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ) : null}
     </main>
   );
 }

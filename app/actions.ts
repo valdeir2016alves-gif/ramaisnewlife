@@ -236,3 +236,126 @@ export async function deleteReport(id: number) {
   }
 }
 
+
+export interface User {
+  id: number;
+  username: string;
+  password?: string;
+  role: 'admin' | 'readonly';
+}
+
+const getUsersPath = () => {
+  const dataDir = path.join(process.cwd(), 'data');
+  return fs.existsSync(dataDir) 
+    ? path.join(dataDir, 'users.json') 
+    : path.join(process.cwd(), 'users.json');
+};
+
+const ensureDefaultUser = (users: User[]): boolean => {
+  if (users.length === 0) {
+    users.push({
+      id: 1,
+      username: 'admin',
+      password: 'srv2504@new',
+      role: 'admin'
+    });
+    return true;
+  }
+  return false;
+};
+
+const readUsers = (): User[] => {
+  const dbPath = getUsersPath();
+  let users: User[] = [];
+  if (fs.existsSync(dbPath)) {
+    try {
+      const content = fs.readFileSync(dbPath, 'utf-8');
+      users = JSON.parse(content) as User[];
+    } catch (error) {
+      console.error('Erro ao ler users.json:', error);
+    }
+  }
+  
+  if (ensureDefaultUser(users)) {
+    writeUsers(users);
+  }
+  return users;
+};
+
+const writeUsers = (data: User[]) => {
+  const dbPath = getUsersPath();
+  fs.writeFileSync(dbPath, JSON.stringify(data, null, 2), 'utf-8');
+};
+
+export async function authenticateUser(username: string, password: string): Promise<{ success: boolean; user?: Omit<User, 'password'>; error?: string }> {
+  try {
+    const users = readUsers();
+    const user = users.find(u => u.username === username && u.password === password);
+    if (user) {
+      const { password: _, ...userWithoutPassword } = user;
+      return { success: true, user: userWithoutPassword };
+    }
+    return { success: false, error: 'Usuário ou senha incorretos.' };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function getUsers(): Promise<Omit<User, 'password'>[]> {
+  try {
+    const users = readUsers();
+    return users.map(({ password, ...u }) => u);
+  } catch (error: any) {
+    console.error('Failed to fetch users:', error);
+    return [];
+  }
+}
+
+export async function addUser(username: string, password: string, role: 'admin' | 'readonly') {
+  try {
+    const users = readUsers();
+    if (users.find(u => u.username === username)) {
+      return { success: false, error: 'Usuário já existe.' };
+    }
+    const newId = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
+    users.push({ id: newId, username, password, role });
+    writeUsers(users);
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function updateUser(id: number, username: string, password?: string, role?: 'admin' | 'readonly') {
+  try {
+    const users = readUsers();
+    const index = users.findIndex(u => u.id === id);
+    if (index === -1) return { success: false, error: 'Usuário não encontrado.' };
+    
+    // Check if new username conflicts
+    if (username !== users[index].username && users.find(u => u.username === username)) {
+      return { success: false, error: 'Usuário já existe.' };
+    }
+
+    users[index].username = username;
+    if (password) users[index].password = password;
+    if (role) users[index].role = role;
+    
+    writeUsers(users);
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function deleteUser(id: number) {
+  try {
+    const users = readUsers();
+    if (users.length <= 1) return { success: false, error: 'Não é possível deletar o último usuário do sistema.' };
+    const newUsers = users.filter(u => u.id !== id);
+    writeUsers(newUsers);
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
