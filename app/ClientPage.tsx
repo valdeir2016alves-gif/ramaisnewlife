@@ -150,14 +150,16 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
               : 'Em breve'}
           </div>
         ) : (
-          Object.entries(groupedContacts).map(([department, deptContacts]) => (
-            <div key={department} className={styles.departmentSection}>
+          Object.entries(groupedContacts).map(([department, deptContacts]) => {
+            const isImoveis = department.toLowerCase().includes('imóveis') || department.toLowerCase().includes('imobiliária');
+            return (
+            <div key={department} className={`${styles.departmentSection} ${isImoveis ? styles.departmentSectionImoveis : ''}`}>
               <div className={styles.departmentHeader}>
                 <div className={styles.departmentHeaderLeft}>
                   <span className={styles.departmentSubtitle}>{department}</span>
                   <h2 className={styles.departmentTitle}>Colaborador(a) e Ramais</h2>
                 </div>
-                {(department.toLowerCase().includes('imóveis') || department.toLowerCase().includes('imobiliária')) && (
+                {isImoveis && (
                   <div className={styles.departmentLogo}>
                     <Image 
                       src="/logo-imoveis.png" 
@@ -201,7 +203,8 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
                 })}
               </div>
             </div>
-          ))
+            );
+          })
         )}
       </section>
 
