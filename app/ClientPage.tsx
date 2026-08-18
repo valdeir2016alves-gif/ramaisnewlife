@@ -111,8 +111,20 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
   if (!currentUser) {
     return (
       <main className={styles.main}>
-        <div style={{ maxWidth: '400px', margin: '100px auto', background: 'var(--card-bg)', padding: '2rem', borderRadius: '12px', border: '1px solid var(--card-border)' }}>
-          <h2 style={{ textAlign: 'center', marginBottom: '1.5rem', color: 'var(--primary-color)' }}>Acesso Interno</h2>
+        <div style={{ maxWidth: '400px', margin: '100px auto', background: 'var(--card-bg)', padding: '2.5rem 2rem', borderRadius: '12px', border: '1px solid var(--card-border)' }}>
+          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+            <Image 
+              src="/logo.png" 
+              alt="New Life Logo" 
+              width={200} 
+              height={80} 
+              style={{ objectFit: 'contain', filter: 'var(--logo-filter)' }} 
+            />
+            <h2 style={{ color: 'var(--primary-color)', marginTop: '1rem', marginBottom: '0.5rem' }}>Acesso Interno</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.4' }}>
+              Diretório de Ramais internos das Unidades São Gabriel, Bagé e Passo Fundo
+            </p>
+          </div>
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <input 
               type="text" 
