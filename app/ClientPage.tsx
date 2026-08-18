@@ -116,13 +116,13 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
             <Image 
               src="/logo.png" 
               alt="New Life Logo" 
-              width={200} 
-              height={80} 
+              width={320} 
+              height={150} 
               style={{ objectFit: 'contain', filter: 'var(--logo-filter)' }} 
             />
-            <h2 style={{ color: 'var(--primary-color)', marginTop: '1rem', marginBottom: '0.5rem' }}>Acesso Interno</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.4' }}>
-              Diretório de Ramais internos das Unidades São Gabriel, Bagé e Passo Fundo
+            <h2 style={{ color: 'var(--primary-color)', marginTop: '0.5rem', marginBottom: '0.5rem' }}>Acesso Interno</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: '1.5' }}>
+              Diretório de <strong>Ramais</strong> internos das Unidades <strong>São Gabriel</strong>, <strong>Bagé</strong> e <strong>Passo Fundo</strong>
             </p>
           </div>
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
