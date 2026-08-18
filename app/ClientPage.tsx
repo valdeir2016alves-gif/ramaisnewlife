@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { Contact } from './actions';
 import styles from './page.module.css';
 
-import { submitReport, registerVisit } from './actions';
+import { submitReport, registerVisit, authenticateUser, User } from './actions';
 
 export default function ClientPage({ initialContacts, lastUpdated }: { initialContacts: Contact[], lastUpdated: string }) {
   const [search, setSearch] = useState('');
@@ -17,6 +17,13 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
   const [reportRamal, setReportRamal] = useState('');
   const [reportMessage, setReportMessage] = useState('');
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
+
+  // Auth states
+  const [currentUser, setCurrentUser] = useState<Omit<User, 'password'> | null>(null);
+  const [loginUsername, setLoginUsername] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   const handleReportSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +41,30 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
     }
   };
 
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginLoading(true);
+    const result = await authenticateUser(loginUsername, loginPassword);
+    setLoginLoading(false);
+    if (result.success && result.user) {
+      setCurrentUser(result.user);
+      sessionStorage.setItem('clientAuth', JSON.stringify(result.user));
+    } else {
+      alert(result.error || 'Credenciais incorretas!');
+    }
+  };
+
   useEffect(() => {
+    const savedAuth = sessionStorage.getItem('clientAuth');
+    if (savedAuth) {
+      try {
+        setCurrentUser(JSON.parse(savedAuth));
+      } catch (e) {
+        sessionStorage.removeItem('clientAuth');
+      }
+    }
+    setIsCheckingAuth(false);
+
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
       setTheme(savedTheme);
@@ -58,26 +88,60 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
   const groupedContacts = useMemo(() => {
     const filtered = initialContacts.filter((c) => {
       const cCity = c.city || 'sao_gabriel';
-      // If contact is global, it appears in all cities
-      if (cCity === 'all') return true;
-      return cCity === city;
-    }).filter(
-      (c) =>
-        c.name.toLowerCase().includes(search.toLowerCase()) ||
-        c.phone.toLowerCase().includes(search.toLowerCase()) ||
-        c.department.toLowerCase().includes(search.toLowerCase())
-    );
-
-    const groups: Record<string, Contact[]> = {};
-    filtered.forEach((c) => {
-      if (!groups[c.department]) {
-        groups[c.department] = [];
-      }
-      groups[c.department].push(c);
+      const matchesSearch = c.name.toLowerCase().includes(search.toLowerCase()) || 
+                            c.department.toLowerCase().includes(search.toLowerCase()) || 
+                            c.phone.includes(search);
+      const matchesCity = cCity === city;
+      if (cCity === 'all') return matchesSearch;
+      return matchesSearch && matchesCity;
     });
 
+    const groups: Record<string, Contact[]> = {};
+    filtered.forEach(c => {
+      if (!groups[c.department]) groups[c.department] = [];
+      groups[c.department].push(c);
+    });
     return groups;
   }, [initialContacts, search, city]);
+
+  if (isCheckingAuth) {
+    return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Carregando...</div>;
+  }
+
+  if (!currentUser) {
+    return (
+      <main className={styles.main}>
+        <div style={{ maxWidth: '400px', margin: '100px auto', background: 'var(--card-bg)', padding: '2rem', borderRadius: '12px', border: '1px solid var(--card-border)' }}>
+          <h2 style={{ textAlign: 'center', marginBottom: '1.5rem', color: 'var(--primary-color)' }}>Acesso Interno</h2>
+          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <input 
+              type="text" 
+              placeholder="Usuário" 
+              value={loginUsername} 
+              onChange={e => setLoginUsername(e.target.value)} 
+              style={{ padding: '0.8rem', borderRadius: '6px', border: '1px solid var(--card-border)', background: 'transparent', color: 'var(--text-main)' }} 
+              required 
+            />
+            <input 
+              type="password" 
+              placeholder="Senha" 
+              value={loginPassword} 
+              onChange={e => setLoginPassword(e.target.value)} 
+              style={{ padding: '0.8rem', borderRadius: '6px', border: '1px solid var(--card-border)', background: 'transparent', color: 'var(--text-main)' }} 
+              required 
+            />
+            <button 
+              type="submit" 
+              disabled={loginLoading}
+              style={{ padding: '0.8rem', borderRadius: '6px', border: 'none', background: 'var(--primary-color)', color: '#fff', fontWeight: 'bold', cursor: 'pointer' }}
+            >
+              {loginLoading ? 'Entrando...' : 'Entrar'}
+            </button>
+          </form>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className={styles.main}>

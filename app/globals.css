@@ -1,13 +1,13 @@
 :root {
-  --primary-color: #48cae4; /* Ciano estilo tech para títulos */
+  --primary-color: #48cae4;
   --primary-hover: #00b4d8;
-  --sector-title-color: #ffffff; /* Texto dos setores fica branco no escuro */
-  --bg-color: #060e17; /* Fundo extremamente escuro igual a referência */
-  --card-bg: rgba(255, 255, 255, 0.02); /* Fundo sutil para os cards */
-  --card-border: rgba(255, 255, 255, 0.08); /* Borda bem discreta */
-  --card-border-hover: rgba(72, 202, 228, 0.4); /* Brilho ciano na borda */
-  --text-main: #f1f5f9; /* Texto claro */
-  --text-muted: #94a3b8; /* Texto cinza secundário */
+  --sector-title-color: #ffffff;
+  --bg-color: #0c1e3e; /* Azul Royal escuro */
+  --card-bg: rgba(255, 255, 255, 0.04);
+  --card-border: rgba(255, 255, 255, 0.1);
+  --card-border-hover: rgba(72, 202, 228, 0.4);
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
   --accent: #00b4d8; 
   --success: #2ecc71;
   --logo-filter: brightness(0) invert(1);
@@ -17,19 +17,19 @@
 }
 
 [data-theme="light"] {
-  --primary-color: #0077b6; /* Azul escuro no tema claro para botões etc */
-  --primary-hover: #023e8a;
-  --sector-title-color: #023e8a; /* Azul escuro para legibilidade do setor */
-  --bg-color: #f1f5f9; /* Fundo claro sutil */
-  --card-bg: #ffffff; /* Cards brancos */
-  --card-border: #cbd5e1; /* Borda cinza clara */
-  --card-border-hover: #023e8a; /* Azul na borda ao passar o mouse */
-  --text-main: #0f172a; /* Texto escuro */
-  --text-muted: #64748b; /* Texto cinza secundário escurecido */
-  --accent: #0077b6;
-  --success: #16a34a; /* Verde mais forte para contraste no claro */
-  --logo-filter: none; /* Logo com cores originais */
-  --header-bg: #ffffff;
+  --primary-color: #1e3a8a;
+  --primary-hover: #1e40af;
+  --sector-title-color: #1e3a8a;
+  --bg-color: #eff6ff; /* Fundo azul bem claro */
+  --card-bg: #ffffff;
+  --card-border: #bfdbfe;
+  --card-border-hover: #3b82f6;
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --accent: #1e3a8a;
+  --success: #16a34a;
+  --logo-filter: none;
+  --header-bg: transparent;
 }
 
 * {
