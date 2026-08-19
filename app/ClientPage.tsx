@@ -31,7 +31,12 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
     const result = await submitReport(reportName, reportRamal, reportMessage);
     setIsSubmittingReport(false);
     if (result.success) {
-      alert('Relato enviado com sucesso! A equipe responsável irá verificar.');
+      alert('Relato enviado com sucesso! Você será redirecionado para o WhatsApp do suporte.');
+      
+      const text = `Olá, gostaria de relatar um problema de ramal.\n\n*Nome/Setor:* ${reportName || 'Não informado'}\n*Ramal com problema:* ${reportRamal}\n*O que está errado:* ${reportMessage}`;
+      const waLink = `https://wa.me/555596722575?text=${encodeURIComponent(text)}`;
+      window.open(waLink, '_blank');
+
       setShowReportModal(false);
       setReportName('');
       setReportRamal('');
