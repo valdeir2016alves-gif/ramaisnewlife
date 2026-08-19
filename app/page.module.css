@@ -428,6 +428,12 @@
   font-size: 1.05rem;
 }
 
+.instructionItem p strong {
+  display: inline;
+  font-size: inherit;
+  margin-bottom: 0;
+}
+
 .instructionItem p {
   color: var(--text-muted);
   margin: 0;
