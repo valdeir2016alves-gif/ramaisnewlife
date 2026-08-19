@@ -321,6 +321,13 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
                   <p>Digite <span>*2</span>, aguarde a voz automática falar "transferir", digite o ramal desejado e aguarde.</p>
                 </div>
               </div>
+              <div className={styles.instructionItem}>
+                <div className={styles.instructionIcon}>🚫</div>
+                <div>
+                  <strong>Atenção:</strong>
+                  <p>Os contatos de WhatsApp disponibilizados nesta página são destinados <strong>exclusivamente</strong> à comunicação interna da empresa. O número de WhatsApp de qualquer colaborador somente poderá ser encaminhado a clientes mediante autorização prévia do responsável pelo contato.</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
