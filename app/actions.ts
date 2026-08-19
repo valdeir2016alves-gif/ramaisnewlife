@@ -232,6 +232,26 @@ export async function submitReport(name: string, ramal: string, message: string)
     };
     reports.push(newReport);
     writeReports(reports);
+
+    // Opcional: Enviar notificação via Webhook (API do WhatsApp, n8n, Make, Z-API, etc.)
+    // Para funcionar, basta substituir a URL_DO_SEU_WEBHOOK pela URL real da sua API.
+    const WEBHOOK_URL = process.env.WHATSAPP_WEBHOOK_URL || '';
+    if (WEBHOOK_URL) {
+      try {
+        const text = `🚨 *Novo Relato de Ramal*\n\n*Nome/Setor:* ${name || 'Não informado'}\n*Ramal com problema:* ${ramal}\n*O que está errado:* ${message}`;
+        await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            number: '555596722575', // Número do NOC
+            message: text
+          })
+        });
+      } catch (e) {
+        console.error('Erro ao enviar webhook do WhatsApp:', e);
+      }
+    }
+
     return { success: true };
   } catch (error: any) {
     console.error('Failed to submit report:', error);
