@@ -3,7 +3,7 @@
     "id": 54,
     "name": "WhatsApp Central",
     "phone": "0800 647 6190",
-    "department": "Contatos Regionais e Externos",
+    "department": "Contatos Regionais E Externos",
     "ip": "",
     "city": "all"
   },
@@ -11,7 +11,7 @@
     "id": 55,
     "name": "São Gabriel – RS",
     "phone": "(55) 3112-0041",
-    "department": "Contatos Regionais e Externos",
+    "department": "Contatos Regionais E Externos",
     "ip": "",
     "city": "all"
   },
@@ -19,7 +19,7 @@
     "id": 56,
     "name": "Bagé – RS",
     "phone": "(53) 2018-1566",
-    "department": "Contatos Regionais e Externos",
+    "department": "Contatos Regionais E Externos",
     "ip": "",
     "city": "all"
   },
@@ -27,7 +27,7 @@
     "id": 57,
     "name": "Passo Fundo – RS",
     "phone": "(54) 3310-1008",
-    "department": "Contatos Regionais e Externos",
+    "department": "Contatos Regionais E Externos",
     "ip": "",
     "city": "all"
   },
@@ -35,7 +35,7 @@
     "id": 58,
     "name": "Imobiliária SG (Fixo)",
     "phone": "(55) 3237-2626",
-    "department": "Contatos Regionais e Externos",
+    "department": "Contatos Regionais E Externos",
     "ip": "",
     "city": "all"
   },
@@ -152,14 +152,6 @@
     "city": "sao_gabriel"
   },
   {
-    "id": 73,
-    "name": "-",
-    "phone": "4040",
-    "department": "Suporte Técnico",
-    "ip": "",
-    "city": "sao_gabriel"
-  },
-  {
     "id": 74,
     "name": "Alice",
     "phone": "4021",
@@ -259,7 +251,7 @@
     "id": 86,
     "name": "Mayara",
     "phone": "4024",
-    "department": "Recuperação de Crédito",
+    "department": "Recuperação De Crédito",
     "ip": "",
     "city": "sao_gabriel"
   },
@@ -388,14 +380,6 @@
     "name": "Jhonatan / Bruno / Valdeir",
     "phone": "4001",
     "department": "NOC",
-    "ip": "",
-    "city": "sao_gabriel"
-  },
-  {
-    "id": 103,
-    "name": "-",
-    "phone": "4060",
-    "department": "Imobiliária",
     "ip": "",
     "city": "sao_gabriel"
   },

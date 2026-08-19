@@ -280,7 +280,7 @@ const ensureDefaultUser = (users: User[]): boolean => {
     users.push({
       id: 1,
       username: 'admin',
-      password: 'srv2504@new',
+      password: 'Nl!#@2026Admin',
       role: 'admin'
     });
     return true;

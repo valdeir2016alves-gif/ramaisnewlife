@@ -101,11 +101,35 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
       if (!groups[c.department]) groups[c.department] = [];
       groups[c.department].push(c);
     });
+    
+    // Sort contacts within each group alphabetically by name
+    Object.keys(groups).forEach(dept => {
+      groups[dept].sort((a, b) => a.name.localeCompare(b.name));
+    });
+
     return groups;
   }, [initialContacts, search, city]);
 
   if (isCheckingAuth) {
-    return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Carregando...</div>;
+    return (
+      <main className={styles.main}>
+        <div className={styles.skeletonHeader}></div>
+        <div className={styles.skeletonTabs}></div>
+        <div className={styles.skeletonGrid}>
+          {[1, 2, 3, 4, 5, 6].map(i => (
+            <div key={i} className={styles.skeletonCard}>
+              <div className={styles.skeletonLine} style={{ width: '60%', height: '24px', marginBottom: '1.5rem' }}></div>
+              {[1, 2, 3].map(j => (
+                <div key={j} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                  <div className={styles.skeletonLine} style={{ width: '40%' }}></div>
+                  <div className={styles.skeletonLine} style={{ width: '30%' }}></div>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </main>
+    );
   }
 
   if (!currentUser) {
@@ -253,34 +277,34 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
                 )}
               </div>
               
-              <div className={deptContacts.length > 6 ? styles.contactListMulti : styles.contactList}>
+              <div className={styles.contactList}>
                 {deptContacts.map((contact) => {
-                  const isFullWidth = contact.name.toLowerCase().includes('whatsapp') || 
-                                     contact.name.toLowerCase().includes('filtro') || 
-                                     contact.name.toLowerCase().includes('empresarial') || 
-                                     [9005, 9006, 9007].includes(contact.id);
-                  
                   const onlyNumbers = contact.phone.replace(/\D/g, '');
                   const isWhatsAppNumber = onlyNumbers.length >= 11 || 
                                          (onlyNumbers.length === 10 && onlyNumbers[2] === '9') || 
                                          contact.name.toLowerCase().includes('whatsapp') ||
                                          contact.name.toLowerCase().includes('whats');
                   const whatsappLink = isWhatsAppNumber ? `https://wa.me/55${onlyNumbers}` : null;
+                  const telLink = `tel:+55${onlyNumbers}`;
+                  
+                  const isExternal = onlyNumbers.length >= 10;
+                  const icon = isWhatsAppNumber ? '💬' : isExternal ? '📱' : '📞';
 
                   return (
                     <div 
                       key={contact.id} 
                       className={styles.contactItem}
-                      style={isFullWidth ? { gridColumn: '1 / -1' } : {}}
                     >
-                      <span className={styles.chevron}>›</span>
+                      <span className={styles.chevron}>{icon}</span>
                       <span className={styles.contactName}>{contact.name}</span>
                       {isWhatsAppNumber ? (
                         <a href={whatsappLink!} target="_blank" rel="noopener noreferrer" className={styles.whatsappLink}>
                           {contact.phone}
                         </a>
                       ) : (
-                        <span className={styles.contactPhone}>{contact.phone}</span>
+                        <a href={telLink} className={styles.telLink}>
+                          {contact.phone}
+                        </a>
                       )}
                     </div>
                   );
