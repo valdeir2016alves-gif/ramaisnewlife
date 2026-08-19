@@ -236,6 +236,10 @@
   line-height: 1.4;
 }
 
+.contactItem:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
 .chevron {
   color: var(--primary-color);
   font-size: 1.1rem;
