@@ -230,7 +230,7 @@
 
 .contactItem {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   font-size: 0.95rem;
   color: var(--text-muted);
   line-height: 1.4;
@@ -241,13 +241,13 @@
   font-size: 1.1rem;
   margin-right: 0.5rem;
   font-weight: 600;
+  margin-top: 0.1rem;
 }
 
 .contactName {
   flex-grow: 1;
   margin-right: 0.5rem;
   line-height: 1.2;
-  word-break: break-word;
 }
 
 .contactPhone {
