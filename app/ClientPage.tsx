@@ -293,7 +293,7 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
       </section>
 
       <footer className={styles.footer}>
-        <p>Atualizado em: {lastUpdated}</p>
+        <p>Atualizado em: {lastUpdated} - NOC</p>
         <button onClick={() => setShowReportModal(true)} className={styles.reportLinkBtn}>
           Encontrou um ramal errado? Avise aqui!
         </button>

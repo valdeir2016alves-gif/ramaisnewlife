@@ -143,6 +143,30 @@ export async function updateContact(id: number, name: string, phone: string, dep
   }
 }
 
+export async function reorderContact(id: number, direction: 'up' | 'down') {
+  try {
+    const contacts = readData();
+    const index = contacts.findIndex(c => c.id === id);
+    if (index === -1) return { success: false, error: 'Contact not found' };
+    
+    if (direction === 'up' && index > 0) {
+      const temp = contacts[index - 1];
+      contacts[index - 1] = contacts[index];
+      contacts[index] = temp;
+      writeData(contacts);
+    } else if (direction === 'down' && index < contacts.length - 1) {
+      const temp = contacts[index + 1];
+      contacts[index + 1] = contacts[index];
+      contacts[index] = temp;
+      writeData(contacts);
+    }
+    return { success: true };
+  } catch (error: any) {
+    console.error('Failed to reorder contact:', error);
+    return { success: false, error: error.message };
+  }
+}
+
 export async function renameDepartment(oldDepartment: string, newDepartment: string) {
   try {
     const contacts = readData();

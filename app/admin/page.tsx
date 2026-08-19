@@ -5,7 +5,7 @@ import {
   getContacts, addContact, deleteContact, updateContact, renameDepartment, Contact, 
   getReports, deleteReport, Report, authenticateUser, getUsers as fetchUsers, 
   addUser as createUser, updateUser as editUser, deleteUser as removeUser, User,
-  getAnalytics, DailyStats
+  getAnalytics, DailyStats, reorderContact
 } from '../actions';
 import styles from './admin.module.css';
 
@@ -33,11 +33,13 @@ function EditableRow({
   contact, 
   onSave, 
   onDelete,
+  onMove,
   canEdit
 }: { 
   contact: Contact; 
   onSave: (id: number, name: string, phone: string, department: string, ip: string, city: string, phoneModel: string) => Promise<void>; 
   onDelete: (id: number) => Promise<void>;
+  onMove: (id: number, direction: 'up' | 'down') => Promise<void>;
   canEdit: boolean;
 }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -169,6 +171,24 @@ function EditableRow({
         <td>
           <div className={styles.tableActions}>
             <button 
+              onClick={() => onMove(contact.id, 'up')} 
+              className={styles.btnSecondary}
+              style={{ padding: '0.4rem 0.6rem' }}
+              title="Mover para Cima"
+              disabled={loading}
+            >
+              ↑
+            </button>
+            <button 
+              onClick={() => onMove(contact.id, 'down')} 
+              className={styles.btnSecondary}
+              style={{ padding: '0.4rem 0.6rem' }}
+              title="Mover para Baixo"
+              disabled={loading}
+            >
+              ↓
+            </button>
+            <button 
               onClick={() => setIsEditing(true)} 
               className={styles.btnSecondary}
               disabled={loading}
@@ -217,6 +237,10 @@ export default function AdminPage() {
     const result = await authenticateUser(loginUsername, loginPassword);
     setLoading(false);
     if (result.success && result.user) {
+      if (result.user.username.toLowerCase() === 'admin') {
+        alert('O usuário "admin" tem permissão apenas para acessar o site principal (leitura). Use seu usuário pessoal para gerenciar.');
+        return;
+      }
       setCurrentUser(result.user);
       loadContacts();
       if (result.user.role === 'admin') {
@@ -286,14 +310,22 @@ export default function AdminPage() {
   };
 
   const handleDeleteRow = async (id: number) => {
-    if (confirm('Tem certeza que deseja excluir este ramal?')) {
-      const result = await deleteContact(id);
-      if (result.success) {
-        await loadContacts();
-      } else {
-        alert('Erro ao excluir: ' + result.error);
-      }
+    if (!confirm('Excluir este ramal?')) return;
+    setLoading(true);
+    await deleteContact(id);
+    await loadContacts();
+    setLoading(false);
+  };
+
+  const handleMoveRow = async (id: number, direction: 'up' | 'down') => {
+    setLoading(true);
+    const result = await reorderContact(id, direction);
+    if (result.success) {
+      await loadContacts();
+    } else {
+      alert('Erro ao reordenar: ' + result.error);
     }
+    setLoading(false);
   };
 
   const handleDeleteReportRow = async (id: number) => {
@@ -535,6 +567,7 @@ export default function AdminPage() {
                         contact={contact} 
                         onSave={handleUpdateRow} 
                         onDelete={handleDeleteRow} 
+                        onMove={handleMoveRow}
                         canEdit={canEdit}
                       />
                     ))}

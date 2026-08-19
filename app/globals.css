@@ -41,11 +41,11 @@
 body {
   font-family: var(--font-family);
   background: var(--bg-color);
-  /* Sem gradientes complexos no fundo para focar na limpeza das caixas */
   background-attachment: fixed;
   color: var(--text-main);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  font-size: 14px;
 }
 
 h1, h2, h3, h4, h5, h6 {
