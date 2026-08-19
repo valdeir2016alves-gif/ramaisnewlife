@@ -301,10 +301,6 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
                         <a href={whatsappLink!} target="_blank" rel="noopener noreferrer" className={styles.whatsappLink}>
                           {contact.phone}
                         </a>
-                      ) : isExternal ? (
-                        <a href={telLink} className={styles.telLink}>
-                          {contact.phone}
-                        </a>
                       ) : (
                         <span className={styles.contactPhone}>
                           {contact.phone}
