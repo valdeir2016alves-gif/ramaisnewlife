@@ -245,11 +245,9 @@
 
 .contactName {
   flex-grow: 1;
-  min-width: 0;
   margin-right: 0.5rem;
-  overflow-wrap: break-word;
-  word-break: normal;
   line-height: 1.2;
+  word-break: break-word;
 }
 
 .contactPhone {
