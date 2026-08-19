@@ -233,22 +233,27 @@ export async function submitReport(name: string, ramal: string, message: string)
     reports.push(newReport);
     writeReports(reports);
 
-    // Opcional: Enviar notificação via Webhook (API do WhatsApp, n8n, Make, Z-API, etc.)
-    // Para funcionar, basta substituir a URL_DO_SEU_WEBHOOK pela URL real da sua API.
-    const WEBHOOK_URL = process.env.WHATSAPP_WEBHOOK_URL || '';
-    if (WEBHOOK_URL) {
+    // Opcional: Enviar notificação via Telegram
+    // Requer as variáveis TELEGRAM_BOT_TOKEN e TELEGRAM_CHAT_ID
+    const telegramToken = process.env.TELEGRAM_BOT_TOKEN;
+    const telegramChatId = process.env.TELEGRAM_CHAT_ID;
+
+    if (telegramToken && telegramChatId) {
       try {
-        const text = `🚨 *Novo Relato de Ramal*\n\n*Nome/Setor:* ${name || 'Não informado'}\n*Ramal com problema:* ${ramal}\n*O que está errado:* ${message}`;
-        await fetch(WEBHOOK_URL, {
+        const text = `🚨 *Novo Relato de Ramal Errado*\n\n*Nome/Setor:* ${name || 'Não informado'}\n*Ramal com problema:* ${ramal}\n*O que está errado:* ${message}`;
+        const url = `https://api.telegram.org/bot${telegramToken}/sendMessage`;
+        
+        await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            number: '555596722575', // Número do NOC
-            message: text
+            chat_id: telegramChatId,
+            text: text,
+            parse_mode: 'Markdown'
           })
         });
       } catch (e) {
-        console.error('Erro ao enviar webhook do WhatsApp:', e);
+        console.error('Erro ao enviar notificação para o Telegram:', e);
       }
     }
 
