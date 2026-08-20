@@ -262,13 +262,15 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
                 </div>
                 {isImoveis && (
                   <div className={styles.departmentLogo}>
-                    <Image 
-                      src="/logo-imoveis.png" 
-                      alt="New Life Imóveis" 
-                      width={80} 
-                      height={60} 
-                      style={{ objectFit: 'contain' }}
-                    />
+                    <a href="https://www.newlifeimoveis.imb.br/" target="_blank" rel="noopener noreferrer">
+                      <Image 
+                        src="/logo-imoveis.png" 
+                        alt="New Life Imóveis" 
+                        width={80} 
+                        height={60} 
+                        style={{ objectFit: 'contain' }}
+                      />
+                    </a>
                   </div>
                 )}
               </div>
