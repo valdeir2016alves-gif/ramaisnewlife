@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import { Contact } from './actions';
 import styles from './page.module.css';
+import GlowCard from './GlowCard';
 
 import { submitReport, registerVisit, authenticateUser, User } from './actions';
 
@@ -332,33 +333,39 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
 
       {showInstructions && (
         <div className={styles.modalOverlay} onClick={() => setShowInstructions(false)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+          <div className={styles.modalContent} style={{ maxWidth: '800px' }} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <h3>Instruções de Atendimento</h3>
               <button className={styles.closeButton} onClick={() => setShowInstructions(false)}>✕</button>
             </div>
-            <div className={styles.modalBody}>
-              <div className={styles.instructionItem}>
-                <div className={styles.instructionIcon}>📞</div>
-                <div>
-                  <strong>Puxar Ligação:</strong>
-                  <p>Digite <span>*8</span> e aguarde a ligação ser puxada.</p>
+            <div className={styles.modalBody} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
+              <GlowCard>
+                <div className={styles.instructionItem} style={{ flexDirection: 'column', gap: '0.75rem' }}>
+                  <div className={styles.instructionIcon}>📞</div>
+                  <div>
+                    <strong>Puxar Ligação</strong>
+                    <p style={{ marginTop: '0.5rem' }}>Digite <span>*8</span> e aguarde a ligação ser puxada.</p>
+                  </div>
                 </div>
-              </div>
-              <div className={styles.instructionItem}>
-                <div className={styles.instructionIcon}>🔄</div>
-                <div>
-                  <strong>Transferir Ligação:</strong>
-                  <p>Digite <span>*2</span>, aguarde a voz automática falar "transferir", digite o ramal desejado e aguarde.</p>
+              </GlowCard>
+              <GlowCard>
+                <div className={styles.instructionItem} style={{ flexDirection: 'column', gap: '0.75rem' }}>
+                  <div className={styles.instructionIcon}>🔄</div>
+                  <div>
+                    <strong>Transferir Ligação</strong>
+                    <p style={{ marginTop: '0.5rem' }}>Digite <span>*2</span>, aguarde a voz automática falar "transferir", digite o ramal desejado e aguarde.</p>
+                  </div>
                 </div>
-              </div>
-              <div className={styles.instructionItem}>
-                <div className={styles.instructionIcon}>🚫</div>
-                <div>
-                  <strong>Atenção:</strong>
-                  <p>Os contatos de WhatsApp disponibilizados nesta página são destinados <strong>exclusivamente</strong> à comunicação interna da empresa. O número de WhatsApp de qualquer colaborador somente poderá ser encaminhado a clientes mediante autorização prévia do responsável pelo contato.</p>
+              </GlowCard>
+              <GlowCard className="md-col-span-2" style={{ gridColumn: '1 / -1' } as any}>
+                <div className={styles.instructionItem} style={{ flexDirection: 'column', gap: '0.75rem' }}>
+                  <div className={styles.instructionIcon}>🚫</div>
+                  <div>
+                    <strong>Atenção</strong>
+                    <p style={{ marginTop: '0.5rem' }}>Os contatos de WhatsApp disponibilizados nesta página são destinados <strong>exclusivamente</strong> à comunicação interna da empresa. O número de WhatsApp de qualquer colaborador somente poderá ser encaminhado a clientes mediante autorização prévia do responsável pelo contato.</p>
+                  </div>
                 </div>
-              </div>
+              </GlowCard>
             </div>
           </div>
         </div>
