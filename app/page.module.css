@@ -523,10 +523,9 @@
 .glowCard {
   position: relative;
   border-radius: 12px;
-  background: var(--card-bg);
+  background: transparent;
   transition: transform 0.2s ease;
-  overflow: hidden;
-  padding: 1px;
+  overflow: visible;
 }
 
 .glowCard:hover {
@@ -536,25 +535,17 @@
 .glowCard::before {
   content: '';
   position: absolute;
-  top: -100%;
-  left: -100%;
-  width: 300%;
-  height: 300%;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0deg,
-    var(--glow-color-faint) 60deg,
-    var(--glow-color) 120deg,
-    transparent 180deg
-  );
-  animation: spinGlow 3s linear infinite;
-  z-index: 0;
+  inset: -1px;
+  border-radius: inherit;
+  background: radial-gradient(300px circle at var(--x, -1000px) var(--y, -1000px), var(--glow-color), transparent 40%);
+  padding: 1px;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
   pointer-events: none;
-}
-
-@keyframes spinGlow {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  z-index: 0;
+  transition: background 0.1s;
 }
 
 .glowCardInner {
@@ -564,4 +555,27 @@
   height: 100%;
   padding: 1.5rem;
   z-index: 1;
+}
+
+.glowButtonInner {
+  position: relative;
+  background: var(--card-bg);
+  border-radius: 7px;
+  height: 100%;
+  width: 100%;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.instructionsButtonWrapper {
+  height: 44px;
+  border-radius: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
 }
