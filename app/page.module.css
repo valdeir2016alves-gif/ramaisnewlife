@@ -543,8 +543,8 @@
   background: conic-gradient(
     from 0deg,
     transparent 0deg,
-    rgba(72, 202, 228, 0.2) 60deg,
-    rgba(72, 202, 228, 1) 120deg,
+    var(--glow-color-faint) 60deg,
+    var(--glow-color) 120deg,
     transparent 180deg
   );
   animation: spinGlow 3s linear infinite;
