@@ -324,7 +324,6 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
       <footer className={styles.footer}>
         <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
           Atualizado em: {lastUpdated} - NOC
-          <img src="/cookiecutter-icon.svg" alt="NOC" width="16" height="16" style={{ filter: theme === 'dark' ? 'invert(1)' : 'none' }} />
         </p>
         <button onClick={() => setShowReportModal(true)} className={styles.reportLinkBtn}>
           Encontrou um ramal errado? Avise aqui!
