@@ -136,7 +136,7 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
             <Image 
               src="/logo.png" 
               alt="New Life Logo" 
-              width={320} 
+              width={380} 
               height={150} 
               style={{ objectFit: 'contain', filter: 'var(--logo-filter)' }} 
             />
@@ -179,14 +179,16 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
     <main className={styles.main}>
       <header className={styles.header}>
         <div className={styles.logoContainer}>
-          <Image 
-            src="/logo.png" 
-            alt="New Life" 
-            width={320} 
-            height={126} 
-            priority
-            style={{ objectFit: 'contain', filter: 'var(--logo-filter)' }}
-          />
+          <a href="https://minhanewlife.com.br/" target="_blank" rel="noopener noreferrer">
+            <Image 
+              src="/logo.png" 
+              alt="New Life" 
+              width={400} 
+              height={158} 
+              priority
+              style={{ objectFit: 'contain', filter: 'var(--logo-filter)' }}
+            />
+          </a>
         </div>
         <div className={styles.headerText}>
           Diretório de Ramais internos das Unidades <strong>São Gabriel, Bagé e Passo Fundo</strong>
@@ -320,7 +322,10 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
       </section>
 
       <footer className={styles.footer}>
-        <p>Atualizado em: {lastUpdated} - NOC</p>
+        <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+          Atualizado em: {lastUpdated} - NOC
+          <img src="/hackaday-icon.svg" alt="NOC" width="16" height="16" style={{ filter: theme === 'dark' ? 'invert(1)' : 'none' }} />
+        </p>
         <button onClick={() => setShowReportModal(true)} className={styles.reportLinkBtn}>
           Encontrou um ramal errado? Avise aqui!
         </button>
