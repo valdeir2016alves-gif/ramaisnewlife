@@ -208,13 +208,13 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
           </div>
-          <GlowCard 
+          <button 
             onClick={() => setShowInstructions(true)} 
-            className={styles.instructionsButtonWrapper}
-            innerClassName={styles.glowButtonInner}
+            className={styles.instructionsButton}
+            title="Instruções de Uso"
           >
-            <span style={{ color: 'var(--text-main)' }}>❓ Instruções</span>
-          </GlowCard>
+            ❓ Instruções
+          </button>
           <button 
             onClick={toggleTheme} 
             className={styles.themeToggle}

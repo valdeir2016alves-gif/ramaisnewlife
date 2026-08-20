@@ -10,7 +10,7 @@
   --text-muted: #94a3b8;
   --accent: #00b4d8; 
   --success: #10b981;
-  --logo-filter: drop-shadow(0px 0px 10px rgba(255,255,255,0.1));
+  --logo-filter: brightness(0) invert(1);
   --header-bg: transparent;
   
   --font-family: 'Inter', system-ui, -apple-system, sans-serif;
