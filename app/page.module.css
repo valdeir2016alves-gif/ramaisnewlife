@@ -523,10 +523,10 @@
 .glowCard {
   position: relative;
   border-radius: 12px;
-  background: var(--card-border);
-  padding: 1.5px;
-  overflow: hidden;
+  background: var(--card-bg);
   transition: transform 0.2s ease;
+  overflow: hidden;
+  padding: 1px;
 }
 
 .glowCard:hover {
@@ -536,21 +536,31 @@
 .glowCard::before {
   content: '';
   position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: radial-gradient(circle 200px at var(--x, 0) var(--y, 0), rgba(72, 202, 228, 0.4), transparent);
-  opacity: 0;
-  transition: opacity 0.3s;
+  top: -100%;
+  left: -100%;
+  width: 300%;
+  height: 300%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(72, 202, 228, 0.2) 60deg,
+    rgba(72, 202, 228, 1) 120deg,
+    transparent 180deg
+  );
+  animation: spinGlow 3s linear infinite;
+  z-index: 0;
   pointer-events: none;
 }
 
-.glowCard:hover::before {
-  opacity: 1;
+@keyframes spinGlow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .glowCardInner {
   position: relative;
   background: var(--card-bg);
-  border-radius: 10.5px;
+  border-radius: 11px;
   height: 100%;
   padding: 1.5rem;
   z-index: 1;
