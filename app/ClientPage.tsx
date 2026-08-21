@@ -4,7 +4,9 @@ import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import { Contact } from './actions';
 import styles from './page.module.css';
+import TextHoverEffect from './TextHoverEffect';
 import GlowCard from './GlowCard';
+import MeteorCard from './MeteorCard';
 
 import { submitReport, registerVisit, authenticateUser, User } from './actions';
 
@@ -325,17 +327,9 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
       </section>
 
       <footer className={styles.footer}>
-        <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-          Atualizado em: {lastUpdated} - 
-          <img 
-            src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/f-droid.svg" 
-            alt="NOC" 
-            width={16} 
-            height={16} 
-            style={{ filter: theme === 'dark' ? 'invert(1)' : 'none' }}
-          />
-          NOC
-        </p>
+        <div style={{ height: '50px', width: '100%', maxWidth: '400px', margin: '0 auto' }}>
+          <TextHoverEffect text={`Atualizado em: ${lastUpdated} - NOC`} />
+        </div>
         <button onClick={() => setShowReportModal(true)} className={styles.reportLinkBtn}>
           Encontrou um ramal errado? Avise aqui!
         </button>
@@ -348,34 +342,31 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
               <h3>Instruções de Atendimento</h3>
               <button className={styles.closeButton} onClick={() => setShowInstructions(false)}>✕</button>
             </div>
-            <div className={styles.modalBody} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
-              <GlowCard>
+            <div className={styles.modalBody} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', padding: '1rem' }}>
+              <MeteorCard>
                 <div className={styles.instructionItem} style={{ flexDirection: 'column', gap: '0.75rem' }}>
                   <div className={styles.instructionIcon}>📞</div>
                   <div>
-                    <strong>Puxar Ligação</strong>
                     <p style={{ marginTop: '0.5rem' }}>Digite <span>*8</span> e aguarde a ligação ser puxada.</p>
                   </div>
                 </div>
-              </GlowCard>
-              <GlowCard>
+              </MeteorCard>
+              <MeteorCard>
                 <div className={styles.instructionItem} style={{ flexDirection: 'column', gap: '0.75rem' }}>
-                  <div className={styles.instructionIcon}>🔄</div>
+                  <div className={styles.instructionIcon}>🗣️</div>
                   <div>
-                    <strong>Transferir Ligação</strong>
                     <p style={{ marginTop: '0.5rem' }}>Digite <span>*2</span>, aguarde a voz automática falar "transferir", digite o ramal desejado e aguarde.</p>
                   </div>
                 </div>
-              </GlowCard>
-              <GlowCard className="md-col-span-2" style={{ gridColumn: '1 / -1' } as any}>
+              </MeteorCard>
+              <MeteorCard className="md-col-span-2" style={{ gridColumn: '1 / -1' } as any}>
                 <div className={styles.instructionItem} style={{ flexDirection: 'column', gap: '0.75rem' }}>
-                  <div className={styles.instructionIcon}>🚫</div>
+                  <div className={styles.instructionIcon}>⚠️</div>
                   <div>
-                    <strong>Atenção</strong>
                     <p style={{ marginTop: '0.5rem' }}>Os contatos de WhatsApp disponibilizados nesta página são destinados <strong>exclusivamente</strong> à comunicação interna da empresa. O número de WhatsApp de qualquer colaborador somente poderá ser encaminhado a clientes mediante autorização prévia do responsável pelo contato.</p>
                   </div>
                 </div>
-              </GlowCard>
+              </MeteorCard>
             </div>
           </div>
         </div>
