@@ -750,22 +750,33 @@ export default function AdminPage() {
             {stats.length === 0 ? (
               <p style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Nenhum dado de acesso registrado ainda.</p>
             ) : (
-              <div style={{ display: 'flex', alignItems: 'flex-end', height: '250px', gap: '8px', overflowX: 'auto', paddingTop: '20px', paddingBottom: '30px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-end', height: '300px', gap: '8px', overflowX: 'auto', paddingTop: '20px', paddingBottom: '40px' }}>
                 {stats.map((s, i) => {
                   const maxVisits = Math.max(...stats.map(x => x.visits), 1);
                   const heightPercentage = (s.visits / maxVisits) * 100;
                   return (
-                    <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, minWidth: '30px' }}>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '4px' }}>{s.visits}</div>
+                    <div key={i} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', flex: 1, minWidth: '25px', height: '100%', position: 'relative' }}>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-main)', fontWeight: 'bold', marginBottom: '4px' }}>{s.visits}</div>
+                      <div style={{ width: '100%', flex: 1, display: 'flex', alignItems: 'flex-end' }}>
+                        <div style={{ 
+                          width: '100%', 
+                          height: `${heightPercentage}%`, 
+                          backgroundColor: 'var(--primary-color)',
+                          borderRadius: '4px 4px 0 0',
+                          minHeight: '4px',
+                          transition: 'height 0.3s ease',
+                          boxShadow: '0 0 10px rgba(72, 202, 228, 0.3)'
+                        }}></div>
+                      </div>
                       <div style={{ 
-                        width: '100%', 
-                        height: `${heightPercentage}%`, 
-                        backgroundColor: 'var(--primary-color)',
-                        borderRadius: '4px 4px 0 0',
-                        minHeight: '4px',
-                        transition: 'height 0.3s ease'
-                      }}></div>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '8px', transform: 'rotate(-45deg)', transformOrigin: 'top left', whiteSpace: 'nowrap' }}>
+                        fontSize: '0.7rem', 
+                        color: 'var(--text-muted)', 
+                        position: 'absolute', 
+                        bottom: '-25px', 
+                        transform: 'rotate(-45deg)', 
+                        transformOrigin: 'top left', 
+                        whiteSpace: 'nowrap' 
+                      }}>
                         {s.date.split('-').reverse().slice(0, 2).join('/')}
                       </div>
                     </div>
