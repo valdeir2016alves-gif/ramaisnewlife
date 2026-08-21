@@ -9,7 +9,7 @@ import {
 } from '../actions';
 import styles from './admin.module.css';
 import Image from 'next/image';
-import FlipCard from '../FlipCard';
+import GlareCard from '../GlareCard';
 
 const departmentEmojis: Record<string, string> = {
   'Contatos Regionais e Externos': 'ðŸ“ž',
@@ -378,11 +378,9 @@ export default function AdminPage() {
       <main className={styles.container}>
         <div className={`${styles.loginBox} glass`}>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
-            <FlipCard 
-              front={<Image src="/admin-logo.png" alt="Admin Logo" width={120} height={120} style={{ borderRadius: '50%', objectFit: 'contain' }} />} 
-              back={<span style={{ fontSize: '0.85rem', lineHeight: '1.2' }}>tá fazendo o que nessa página?</span>} 
-              style={{ width: '120px', height: '120px' }} 
-            />
+            <GlareCard style={{ width: '220px', height: '120px' }}>
+              <Image src="/admin-logo-glare.png" alt="Admin Logo" width={220} height={120} style={{ objectFit: 'contain', filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.2))' }} />
+            </GlareCard>
           </div>
           <h1 className={styles.title}>Admin - Ramais</h1>
           <p className={styles.subtitle}>Digite seu usuário e senha para acessar</p>
