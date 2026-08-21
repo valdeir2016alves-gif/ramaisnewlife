@@ -213,7 +213,7 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
           </div>
-            <NeonBorder borderRadius={8} className={styles.instructionsButtonWrapper}>
+            <GlowCard innerClassName={styles.glowButtonInner} className={styles.instructionsButtonWrapper} style={{"--glow-color": "rgba(255, 255, 255, 0.4)"} as React.CSSProperties}>
               <button 
                 onClick={() => setShowInstructions(true)} 
                 className={styles.instructionsButton}
@@ -222,7 +222,7 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
               >
                 ❓ Instruções
               </button>
-            </NeonBorder>
+            </GlowCard>
           <button 
             onClick={toggleTheme} 
             className={styles.themeToggle}
@@ -347,30 +347,30 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
               <button className={styles.closeButton} onClick={() => setShowInstructions(false)}>✕</button>
             </div>
             <div className={styles.modalBody} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', padding: '1rem' }}>
-              <NeonBorder borderRadius={16}><div style={{ padding: "1.5rem", background: "var(--card-bg)", width: "100%", height: "100%", borderRadius: "14px" }}>
+              <GlowCard style={{"--glow-color": "rgba(255,255,255,0.4)"} as React.CSSProperties}><div style={{ padding: "1.5rem", background: "var(--card-bg)", width: "100%", height: "100%", borderRadius: "14px" }}>
                 <div className={styles.instructionItem} style={{ flexDirection: 'column', gap: '0.75rem' }}>
                   <div className={styles.instructionIcon}>📞</div>
                   <div>
                     <p style={{ marginTop: '0.5rem' }}>Digite <span>*8</span> e aguarde a ligação ser puxada.</p>
                   </div>
                 </div>
-              </div></NeonBorder>
-              <NeonBorder borderRadius={16}><div style={{ padding: "1.5rem", background: "var(--card-bg)", width: "100%", height: "100%", borderRadius: "14px" }}>
+              </div></GlowCard>
+              <GlowCard style={{"--glow-color": "rgba(255,255,255,0.4)"} as React.CSSProperties}><div style={{ padding: "1.5rem", background: "var(--card-bg)", width: "100%", height: "100%", borderRadius: "14px" }}>
                 <div className={styles.instructionItem} style={{ flexDirection: 'column', gap: '0.75rem' }}>
                   <div className={styles.instructionIcon}>🗣️</div>
                   <div>
                     <p style={{ marginTop: '0.5rem' }}>Digite <span>*2</span>, aguarde a voz automática falar "transferir", digite o ramal desejado e aguarde.</p>
                   </div>
                 </div>
-              </div></NeonBorder>
-              <NeonBorder borderRadius={16} className="md-col-span-2" style={{ gridColumn: '1 / -1' } as any}><div style={{ padding: "1.5rem", background: "var(--card-bg)", width: "100%", height: "100%", borderRadius: "14px" }}>
+              </div></GlowCard>
+              <GlowCard className="md-col-span-2" style={{"--glow-color": "rgba(255,255,255,0.4)", gridColumn: "1 / -1"} as React.CSSProperties}><div style={{ padding: "1.5rem", background: "var(--card-bg)", width: "100%", height: "100%", borderRadius: "14px" }}>
                 <div className={styles.instructionItem} style={{ flexDirection: 'column', gap: '0.75rem' }}>
                   <div className={styles.instructionIcon}>⚠️</div>
                   <div>
                     <p style={{ marginTop: '0.5rem' }}>Os contatos de WhatsApp disponibilizados nesta página são destinados <strong>exclusivamente</strong> à comunicação interna da empresa. O número de WhatsApp de qualquer colaborador somente poderá ser encaminhado a clientes mediante autorização prévia do responsável pelo contato.</p>
                   </div>
                 </div>
-              </div></NeonBorder>
+              </div></GlowCard>
             </div>
           </div>
         </div>
