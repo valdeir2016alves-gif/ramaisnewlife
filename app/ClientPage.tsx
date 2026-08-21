@@ -134,13 +134,15 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
       <main className={styles.main}>
         <div style={{ maxWidth: '400px', margin: '100px auto', background: 'var(--card-bg)', padding: '2.5rem 2rem', borderRadius: '12px', border: '1px solid var(--card-border)' }}>
           <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-            <Image 
-              src="/logo.png" 
-              alt="New Life Logo" 
-              width={380} 
-              height={150} 
-              style={{ objectFit: 'contain', filter: 'var(--logo-filter)' }} 
-            />
+            <a href="https://minhanewlife.com.br/" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', margin: '0 auto' }}>
+              <Image 
+                src="/logo.png" 
+                alt="New Life Logo" 
+                width={380} 
+                height={150} 
+                style={{ objectFit: 'contain', filter: 'var(--logo-filter)', maxWidth: '100%', height: 'auto' }} 
+              />
+            </a>
             <h2 style={{ color: 'var(--primary-color)', marginTop: '0.5rem', marginBottom: '0.5rem' }}>Acesso Interno</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: '1.5' }}>
               Diretório de <strong>Ramais</strong> internos das Unidades <strong>São Gabriel</strong>, <strong>Bagé</strong> e <strong>Passo Fundo</strong>
@@ -180,14 +182,14 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
     <main className={styles.main}>
       <header className={styles.header}>
         <div className={styles.logoContainer}>
-          <a href="https://minhanewlife.com.br/" target="_blank" rel="noopener noreferrer">
+          <a href="https://minhanewlife.com.br/" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block' }}>
             <Image 
               src="/logo.png" 
               alt="New Life" 
               width={400} 
               height={158} 
               priority
-              style={{ objectFit: 'contain', filter: 'var(--logo-filter)' }}
+              style={{ objectFit: 'contain', filter: 'var(--logo-filter)', maxWidth: '100%', height: 'auto' }}
             />
           </a>
         </div>
