@@ -8,26 +8,28 @@ import {
   getAnalytics, DailyStats, reorderContact
 } from '../actions';
 import styles from './admin.module.css';
+import Image from 'next/image';
+import FlipCard from '../FlipCard';
 
 const departmentEmojis: Record<string, string> = {
-  'Contatos Regionais e Externos': '📞',
-  'Estoque': '📦',
-  'Suporte Técnico': '💻',
-  'Caixa': '💰',
-  'Cancelamento': '🚫',
-  'Comercial': '📈',
-  'Renovações': '🔄',
-  'Recuperação de Crédito': '🛡️',
-  'Financeiro': '📊',
-  'RH': '🧑‍💼',
-  'SAC': '🎧',
-  'NOC': '📡',
-  'Imobiliária': '🏠',
-  'Gerência': '💼',
-  'Agendamento': '📅'
+  'Contatos Regionais e Externos': 'ðŸ“ž',
+  'Estoque': 'ðŸ“¦',
+  'Suporte TÃ©cnico': 'ðŸ’»',
+  'Caixa': 'ðŸ’°',
+  'Cancelamento': 'ðŸš«',
+  'Comercial': 'ðŸ“ˆ',
+  'RenovaÃ§Ãµes': 'ðŸ”„',
+  'RecuperaÃ§Ã£o de CrÃ©dito': 'ðŸ›¡ï¸',
+  'Financeiro': 'ðŸ“Š',
+  'RH': 'ðŸ§‘â€ðŸ’¼',
+  'SAC': 'ðŸŽ§',
+  'NOC': 'ðŸ“¡',
+  'ImobiliÃ¡ria': 'ðŸ ',
+  'GerÃªncia': 'ðŸ’¼',
+  'Agendamento': 'ðŸ“…'
 };
 
-const getEmoji = (dept: string) => departmentEmojis[dept] || '🏢';
+const getEmoji = (dept: string) => departmentEmojis[dept] || 'ðŸ¢';
 
 function EditableRow({ 
   contact, 
@@ -53,7 +55,7 @@ function EditableRow({
 
   const handleSave = async () => {
     if (!name || !phone || !department) {
-      alert('Preencha Nome, Número e Setor!');
+      alert('Preencha Nome, NÃºmero e Setor!');
       return;
     }
     setLoading(true);
@@ -87,8 +89,8 @@ function EditableRow({
             className={styles.inputInline}
             style={{ marginTop: '0.5rem', fontSize: '0.85rem' }}
           >
-            <option value="sao_gabriel">São Gabriel</option>
-            <option value="bage">Bagé</option>
+            <option value="sao_gabriel">SÃ£o Gabriel</option>
+            <option value="bage">BagÃ©</option>
             <option value="passo_fundo">Passo Fundo</option>
             <option value="all">Global (Todas as Unidades)</option>
           </select>
@@ -99,7 +101,7 @@ function EditableRow({
             value={phone} 
             onChange={(e) => setPhone(e.target.value)} 
             className={styles.inputInline} 
-            placeholder="Número"
+            placeholder="NÃºmero"
           />
         </td>
         <td>
@@ -178,7 +180,7 @@ function EditableRow({
               title="Mover para Cima"
               disabled={loading}
             >
-              ↑
+              â†‘
             </button>
             <button 
               onClick={() => onMove(contact.id, 'down')} 
@@ -187,7 +189,7 @@ function EditableRow({
               title="Mover para Baixo"
               disabled={loading}
             >
-              ↓
+              â†“
             </button>
             <button 
               onClick={() => setIsEditing(true)} 
@@ -239,7 +241,7 @@ export default function AdminPage() {
     setLoading(false);
     if (result.success && result.user) {
       if (result.user.username.toLowerCase() === 'admin') {
-        alert('O usuário "admin" tem permissão apenas para acessar o site principal (leitura). Use seu usuário pessoal para gerenciar.');
+        alert('O usuÃ¡rio "admin" tem permissÃ£o apenas para acessar o site principal (leitura). Use seu usuÃ¡rio pessoal para gerenciar.');
         return;
       }
       setCurrentUser(result.user);
@@ -281,7 +283,7 @@ export default function AdminPage() {
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !phone || !department) {
-      alert('Preencha os campos obrigatórios (Nome, Número, Setor)!');
+      alert('Preencha os campos obrigatÃ³rios (Nome, NÃºmero, Setor)!');
       return;
     }
     
@@ -295,7 +297,7 @@ export default function AdminPage() {
       setPhoneModel('');
       await loadContacts();
     } else {
-      alert(`Erro ao adicionar ramal: ${result.error || 'Erro desconhecido. Verifique as configurações de proxy ou permissões.'}`);
+      alert(`Erro ao adicionar ramal: ${result.error || 'Erro desconhecido. Verifique as configuraÃ§Ãµes de proxy ou permissÃµes.'}`);
       console.error(result.error);
     }
     setLoading(false);
@@ -330,7 +332,7 @@ export default function AdminPage() {
   };
 
   const handleDeleteReportRow = async (id: number) => {
-    if (confirm('Marcar este relato como resolvido/excluído?')) {
+    if (confirm('Marcar este relato como resolvido/excluÃ­do?')) {
       const result = await deleteReport(id);
       if (result.success) {
         await loadContacts();
@@ -375,6 +377,13 @@ export default function AdminPage() {
     return (
       <main className={styles.container}>
         <div className={`${styles.loginBox} glass`}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+            <FlipCard 
+              front={<Image src="/admin-logo.png" alt="Admin Logo" width={120} height={120} style={{ borderRadius: '50%', objectFit: 'contain' }} />} 
+              back={<span style={{ fontSize: '0.85rem', lineHeight: '1.2' }}>tá fazendo o que nessa página?</span>} 
+              style={{ width: '120px', height: '120px' }} 
+            />
+          </div>
           <h1 className={styles.title}>Admin - Ramais</h1>
           <p className={styles.subtitle}>Digite seu usuário e senha para acessar</p>
           <form onSubmit={handleLogin} className={styles.form}>
@@ -418,7 +427,7 @@ export default function AdminPage() {
             className={activeTab === 'reports' ? styles.btnPrimary : styles.btnSecondary}
             onClick={() => setActiveTab('reports')}
           >
-            Relatórios de Erro {reports.length > 0 && `(${reports.length})`}
+            RelatÃ³rios de Erro {reports.length > 0 && `(${reports.length})`}
           </button>
           {canEdit && (
             <>
@@ -426,7 +435,7 @@ export default function AdminPage() {
                 className={activeTab === 'users' ? styles.btnPrimary : styles.btnSecondary}
                 onClick={() => setActiveTab('users')}
               >
-                Usuários
+                UsuÃ¡rios
               </button>
               <button 
                 className={activeTab === 'stats' ? styles.btnPrimary : styles.btnSecondary}
@@ -455,21 +464,21 @@ export default function AdminPage() {
               <form onSubmit={handleAdd} className={styles.formRow}>
                 <input 
                   type="text" 
-                  placeholder="Nome (ex: João Silva)" 
+                  placeholder="Nome (ex: JoÃ£o Silva)" 
                   value={name} 
                   onChange={(e) => setName(e.target.value)} 
                   className={styles.input}
                 />
                 <input 
                   type="text" 
-                  placeholder="Número (ex: 4050)" 
+                  placeholder="NÃºmero (ex: 4050)" 
                   value={phone} 
                   onChange={(e) => setPhone(e.target.value)} 
                   className={styles.input}
                 />
           <input 
             type="text" 
-            placeholder="Setor (ex: Suporte Técnico)" 
+            placeholder="Setor (ex: Suporte TÃ©cnico)" 
             value={department} 
             onChange={(e) => setDepartment(e.target.value)} 
             className={styles.input}
@@ -486,8 +495,8 @@ export default function AdminPage() {
             onChange={(e) => setNewCity(e.target.value)}
             className={styles.input}
           >
-            <option value="sao_gabriel">São Gabriel</option>
-            <option value="bage">Bagé</option>
+            <option value="sao_gabriel">SÃ£o Gabriel</option>
+            <option value="bage">BagÃ©</option>
             <option value="passo_fundo">Passo Fundo</option>
             <option value="all">Global (Todas as Unidades)</option>
           </select>
@@ -517,11 +526,11 @@ export default function AdminPage() {
           <button 
             className={adminCity === 'sao_gabriel' ? styles.btnPrimary : styles.btnSecondary}
             onClick={() => setAdminCity('sao_gabriel')}
-          >São Gabriel</button>
+          >SÃ£o Gabriel</button>
           <button 
             className={adminCity === 'bage' ? styles.btnPrimary : styles.btnSecondary}
             onClick={() => setAdminCity('bage')}
-          >Bagé</button>
+          >BagÃ©</button>
           <button 
             className={adminCity === 'passo_fundo' ? styles.btnPrimary : styles.btnSecondary}
             onClick={() => setAdminCity('passo_fundo')}
@@ -547,7 +556,7 @@ export default function AdminPage() {
                     style={{ marginLeft: '1rem', padding: '0.2rem 0.5rem', fontSize: '0.8rem' }}
                     disabled={loading}
                   >
-                    ✎ Editar Nome
+                    âœŽ Editar Nome
                   </button>
                 )}
               </h3>
@@ -556,10 +565,10 @@ export default function AdminPage() {
                   <thead>
                     <tr>
                       <th>Nome</th>
-                      <th>Número</th>
+                      <th>NÃºmero</th>
                       <th>IP</th>
                       <th>Modelo</th>
-                      {canEdit && <th>Ações</th>}
+                      {canEdit && <th>AÃ§Ãµes</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -583,7 +592,7 @@ export default function AdminPage() {
       </>
       ) : activeTab === 'reports' ? (
         <section className={styles.listSection}>
-          <h2>Relatórios de Ramais com Problema</h2>
+          <h2>RelatÃ³rios de Ramais com Problema</h2>
           {reports.length === 0 ? (
             <p>Nenhum relato encontrado. Tudo certo por aqui!</p>
           ) : (
@@ -595,14 +604,14 @@ export default function AdminPage() {
                     <th>Reportado por</th>
                     <th>Ramal</th>
                     <th>Problema</th>
-                    {canEdit && <th>Ações</th>}
+                    {canEdit && <th>AÃ§Ãµes</th>}
                   </tr>
                 </thead>
                 <tbody>
                   {reports.map((r) => (
                     <tr key={r.id}>
                       <td>{new Date(r.date).toLocaleString('pt-BR')}</td>
-                      <td>{r.name || 'Anônimo'}</td>
+                      <td>{r.name || 'AnÃ´nimo'}</td>
                       <td>{r.ramal}</td>
                       <td>{r.message}</td>
                       {canEdit && (
@@ -624,9 +633,9 @@ export default function AdminPage() {
         </section>
       ) : activeTab === 'users' && canEdit ? (
         <section className={styles.listSection}>
-          <h2>Gerenciar Usuários</h2>
+          <h2>Gerenciar UsuÃ¡rios</h2>
           <div className={`${styles.addSection} glass`} style={{ marginBottom: '2rem' }}>
-            <h3>Adicionar Usuário</h3>
+            <h3>Adicionar UsuÃ¡rio</h3>
             <form onSubmit={async (e) => {
               e.preventDefault();
               const form = e.target as HTMLFormElement;
@@ -639,14 +648,14 @@ export default function AdminPage() {
               const result = await createUser(user, pass, role);
               setLoading(false);
               if (result.success) {
-                alert('Usuário criado!');
+                alert('UsuÃ¡rio criado!');
                 form.reset();
                 loadUsers();
               } else {
                 alert('Erro: ' + result.error);
               }
             }} className={styles.formRow}>
-              <input type="text" name="username" placeholder="Nome de Usuário" className={styles.input} required />
+              <input type="text" name="username" placeholder="Nome de UsuÃ¡rio" className={styles.input} required />
               <input type="password" name="password" placeholder="Senha" className={styles.input} required />
               <select name="role" className={styles.input} required>
                 <option value="readonly">Somente Leitura</option>
@@ -660,9 +669,9 @@ export default function AdminPage() {
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th>Usuário</th>
-                  <th>Nível de Acesso</th>
-                  <th>Ações</th>
+                  <th>UsuÃ¡rio</th>
+                  <th>NÃ­vel de Acesso</th>
+                  <th>AÃ§Ãµes</th>
                 </tr>
               </thead>
               <tbody>
@@ -674,7 +683,7 @@ export default function AdminPage() {
                         value={u.role}
                         onChange={async (e) => {
                           const newRole = e.target.value as 'admin' | 'readonly';
-                          if (confirm(`Mudar nível de acesso de ${u.username} para ${newRole === 'admin' ? 'Administrador' : 'Leitura'}?`)) {
+                          if (confirm(`Mudar nÃ­vel de acesso de ${u.username} para ${newRole === 'admin' ? 'Administrador' : 'Leitura'}?`)) {
                             setLoading(true);
                             const res = await editUser(u.id, u.username, undefined, newRole);
                             setLoading(false);
@@ -701,7 +710,7 @@ export default function AdminPage() {
                       <div className={styles.tableActions}>
                         <button 
                           onClick={async () => {
-                            const newPass = prompt(`Nova senha para ${u.username} (deixe em branco para não alterar):`);
+                            const newPass = prompt(`Nova senha para ${u.username} (deixe em branco para nÃ£o alterar):`);
                             if (newPass !== null) {
                               setLoading(true);
                               const res = await editUser(u.id, u.username, newPass || undefined, undefined);
@@ -717,7 +726,7 @@ export default function AdminPage() {
                         </button>
                         <button 
                           onClick={async () => {
-                            if (confirm(`Excluir usuário ${u.username}?`)) {
+                            if (confirm(`Excluir usuÃ¡rio ${u.username}?`)) {
                               setLoading(true);
                               const res = await removeUser(u.id);
                               setLoading(false);
@@ -741,7 +750,7 @@ export default function AdminPage() {
       ) : activeTab === 'stats' && canEdit ? (
         <section className={styles.listSection}>
           <div className={styles.tableHeader}>
-            <h2>Estatísticas de Acesso (Últimos 30 dias)</h2>
+            <h2>EstatÃ­sticas de Acesso (Ãšltimos 30 dias)</h2>
             <button onClick={loadStats} className={styles.btnSecondary} disabled={loading}>
               Atualizar
             </button>
