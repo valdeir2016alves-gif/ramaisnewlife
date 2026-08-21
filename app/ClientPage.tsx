@@ -4,9 +4,10 @@ import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import { Contact } from './actions';
 import styles from './page.module.css';
-import TextHoverEffect from './TextHoverEffect';
+import UnderlineText from './UnderlineText';
 import GlowCard from './GlowCard';
 import MeteorCard from './MeteorCard';
+import NeonBorder from './NeonBorder';
 
 import { submitReport, registerVisit, authenticateUser, User } from './actions';
 
@@ -140,9 +141,9 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
             <Image 
               src="/logo.png" 
               alt="New Life Logo" 
-              width={180} 
-              height={60} 
-              style={{ objectFit: 'contain', filter: 'var(--logo-filter)', maxHeight: '60px', width: 'auto' }} 
+              width={220} 
+              height={75} 
+              style={{ objectFit: 'contain', filter: 'var(--logo-filter)', maxHeight: '75px', width: 'auto' }} 
             />
           </div>
             <h2 style={{ color: 'var(--primary-color)', marginTop: '0', marginBottom: '0.5rem', fontSize: '1.25rem' }}>Acesso Interno</h2>
@@ -212,13 +213,16 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
           </div>
-          <button 
-            onClick={() => setShowInstructions(true)} 
-            className={styles.instructionsButton}
-            title="Instruções de Uso"
-          >
-            ❓ Instruções
-          </button>
+            <NeonBorder borderRadius={8} className={styles.instructionsButtonWrapper}>
+              <button 
+                onClick={() => setShowInstructions(true)} 
+                className={styles.instructionsButton}
+                title="Instruções de Uso"
+                style={{ border: 'none', background: 'transparent' }}
+              >
+                ❓ Instruções
+              </button>
+            </NeonBorder>
           <button 
             onClick={toggleTheme} 
             className={styles.themeToggle}
@@ -327,8 +331,8 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
       </section>
 
       <footer className={styles.footer}>
-        <div style={{ height: '50px', width: '100%', maxWidth: '400px', margin: '0 auto' }}>
-          <TextHoverEffect text={`Atualizado em: ${lastUpdated} - NOC`} />
+        <div style={{ height: '50px', width: '100%', maxWidth: '400px', margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <UnderlineText text={`Atualizado em: ${lastUpdated} - NOC`} />
         </div>
         <button onClick={() => setShowReportModal(true)} className={styles.reportLinkBtn}>
           Encontrou um ramal errado? Avise aqui!
@@ -343,30 +347,30 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
               <button className={styles.closeButton} onClick={() => setShowInstructions(false)}>✕</button>
             </div>
             <div className={styles.modalBody} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', padding: '1rem' }}>
-              <MeteorCard>
+              <NeonBorder borderRadius={16}><div style={{ padding: "1.5rem", background: "var(--card-bg)", width: "100%", height: "100%", borderRadius: "14px" }}>
                 <div className={styles.instructionItem} style={{ flexDirection: 'column', gap: '0.75rem' }}>
                   <div className={styles.instructionIcon}>📞</div>
                   <div>
                     <p style={{ marginTop: '0.5rem' }}>Digite <span>*8</span> e aguarde a ligação ser puxada.</p>
                   </div>
                 </div>
-              </MeteorCard>
-              <MeteorCard>
+              </div></NeonBorder>
+              <NeonBorder borderRadius={16}><div style={{ padding: "1.5rem", background: "var(--card-bg)", width: "100%", height: "100%", borderRadius: "14px" }}>
                 <div className={styles.instructionItem} style={{ flexDirection: 'column', gap: '0.75rem' }}>
                   <div className={styles.instructionIcon}>🗣️</div>
                   <div>
                     <p style={{ marginTop: '0.5rem' }}>Digite <span>*2</span>, aguarde a voz automática falar "transferir", digite o ramal desejado e aguarde.</p>
                   </div>
                 </div>
-              </MeteorCard>
-              <MeteorCard className="md-col-span-2" style={{ gridColumn: '1 / -1' } as any}>
+              </div></NeonBorder>
+              <NeonBorder borderRadius={16} className="md-col-span-2" style={{ gridColumn: '1 / -1' } as any}><div style={{ padding: "1.5rem", background: "var(--card-bg)", width: "100%", height: "100%", borderRadius: "14px" }}>
                 <div className={styles.instructionItem} style={{ flexDirection: 'column', gap: '0.75rem' }}>
                   <div className={styles.instructionIcon}>⚠️</div>
                   <div>
                     <p style={{ marginTop: '0.5rem' }}>Os contatos de WhatsApp disponibilizados nesta página são destinados <strong>exclusivamente</strong> à comunicação interna da empresa. O número de WhatsApp de qualquer colaborador somente poderá ser encaminhado a clientes mediante autorização prévia do responsável pelo contato.</p>
                   </div>
                 </div>
-              </MeteorCard>
+              </div></NeonBorder>
             </div>
           </div>
         </div>
