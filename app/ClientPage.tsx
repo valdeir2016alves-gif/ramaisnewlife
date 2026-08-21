@@ -134,19 +134,19 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
   if (!currentUser) {
     return (
       <main className={styles.main}>
-        <div style={{ maxWidth: '400px', margin: '100px auto', background: 'var(--card-bg)', padding: '2.5rem 2rem', borderRadius: '12px', border: '1px solid var(--card-border)' }}>
-          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+        <div style={{ maxWidth: '340px', margin: '80px auto', background: 'var(--card-bg)', padding: '2rem 1.5rem', borderRadius: '12px', border: '1px solid var(--card-border)', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
+          <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginBottom: '1rem' }}>
             <Image 
               src="/logo.png" 
               alt="New Life Logo" 
-              width={380} 
-              height={150} 
+              width={220} 
+              height={85} 
               style={{ objectFit: 'contain', filter: 'var(--logo-filter)', maxWidth: '100%', height: 'auto' }} 
             />
           </div>
-            <h2 style={{ color: 'var(--primary-color)', marginTop: '0.5rem', marginBottom: '0.5rem' }}>Acesso Interno</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', lineHeight: '1.5' }}>
+            <h2 style={{ color: 'var(--primary-color)', marginTop: '0', marginBottom: '0.5rem', fontSize: '1.25rem' }}>Acesso Interno</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', lineHeight: '1.4' }}>
               Diretório de <strong>Ramais</strong> internos das Unidades <strong>São Gabriel</strong>, <strong>Bagé</strong> e <strong>Passo Fundo</strong>
             </p>
           </div>
