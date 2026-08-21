@@ -134,15 +134,15 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
   if (!currentUser) {
     return (
       <main className={styles.main}>
-        <div style={{ maxWidth: '340px', margin: '80px auto', background: 'var(--card-bg)', padding: '2rem 1.5rem', borderRadius: '12px', border: '1px solid var(--card-border)', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
+        <div style={{ maxWidth: '320px', margin: '40px auto', background: 'var(--card-bg)', padding: '1.5rem 1.5rem', borderRadius: '12px', border: '1px solid var(--card-border)', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
           <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginBottom: '1rem' }}>
             <Image 
               src="/logo.png" 
               alt="New Life Logo" 
-              width={220} 
-              height={85} 
-              style={{ objectFit: 'contain', filter: 'var(--logo-filter)', maxWidth: '100%', height: 'auto' }} 
+              width={180} 
+              height={60} 
+              style={{ objectFit: 'contain', filter: 'var(--logo-filter)', maxHeight: '60px', width: 'auto' }} 
             />
           </div>
             <h2 style={{ color: 'var(--primary-color)', marginTop: '0', marginBottom: '0.5rem', fontSize: '1.25rem' }}>Acesso Interno</h2>
