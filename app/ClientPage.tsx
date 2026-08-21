@@ -194,7 +194,7 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
           </a>
         </div>
         <div className={styles.headerText}>
-          <span style={{ opacity: 0.8 }}>Diretório de Ramais Internos</span>
+          Diretório de Ramais internos das Unidades <strong>São Gabriel, Bagé e Passo Fundo</strong>
         </div>
         <div className={styles.headerRight}>
           <div className={styles.searchContainer}>
