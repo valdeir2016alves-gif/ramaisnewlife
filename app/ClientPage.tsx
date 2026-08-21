@@ -186,15 +186,15 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
             <Image 
               src="/logo.png" 
               alt="New Life" 
-              width={400} 
-              height={158} 
+              width={240} 
+              height={95} 
               priority
               style={{ objectFit: 'contain', filter: 'var(--logo-filter)', maxWidth: '100%', height: 'auto' }}
             />
           </a>
         </div>
         <div className={styles.headerText}>
-          Diretório de Ramais internos das Unidades <strong>São Gabriel, Bagé e Passo Fundo</strong>
+          <span style={{ opacity: 0.8 }}>Diretório de Ramais Internos</span>
         </div>
         <div className={styles.headerRight}>
           <div className={styles.searchContainer}>
