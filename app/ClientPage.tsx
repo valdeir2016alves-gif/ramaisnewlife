@@ -201,7 +201,7 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
           <div className={styles.searchContainer}>
             <input
               type="text"
-              placeholder="Pesquisar ramal, nome ou setor..."
+              placeholder="Pesquisar contato, nome ou setor..."
               className={styles.searchInput}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -233,7 +233,7 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
       <section className={styles.heroSection}>
         <div className={styles.heroLeft}>
           <h1 className={styles.heroTitle}>
-            Diretório de Ramais internos das Unidades <span style={{ color: 'var(--primary-color)' }}>São Gabriel, Bagé e Passo Fundo</span>
+            Diretório de Contatos internos das Unidades <span style={{ color: 'var(--primary-color)' }}>São Gabriel, Bagé e Passo Fundo</span>
           </h1>
         </div>
         <div className={styles.heroRight}>
@@ -242,7 +242,7 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
               <div className={styles.departmentHeader}>
                 <div className={styles.departmentHeaderLeft}>
                   <span className={styles.departmentSubtitle}>Contatos Regionais e Externos</span>
-                  <h2 className={styles.departmentTitle}>Colaborador(a) e Ramais</h2>
+                  <h2 className={styles.departmentTitle}>Colaborador(a) e Contatos</h2>
                 </div>
               </div>
               <div className={styles.contactList}>
@@ -306,7 +306,7 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
         {Object.keys(groupedContacts).filter(k => k !== "Contatos Regionais e Externos").length === 0 && (!groupedContacts["Contatos Regionais e Externos"]) ? (
           <div className={styles.noResults}>
             {search.trim() !== '' || city !== 'passo_fundo' 
-              ? 'Nenhum ramal encontrado.' 
+              ? 'Nenhum contato encontrado.' 
               : 'Em breve'}
           </div>
         ) : (
@@ -317,7 +317,7 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
               <div className={styles.departmentHeader}>
                 <div className={styles.departmentHeaderLeft}>
                   <span className={styles.departmentSubtitle}>{department}</span>
-                  <h2 className={styles.departmentTitle}>Colaborador(a) e Ramais</h2>
+                  <h2 className={styles.departmentTitle}>Colaborador(a) e Contatos</h2>
                 </div>
                 {isImoveis && (
                   <div className={styles.departmentLogo}>
@@ -383,7 +383,7 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
           <UnderlineText text={`Atualizado em: ${lastUpdated} - NOC`} />
         </div>
         <button onClick={() => setShowReportModal(true)} className={styles.reportLinkBtn}>
-          Encontrou um ramal errado? Avise aqui!
+          Encontrou um contato errado? Avise aqui!
         </button>
       </footer>
 
@@ -428,7 +428,7 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
         <div className={styles.modalOverlay} onClick={() => setShowReportModal(false)}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
-              <h3>Reportar Ramal Errado</h3>
+              <h3>Reportar Contato Errado</h3>
               <button className={styles.closeButton} onClick={() => setShowReportModal(false)}>✕</button>
             </div>
             <form onSubmit={handleReportSubmit} className={styles.modalBody}>
@@ -443,13 +443,13 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
                 />
               </div>
               <div className={styles.formGroup}>
-                <label>Qual ramal está com problema?</label>
+                <label>Qual contato está com problema?</label>
                 <input 
                   type="text" 
                   value={reportRamal} 
                   onChange={(e) => setReportRamal(e.target.value)} 
                   className={styles.modalInput}
-                  placeholder="Ex: Ramal 4050 do TI"
+                  placeholder="Ex: Contato 4050 do TI"
                   required
                 />
               </div>
@@ -459,7 +459,7 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
                   value={reportMessage} 
                   onChange={(e) => setReportMessage(e.target.value)} 
                   className={styles.modalInput}
-                  placeholder="Ex: O ramal não chama, ou está na mesa errada..."
+                  placeholder="Ex: O contato não chama, ou está na mesa errada..."
                   rows={3}
                   required
                 />

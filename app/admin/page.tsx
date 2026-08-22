@@ -298,7 +298,7 @@ export default function AdminPage() {
       setPhoneModel('');
       await loadContacts();
     } else {
-      alert(`Erro ao adicionar ramal: ${result.error || 'Erro desconhecido. Verifique as configurações de proxy ou permissões.'}`);
+      alert(`Erro ao adicionar contato: ${result.error || 'Erro desconhecido. Verifique as configurações de proxy ou permissões.'}`);
       console.error(result.error);
     }
     setLoading(false);
@@ -314,7 +314,7 @@ export default function AdminPage() {
   };
 
   const handleDeleteRow = async (id: number) => {
-    if (!confirm('Excluir este ramal?')) return;
+    if (!confirm('Excluir este contato?')) return;
     setLoading(true);
     await deleteContact(id);
     await loadContacts();
@@ -383,7 +383,7 @@ export default function AdminPage() {
               <Image src="/admin-logo-glare.png" alt="Admin Logo" width={220} height={120} style={{ objectFit: 'contain', filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.2))' }} />
             </GlareCard>
           </div>
-          <h1 className={styles.title}>Admin - Ramais</h1>
+          <h1 className={styles.title}>Admin - Contatos</h1>
           <p className={styles.subtitle}>Digite seu usuário e senha para acessar</p>
           <form onSubmit={handleLogin} className={styles.form}>
             <input
@@ -420,7 +420,7 @@ export default function AdminPage() {
             className={activeTab === 'ramais' ? styles.btnPrimary : styles.btnSecondary}
             onClick={() => setActiveTab('ramais')}
           >
-            Ramais
+            Contatos
           </button>
           <button 
             className={activeTab === 'reports' ? styles.btnPrimary : styles.btnSecondary}
@@ -459,7 +459,7 @@ export default function AdminPage() {
         <>
           {canEdit && (
             <section className={`${styles.addSection} glass`}>
-              <h2>Adicionar Novo Ramal</h2>
+              <h2>Adicionar Novo Contato</h2>
               <form onSubmit={handleAdd} className={styles.formRow}>
                 <input 
                   type="text" 
@@ -539,9 +539,9 @@ export default function AdminPage() {
             onClick={() => setAdminCity('all')}
           >Global</button>
         </div>
-        <h2>Ramais Cadastrados</h2>
+        <h2>Contatos Cadastrados</h2>
         {Object.keys(groupedContacts).length === 0 ? (
-          <p>Nenhum ramal cadastrado.</p>
+          <p>Nenhum contato cadastrado.</p>
         ) : (
           Object.entries(groupedContacts)
             .map(([department, deptContacts]) => (
@@ -591,7 +591,7 @@ export default function AdminPage() {
       </>
       ) : activeTab === 'reports' ? (
         <section className={styles.listSection}>
-          <h2>Relatórios de Ramais com Problema</h2>
+          <h2>Relatórios de Contatos com Problema</h2>
           {reports.length === 0 ? (
             <p>Nenhum relato encontrado. Tudo certo por aqui!</p>
           ) : (
