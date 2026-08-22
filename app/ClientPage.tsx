@@ -305,7 +305,7 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
                     >
                       <span className={styles.chevron}>
                         {isWhatsAppNumber ? (
-                          <img src="/whatsapp-icon.svg" alt="WhatsApp" width="16" height="16" style={{ verticalAlign: 'middle', marginTop: '-2px' }} />
+                          <img src="/whatsapp-icon.svg" alt="WhatsApp" width="16" height="16" style={{ verticalAlign: 'middle' }} />
                         ) : (
                           '📞'
                         )}

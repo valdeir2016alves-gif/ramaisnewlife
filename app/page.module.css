@@ -61,7 +61,7 @@
   border-radius: 8px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   font-size: 1.1rem;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -110,7 +110,7 @@
 .cityTabs {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 1rem;
   margin-bottom: 2rem;
 }
@@ -231,6 +231,10 @@
 }
 
 .chevron {
+  width: 24px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
   color: var(--primary-color);
   font-size: 1.1rem;
   margin-right: 0.5rem;
@@ -284,7 +288,7 @@
   border-radius: 8px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;
@@ -334,7 +338,7 @@
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   z-index: 1000;
 }
 
@@ -387,7 +391,7 @@
   transition: all 0.2s;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   width: 32px;
   height: 32px;
 }
@@ -417,7 +421,7 @@
   height: 48px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   border-radius: 12px;
   flex-shrink: 0;
 }
@@ -567,7 +571,7 @@
   padding: 0 1rem;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   z-index: 1;
   font-weight: 500;
   white-space: nowrap;
@@ -774,7 +778,7 @@
   backface-visibility: hidden;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .flipCardBack {
@@ -816,5 +820,5 @@
   height: 100%;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
 }
