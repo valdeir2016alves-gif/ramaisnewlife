@@ -41,9 +41,9 @@
 .headerRight {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 1rem;
   width: 100%;
-  max-width: 350px;
 }
 
 .searchContainer {
@@ -821,4 +821,40 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
+}
+
+.heroSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 3rem 0;
+  margin-bottom: 2rem;
+}
+
+@media (min-width: 900px) {
+  .heroSection {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.heroLeft {
+  flex: 1;
+  max-width: 600px;
+}
+
+.heroTitle {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.3;
+  margin-bottom: 1rem;
+}
+
+.heroRight {
+  flex: 1;
+  width: 100%;
+  max-width: 500px;
 }

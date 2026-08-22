@@ -196,9 +196,7 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
             />
           </a>
         </div>
-        <div className={styles.headerText}>
-          Diretório de Ramais internos das Unidades <strong>São Gabriel, Bagé e Passo Fundo</strong>
-        </div>
+
         <div className={styles.headerRight}>
           <div className={styles.searchContainer}>
             <input
@@ -232,6 +230,56 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
           </button>
         </div>
       </header>
+      <section className={styles.heroSection}>
+        <div className={styles.heroLeft}>
+          <h1 className={styles.heroTitle}>
+            Diretório de Ramais internos das Unidades <span style={{ color: 'var(--primary-color)' }}>São Gabriel, Bagé e Passo Fundo</span>
+          </h1>
+        </div>
+        <div className={styles.heroRight}>
+          {groupedContacts['Contatos Regionais e Externos'] && (
+            <div className={styles.departmentSection} style={{ marginBottom: 0, height: '100%' }}>
+              <div className={styles.departmentHeader}>
+                <div className={styles.departmentHeaderLeft}>
+                  <span className={styles.departmentSubtitle}>Contatos Regionais e Externos</span>
+                  <h2 className={styles.departmentTitle}>Colaborador(a) e Ramais</h2>
+                </div>
+              </div>
+              <div className={styles.contactList}>
+                {groupedContacts['Contatos Regionais e Externos'].map((contact) => {
+                  const onlyNumbers = contact.phone.replace(/\D/g, '');
+                  const isWhatsAppNumber = onlyNumbers.length >= 11 || 
+                                         (onlyNumbers.length === 10 && onlyNumbers[2] === '9') || 
+                                         contact.name.toLowerCase().includes('whatsapp') ||
+                                         contact.name.toLowerCase().includes('whats');
+                  const whatsappLink = isWhatsAppNumber ? `https://wa.me/55${onlyNumbers}` : null;
+                  
+                  return (
+                    <div key={contact.id} className={styles.contactItem}>
+                      <span className={styles.chevron}>
+                        {isWhatsAppNumber ? (
+                          <img src="/whatsapp-icon.svg" alt="WhatsApp" width="16" height="16" style={{ verticalAlign: 'middle' }} />
+                        ) : (
+                          '📞'
+                        )}
+                      </span>
+                      <span className={styles.contactName}>{contact.name}</span>
+                      {isWhatsAppNumber ? (
+                        <a href={whatsappLink!} target="_blank" rel="noopener noreferrer" className={styles.whatsappLink}>
+                          {contact.phone}
+                        </a>
+                      ) : (
+                        <span className={styles.contactPhone}>{contact.phone}</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
 
       <div className={styles.cityTabs}>
         <button 
@@ -255,14 +303,14 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
       </div>
 
       <section className={styles.content}>
-        {Object.keys(groupedContacts).length === 0 ? (
+        {Object.keys(groupedContacts).filter(k => k !== "Contatos Regionais e Externos").length === 0 && (!groupedContacts["Contatos Regionais e Externos"]) ? (
           <div className={styles.noResults}>
             {search.trim() !== '' || city !== 'passo_fundo' 
               ? 'Nenhum ramal encontrado.' 
               : 'Em breve'}
           </div>
         ) : (
-          Object.entries(groupedContacts).map(([department, deptContacts]) => {
+          Object.entries(groupedContacts).filter(([dep]) => dep !== "Contatos Regionais e Externos").map(([department, deptContacts]) => {
             const isImoveis = department.toLowerCase().includes('imóveis') || department.toLowerCase().includes('imobiliária');
             return (
             <div key={department} className={`${styles.departmentSection} ${isImoveis ? styles.departmentSectionImoveis : ''}`}>
