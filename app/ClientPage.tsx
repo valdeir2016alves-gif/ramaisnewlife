@@ -380,10 +380,8 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
         )}
       </section>
 
+      <RadioPlayer />
       <footer className={styles.footer}>
-        <div style={{ marginBottom: '1.5rem' }}>
-          <RadioPlayer />
-        </div>
         <div style={{ height: '50px', width: '100%', maxWidth: '400px', margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
           <UnderlineText text={`Atualizado em: ${lastUpdated} - NOC`} />
         </div>

@@ -239,10 +239,10 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<'ramais' | 'reports' | 'users' | 'stats'>('ramais');
   const [reports, setReports] = useState<Report[]>([]);
   const [systemUsers, setSystemUsers] = useState<Omit<User, 'password'>[]>([]);
-  const [collapsedDeps, setCollapsedDeps] = useState<Record<string, boolean>>({});
+  const [expandedDeps, setExpandedDeps] = useState<Record<string, boolean>>({});
 
   const toggleCollapse = (dep: string) => {
-    setCollapsedDeps(prev => ({ ...prev, [dep]: !prev[dep] }));
+    setExpandedDeps(prev => ({ ...prev, [dep]: !prev[dep] }));
   };
   const [stats, setStats] = useState<DailyStats[]>([]);
   
@@ -571,7 +571,7 @@ export default function AdminPage() {
             .map(([department, deptContacts]) => (
             <div key={department} className={styles.departmentGroup}>
               <h3 className={styles.departmentTitle} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }} onClick={() => toggleCollapse(department)}>
-                <span style={{ marginRight: '8px', fontSize: '0.8em', transition: 'transform 0.2s', transform: collapsedDeps[department] ? 'rotate(-90deg)' : 'rotate(0)' }}>▼</span>
+                <span style={{ marginRight: '8px', fontSize: '0.8em', transition: 'transform 0.2s', transform: expandedDeps[department] ? 'rotate(0)' : 'rotate(-90deg)' }}>▼</span>
                 {getEmoji(department)} {department}
                 {canEdit && (
                   <button 
@@ -584,7 +584,7 @@ export default function AdminPage() {
                   </button>
                 )}
               </h3>
-              {!collapsedDeps[department] && <div className={styles.tableContainer}>
+              {expandedDeps[department] && <div className={styles.tableContainer}>
                 <table className={styles.table}>
                   <thead>
                     <tr>
