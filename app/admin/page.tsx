@@ -239,6 +239,11 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<'ramais' | 'reports' | 'users' | 'stats'>('ramais');
   const [reports, setReports] = useState<Report[]>([]);
   const [systemUsers, setSystemUsers] = useState<Omit<User, 'password'>[]>([]);
+  const [collapsedDeps, setCollapsedDeps] = useState<Record<string, boolean>>({});
+
+  const toggleCollapse = (dep: string) => {
+    setCollapsedDeps(prev => ({ ...prev, [dep]: !prev[dep] }));
+  };
   const [stats, setStats] = useState<DailyStats[]>([]);
   
   const [loading, setLoading] = useState(false);
@@ -565,11 +570,12 @@ export default function AdminPage() {
           Object.entries(groupedContacts)
             .map(([department, deptContacts]) => (
             <div key={department} className={styles.departmentGroup}>
-              <h3 className={styles.departmentTitle}>
+              <h3 className={styles.departmentTitle} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }} onClick={() => toggleCollapse(department)}>
+                <span style={{ marginRight: '8px', fontSize: '0.8em', transition: 'transform 0.2s', transform: collapsedDeps[department] ? 'rotate(-90deg)' : 'rotate(0)' }}>▼</span>
                 {getEmoji(department)} {department}
                 {canEdit && (
                   <button 
-                    onClick={() => handleRenameDepartment(department)}
+                    onClick={(e) => { e.stopPropagation(); handleRenameDepartment(department); }}
                     className={styles.btnSecondary}
                     style={{ marginLeft: '1rem', padding: '0.2rem 0.5rem', fontSize: '0.8rem' }}
                     disabled={loading}
@@ -578,7 +584,7 @@ export default function AdminPage() {
                   </button>
                 )}
               </h3>
-              <div className={styles.tableContainer}>
+              {!collapsedDeps[department] && <div className={styles.tableContainer}>
                 <table className={styles.table}>
                   <thead>
                     <tr>
@@ -603,7 +609,7 @@ export default function AdminPage() {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </div>}
             </div>
           ))
         )}
