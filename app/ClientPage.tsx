@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { Contact } from './actions';
 import styles from './page.module.css';
 import UnderlineText from './UnderlineText';
-import RadioPlayer from './RadioPlayer';
 import GlowCard from './GlowCard';
 import MeteorCard from './MeteorCard';
 import NeonBorder from './NeonBorder';
@@ -380,7 +379,6 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
         )}
       </section>
 
-      <RadioPlayer />
       <footer className={styles.footer}>
         <div style={{ height: '50px', width: '100%', maxWidth: '400px', margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
           <UnderlineText text={`Atualizado em: ${lastUpdated} - NOC`} />
