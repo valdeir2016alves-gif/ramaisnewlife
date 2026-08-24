@@ -11,6 +11,7 @@ export interface Contact {
   ip: string;
   city?: string;
   phoneModel?: string;
+  hidden?: boolean;
 }
 
 const getDbPath = () => {
@@ -112,6 +113,22 @@ export async function addContact(name: string, phone: string, department: string
     return { success: true, contact: newContact };
   } catch (error: any) {
     console.error('Failed to add contact:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function toggleContactVisibility(id: number, hidden: boolean) {
+  try {
+    const contacts = readData();
+    const index = contacts.findIndex(c => c.id === id);
+    if (index !== -1) {
+      contacts[index].hidden = hidden;
+      writeData(contacts);
+      return { success: true };
+    }
+    return { success: false, error: 'Contato não encontrado' };
+  } catch (error: any) {
+    console.error('Failed to toggle visibility:', error);
     return { success: false, error: error.message };
   }
 }

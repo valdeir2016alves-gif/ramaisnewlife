@@ -5,7 +5,7 @@ import {
   getContacts, addContact, deleteContact, updateContact, renameDepartment, Contact, 
   getReports, deleteReport, Report, authenticateUser, getUsers as fetchUsers, 
   addUser as createUser, updateUser as editUser, deleteUser as removeUser, User,
-  getAnalytics, DailyStats, reorderContact
+  getAnalytics, DailyStats, reorderContact, toggleContactVisibility
 } from '../actions';
 import styles from './admin.module.css';
 import Image from 'next/image';
@@ -37,12 +37,14 @@ function EditableRow({
   onSave, 
   onDelete,
   onMove,
+  onToggleVisibility,
   canEdit
 }: { 
   contact: Contact; 
   onSave: (id: number, name: string, phone: string, department: string, ip: string, city: string, phoneModel: string) => Promise<void>; 
   onDelete: (id: number) => Promise<void>;
   onMove: (id: number, direction: 'up' | 'down') => Promise<void>;
+  onToggleVisibility: (id: number, hidden: boolean) => Promise<void>;
   canEdit: boolean;
 }) {
   const [isEditing, setIsEditing] = useState(false);
@@ -76,12 +78,7 @@ function EditableRow({
             className={styles.inputInline} 
             placeholder="Nome"
           />
-          <input 
-            type="text" 
-            value={department} 
-            onChange={(e) => setDepartment(e.target.value)} 
-            className={styles.inputInline} 
-            placeholder="Setor"
+          <input type="text" list="departments-list" value={department} onChange={(e) => setDepartment(e.target.value)} className={styles.inputInline} placeholder="Setor"
             style={{ marginTop: '0.5rem', fontSize: '0.85rem' }}
           />
           <select
@@ -192,8 +189,21 @@ function EditableRow({
             >
               ↓
             </button>
-            <button 
-              onClick={() => setIsEditing(true)} 
+              <button 
+                onClick={async () => {
+                  setLoading(true);
+                  await onToggleVisibility(contact.id, !contact.hidden);
+                  setLoading(false);
+                }} 
+                className={styles.btnSecondary}
+                style={{ padding: '0.4rem 0.6rem', color: contact.hidden ? 'gray' : 'inherit' }}
+                title={contact.hidden ? "Mostrar no site principal" : "Ocultar do site principal"}
+                disabled={loading}
+              >
+                {contact.hidden ? 'Oculto' : 'Visível'}
+              </button>
+              <button 
+                onClick={() => setIsEditing(true)} 
               className={styles.btnSecondary}
               disabled={loading}
             >
@@ -313,6 +323,17 @@ export default function AdminPage() {
     }
   };
 
+  const handleToggleVisibility = async (id: number, hidden: boolean) => {
+    setLoading(true);
+    const result = await toggleContactVisibility(id, hidden);
+    if (result.success) {
+      await loadContacts();
+    } else {
+      alert('Erro: ' + result.error);
+    }
+    setLoading(false);
+  };
+
   const handleDeleteRow = async (id: number) => {
     if (!confirm('Excluir este contato?')) return;
     setLoading(true);
@@ -413,6 +434,9 @@ export default function AdminPage() {
 
   return (
     <main className={styles.container}>
+      <datalist id="departments-list">
+        {Object.keys(groupedContacts).map(dep => <option key={dep} value={dep} />)}
+      </datalist>
       <header className={styles.header}>
         <h1 className={styles.title}>Admin Panel</h1>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -475,12 +499,7 @@ export default function AdminPage() {
                   onChange={(e) => setPhone(e.target.value)} 
                   className={styles.input}
                 />
-          <input 
-            type="text" 
-            placeholder="Setor (ex: Suporte Técnico)" 
-            value={department} 
-            onChange={(e) => setDepartment(e.target.value)} 
-            className={styles.input}
+          <input type="text" list="departments-list" placeholder="Setor (ex: Suporte Técnico)" value={department} onChange={(e) => setDepartment(e.target.value)} className={styles.input}
           />
           <input 
             type="text" 
@@ -578,6 +597,7 @@ export default function AdminPage() {
                         onSave={handleUpdateRow} 
                         onDelete={handleDeleteRow} 
                         onMove={handleMoveRow}
+                        onToggleVisibility={handleToggleVisibility}
                         canEdit={canEdit}
                       />
                     ))}

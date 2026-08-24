@@ -92,6 +92,7 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
 
   const groupedContacts = useMemo(() => {
     const filtered = initialContacts.filter((c) => {
+      if (c.hidden) return false;
       const cCity = c.city || 'sao_gabriel';
       const matchesSearch = c.name.toLowerCase().includes(search.toLowerCase()) || 
                             c.department.toLowerCase().includes(search.toLowerCase()) || 
@@ -379,7 +380,11 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
       </section>
 
       <footer className={styles.footer}>
-        <div style={{ height: '50px', width: '100%', maxWidth: '400px', margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <div style={{ height: '50px', width: '100%', maxWidth: '400px', margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--primary-color)' }}>
+            <circle cx="12" cy="12" r="2"></circle>
+            <path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"></path>
+          </svg>
           <UnderlineText text={`Atualizado em: ${lastUpdated} - NOC`} />
         </div>
         <button onClick={() => setShowReportModal(true)} className={styles.reportLinkBtn}>
