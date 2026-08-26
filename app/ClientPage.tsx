@@ -41,36 +41,36 @@ function getDepartmentDescription(dept: string, descriptions: Record<string, str
 function InfoTooltip({ department, text }: { department: string; text: string }) {
   const [isOpen, setIsOpen] = useState(false);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleOutsideClick = () => {
-      setIsOpen(false);
-    };
-    document.addEventListener('click', handleOutsideClick);
-    return () => document.removeEventListener('click', handleOutsideClick);
-  }, [isOpen]);
-
   if (!text) return null;
 
   return (
-    <div 
-      className={`${styles.infoTooltipContainer} ${isOpen ? styles.infoTooltipOpen : ''}`}
-      onClick={(e) => e.stopPropagation()}
-    >
+    <>
       <button 
         type="button" 
         className={styles.infoButton}
-        title={`Informações sobre ${department}`}
         aria-label={`Informações sobre ${department}`}
-        onClick={() => setIsOpen(prev => !prev)}
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsOpen(true);
+        }}
       >
         !
       </button>
-      <div className={styles.infoTooltip} onClick={(e) => e.stopPropagation()}>
-        <div className={styles.infoTooltipTitle}>{department}</div>
-        <p className={styles.infoTooltipText}>{text}</p>
-      </div>
-    </div>
+      
+      {isOpen && (
+        <div className={styles.modalOverlay} onClick={(e) => { e.stopPropagation(); setIsOpen(false); }} style={{ zIndex: 9999 }}>
+          <div className={styles.modalContent} style={{ maxWidth: '500px' }} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3 style={{ textTransform: 'uppercase', fontSize: '1.1rem', margin: 0, color: 'var(--primary-color)' }}>{department}</h3>
+              <button className={styles.closeButton} onClick={() => setIsOpen(false)}>✕</button>
+            </div>
+            <div className={styles.modalBody} style={{ padding: '2rem 1.5rem', lineHeight: '1.6', fontSize: '1.05rem', textAlign: 'center' }}>
+              <p>{text}</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
