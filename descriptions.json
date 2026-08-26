@@ -1,0 +1,18 @@
+{
+  "estoque": "Responsável pelo controle de entrada, saída e disponibilidade de produtos. Atende dúvidas sobre disponibilidade, reposição e status de itens em estoque.",
+  "suporte técnico": "Atende chamados relacionados a falhas técnicas, configuração de sistemas e problemas operacionais. Direciona casos mais complexos para áreas especializadas quando necessário.",
+  "cancelamento": "Trata solicitações de cancelamento de contratos, serviços ou pedidos. Avalia motivo do cancelamento e verifica possibilidade de retenção antes de efetivar.",
+  "caixa": "Responsável por recebimentos, pagamentos e movimentações financeiras no ponto de atendimento. Emite comprovantes e concilia valores diários.",
+  "renovações": "Cuida da renovação de contratos, planos ou serviços próximos do vencimento. Contata clientes para negociar condições e evitar cancelamento.",
+  "comercial - (fideliza)": "Foco em retenção e fidelização de clientes ativos, incluindo ampliação ou troca de plano dentro da base já existente.",
+  "comercial": "Atua na prospecção, negociação e fechamento de novos contratos ou vendas. Primeiro ponto de contato para novos clientes interessados.",
+  "agendamento - (instalação / troca end)": "Organiza a agenda de visitas técnicas, instalações e trocas de endereço. Confirma disponibilidade de datas e horários com o cliente.",
+  "gerência": "Nível de decisão para exceções, aprovações e casos que fogem do fluxo padrão de atendimento. Acionar apenas quando outras áreas não resolverem.",
+  "recuperação de crédito - (valoriza)": "Trata cobrança e renegociação de débitos em aberto. Oferece condições de pagamento para recuperação de clientes inadimplentes.",
+  "financeiro": "Responsável por questões de faturamento, segunda via de boletos, contestação de cobranças e ajustes financeiros gerais.",
+  "departamento pessoal (rh)": "Cuida de questões relacionadas a colaboradores: admissão, folha de pagamento, benefícios e documentação trabalhista.",
+  "sac": "Central de atendimento ao cliente para dúvidas gerais, reclamações e solicitações que não se enquadram em um setor específico.",
+  "noc": "Monitoramento e suporte da infraestrutura de rede. Responsável por identificar e resolver instabilidades e quedas de conexão.",
+  "new life imóveis": "Atendimento relacionado à área imobiliária do grupo: locação, venda e informações sobre imóveis disponíveis.",
+  "contatos regionais e externos": "Contatos centrais de 0800, WhatsApp Central e linhas fixas das unidades e cidades atendidas."
+}

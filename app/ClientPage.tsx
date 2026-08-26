@@ -11,69 +11,29 @@ import NeonBorder from './NeonBorder';
 
 import { submitReport, registerVisit, authenticateUser, User } from './actions';
 
-const DEPARTMENT_DESCRIPTIONS: Record<string, string> = {
-  'estoque': 'Responsável pelo controle de entrada, saída e disponibilidade de produtos. Atende dúvidas sobre disponibilidade, reposição e status de itens em estoque.',
-  'suporte técnico': 'Atende chamados relacionados a falhas técnicas, configuração de sistemas e problemas operacionais. Direciona casos mais complexos para áreas especializadas quando necessário.',
-  'suporte tecnico': 'Atende chamados relacionados a falhas técnicas, configuração de sistemas e problemas operacionais. Direciona casos mais complexos para áreas especializadas quando necessário.',
-  'cancelamento': 'Trata solicitações de cancelamento de contratos, serviços ou pedidos. Avalia motivo do cancelamento e verifica possibilidade de retenção antes de efetivar.',
-  'caixa': 'Responsável por recebimentos, pagamentos e movimentações financeiras no ponto de atendimento. Emite comprovantes e concilia valores diários.',
-  'renovações': 'Cuida da renovação de contratos, planos ou serviços próximos do vencimento. Contata clientes para negociar condições e evitar cancelamento.',
-  'renovacoes': 'Cuida da renovação de contratos, planos ou serviços próximos do vencimento. Contata clientes para negociar condições e evitar cancelamento.',
-  'comercial – (fideliza)': 'Foco em retenção e fidelização de clientes ativos, incluindo ampliação ou troca de plano dentro da base já existente.',
-  'comercial - (fideliza)': 'Foco em retenção e fidelização de clientes ativos, incluindo ampliação ou troca de plano dentro da base já existente.',
-  'comercial (fideliza)': 'Foco em retenção e fidelização de clientes ativos, incluindo ampliação ou troca de plano dentro da base já existente.',
-  'fideliza': 'Foco em retenção e fidelização de clientes ativos, incluindo ampliação ou troca de plano dentro da base já existente.',
-  'comercial': 'Atua na prospecção, negociação e fechamento de novos contratos ou vendas. Primeiro ponto de contato para novos clientes interessados.',
-  'agendamento – (instalação / troca end)': 'Organiza a agenda de visitas técnicas, instalações e trocas de endereço. Confirma disponibilidade de datas e horários com o cliente.',
-  'agendamento - (instalação / troca end)': 'Organiza a agenda de visitas técnicas, instalações e trocas de endereço. Confirma disponibilidade de datas e horários com o cliente.',
-  'agendamento': 'Organiza a agenda de visitas técnicas, instalações e trocas de endereço. Confirma disponibilidade de datas e horários com o cliente.',
-  'gerência': 'Nível de decisão para exceções, aprovações e casos que fogem do fluxo padrão de atendimento. Acionar apenas quando outras áreas não resolverem.',
-  'gerencia': 'Nível de decisão para exceções, aprovações e casos que fogem do fluxo padrão de atendimento. Acionar apenas quando outras áreas não resolverem.',
-  'recuperação de crédito – (valoriza)': 'Trata cobrança e renegociação de débitos em aberto. Oferece condições de pagamento para recuperação de clientes inadimplentes.',
-  'recuperação de crédito - (valoriza)': 'Trata cobrança e renegociação de débitos em aberto. Oferece condições de pagamento para recuperação de clientes inadimplentes.',
-  'recuperacao de credito - (valoriza)': 'Trata cobrança e renegociação de débitos em aberto. Oferece condições de pagamento para recuperação de clientes inadimplentes.',
-  'recuperação de crédito': 'Trata cobrança e renegociação de débitos em aberto. Oferece condições de pagamento para recuperação de clientes inadimplentes.',
-  'recuperacao de credito': 'Trata cobrança e renegociação de débitos em aberto. Oferece condições de pagamento para recuperação de clientes inadimplentes.',
-  'valoriza': 'Trata cobrança e renegociação de débitos em aberto. Oferece condições de pagamento para recuperação de clientes inadimplentes.',
-  'financeiro': 'Responsável por questões de faturamento, segunda via de boletos, contestação de cobranças e ajustes financeiros gerais.',
-  'financeiro / rh': 'Responsável por questões de faturamento, segunda via de boletos, contestação de cobranças e ajustes financeiros gerais.',
-  'departamento pessoal (rh)': 'Cuida de questões relacionadas a colaboradores: admissão, folha de pagamento, benefícios e documentação trabalhista.',
-  'departamento pessoal': 'Cuida de questões relacionadas a colaboradores: admissão, folha de pagamento, benefícios e documentação trabalhista.',
-  'rh': 'Cuida de questões relacionadas a colaboradores: admissão, folha de pagamento, benefícios e documentação trabalhista.',
-  'sac': 'Central de atendimento ao cliente para dúvidas gerais, reclamações e solicitações que não se enquadram em um setor específico.',
-  'noc': 'Monitoramento e suporte da infraestrutura de rede. Responsável por identificar e resolver instabilidades e quedas de conexão.',
-  'new life imóveis': 'Atendimento relacionado à área imobiliária do grupo: locação, venda e informações sobre imóveis disponíveis.',
-  'new life imoveis': 'Atendimento relacionado à área imobiliária do grupo: locação, venda e informações sobre imóveis disponíveis.',
-  'imobiliária': 'Atendimento relacionado à área imobiliária do grupo: locação, venda e informações sobre imóveis disponíveis.',
-  'imobiliaria': 'Atendimento relacionado à área imobiliária do grupo: locação, venda e informações sobre imóveis disponíveis.',
-  'imóveis': 'Atendimento relacionado à área imobiliária do grupo: locação, venda e informações sobre imóveis disponíveis.',
-  'imoveis': 'Atendimento relacionado à área imobiliária do grupo: locação, venda e informações sobre imóveis disponíveis.',
-  'contatos regionais e externos': 'Contatos centrais de 0800, WhatsApp Central e linhas fixas das unidades e cidades atendidas.',
-};
-
-function getDepartmentDescription(dept: string): string {
+function getDepartmentDescription(dept: string, descriptions: Record<string, string>): string {
   const normalized = dept.toLowerCase().replace(/–/g, '-').trim();
   
-  if (DEPARTMENT_DESCRIPTIONS[normalized]) {
-    return DEPARTMENT_DESCRIPTIONS[normalized];
+  if (descriptions[normalized]) {
+    return descriptions[normalized];
   }
   
-  if (normalized.includes('fideliza')) return DEPARTMENT_DESCRIPTIONS['comercial – (fideliza)'];
-  if (normalized.includes('agendamento')) return DEPARTMENT_DESCRIPTIONS['agendamento – (instalação / troca end)'];
-  if (normalized.includes('valoriza') || normalized.includes('recupera')) return DEPARTMENT_DESCRIPTIONS['recuperação de crédito – (valoriza)'];
-  if (normalized.includes('pessoal') || normalized === 'rh') return DEPARTMENT_DESCRIPTIONS['departamento pessoal (rh)'];
-  if (normalized.includes('imóve') || normalized.includes('imove') || normalized.includes('imobili')) return DEPARTMENT_DESCRIPTIONS['new life imóveis'];
-  if (normalized.includes('estoque')) return DEPARTMENT_DESCRIPTIONS['estoque'];
-  if (normalized.includes('suporte')) return DEPARTMENT_DESCRIPTIONS['suporte técnico'];
-  if (normalized.includes('cancelamento')) return DEPARTMENT_DESCRIPTIONS['cancelamento'];
-  if (normalized.includes('caixa')) return DEPARTMENT_DESCRIPTIONS['caixa'];
-  if (normalized.includes('renova')) return DEPARTMENT_DESCRIPTIONS['renovações'];
-  if (normalized.includes('gerência') || normalized.includes('gerencia')) return DEPARTMENT_DESCRIPTIONS['gerência'];
-  if (normalized.includes('financeiro')) return DEPARTMENT_DESCRIPTIONS['financeiro'];
-  if (normalized.includes('sac')) return DEPARTMENT_DESCRIPTIONS['sac'];
-  if (normalized.includes('noc')) return DEPARTMENT_DESCRIPTIONS['noc'];
-  if (normalized.includes('comercial')) return DEPARTMENT_DESCRIPTIONS['comercial'];
-  if (normalized.includes('regionais') || normalized.includes('externos')) return DEPARTMENT_DESCRIPTIONS['contatos regionais e externos'];
+  if (normalized.includes('fideliza')) return descriptions['comercial - (fideliza)'] || descriptions['comercial – (fideliza)'];
+  if (normalized.includes('agendamento')) return descriptions['agendamento - (instalação / troca end)'] || descriptions['agendamento – (instalação / troca end)'];
+  if (normalized.includes('valoriza') || normalized.includes('recupera')) return descriptions['recuperação de crédito - (valoriza)'] || descriptions['recuperação de crédito – (valoriza)'];
+  if (normalized.includes('pessoal') || normalized === 'rh') return descriptions['departamento pessoal (rh)'] || descriptions['departamento pessoal'];
+  if (normalized.includes('imóve') || normalized.includes('imove') || normalized.includes('imobili')) return descriptions['new life imóveis'];
+  if (normalized.includes('estoque')) return descriptions['estoque'];
+  if (normalized.includes('suporte')) return descriptions['suporte técnico'] || descriptions['suporte tecnico'];
+  if (normalized.includes('cancelamento')) return descriptions['cancelamento'];
+  if (normalized.includes('caixa')) return descriptions['caixa'];
+  if (normalized.includes('renova')) return descriptions['renovações'] || descriptions['renovacoes'];
+  if (normalized.includes('gerência') || normalized.includes('gerencia')) return descriptions['gerência'] || descriptions['gerencia'];
+  if (normalized.includes('financeiro')) return descriptions['financeiro'];
+  if (normalized.includes('sac')) return descriptions['sac'];
+  if (normalized.includes('noc')) return descriptions['noc'];
+  if (normalized.includes('comercial')) return descriptions['comercial'];
+  if (normalized.includes('regionais') || normalized.includes('externos')) return descriptions['contatos regionais e externos'];
 
   return '';
 }
@@ -114,7 +74,7 @@ function InfoTooltip({ department, text }: { department: string; text: string })
   );
 }
 
-export default function ClientPage({ initialContacts, lastUpdated }: { initialContacts: Contact[], lastUpdated: string }) {
+export default function ClientPage({ initialContacts, lastUpdated, initialDescriptions = {} }: { initialContacts: Contact[], lastUpdated: string, initialDescriptions?: Record<string, string> }) {
   const [search, setSearch] = useState('');
   const [city, setCity] = useState('sao_gabriel');
   const [theme, setTheme] = useState('dark');
@@ -349,7 +309,7 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
                   <h2 className={styles.departmentTitle}>Colaborador(a) e Contatos</h2>
                 </div>
                 <div className={styles.departmentHeaderRight}>
-                  <InfoTooltip department="Contatos Regionais e Externos" text={getDepartmentDescription("Contatos Regionais e Externos")} />
+                  <InfoTooltip department="Contatos Regionais e Externos" text={getDepartmentDescription("Contatos Regionais e Externos", initialDescriptions)} />
                 </div>
               </div>
               <div className={styles.contactList}>
@@ -419,7 +379,7 @@ export default function ClientPage({ initialContacts, lastUpdated }: { initialCo
         ) : (
           Object.entries(groupedContacts).filter(([dep]) => dep !== "Contatos Regionais e Externos").map(([department, deptContacts]) => {
             const isImoveis = department.toLowerCase().includes('imóveis') || department.toLowerCase().includes('imobiliária');
-            const description = getDepartmentDescription(department);
+            const description = getDepartmentDescription(department, initialDescriptions);
             return (
             <div key={department} className={`${styles.departmentSection} ${isImoveis ? styles.departmentSectionImoveis : ''}`}>
               <div className={styles.departmentHeader}>

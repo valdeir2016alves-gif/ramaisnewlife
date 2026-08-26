@@ -5,7 +5,7 @@ import {
   getContacts, addContact, deleteContact, updateContact, renameDepartment, Contact, 
   getReports, deleteReport, Report, authenticateUser, getUsers as fetchUsers, 
   addUser as createUser, updateUser as editUser, deleteUser as removeUser, User,
-  getAnalytics, DailyStats, reorderContact, toggleContactVisibility
+  getAnalytics, DailyStats, reorderContact, toggleContactVisibility, getDepartmentDescriptions, updateDepartmentDescription
 } from '../actions';
 import styles from './admin.module.css';
 import Image from 'next/image';
@@ -31,6 +31,53 @@ const departmentEmojis: Record<string, string> = {
 };
 
 const getEmoji = (dept: string) => departmentEmojis[dept] || '🏢';
+
+
+function DescriptionRow({ department, initialDescription, onSave }: { department: string; initialDescription: string; onSave: (dept: string, desc: string) => Promise<void> }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [desc, setDesc] = useState(initialDescription);
+  const [loading, setLoading] = useState(false);
+
+  const handleSave = async () => {
+    setLoading(true);
+    await onSave(department, desc);
+    setIsEditing(false);
+    setLoading(false);
+  };
+
+  if (isEditing) {
+    return (
+      <tr>
+        <td style={{ fontWeight: 'bold' }}>{department}</td>
+        <td>
+          <textarea 
+            className={styles.input} 
+            value={desc} 
+            onChange={e => setDesc(e.target.value)} 
+            rows={3} 
+            style={{ width: '100%', resize: 'vertical' }}
+          />
+        </td>
+        <td>
+          <div className={styles.tableActions}>
+            <button onClick={handleSave} className={styles.btnPrimary} disabled={loading}>Salvar</button>
+            <button onClick={() => { setIsEditing(false); setDesc(initialDescription); }} className={styles.btnSecondary} disabled={loading}>Cancelar</button>
+          </div>
+        </td>
+      </tr>
+    );
+  }
+
+  return (
+    <tr>
+      <td style={{ fontWeight: 'bold' }}>{department}</td>
+      <td style={{ whiteSpace: 'pre-wrap', color: desc ? 'inherit' : '#888' }}>{desc || '(Sem descrição)'}</td>
+      <td>
+        <button onClick={() => setIsEditing(true)} className={styles.btnSecondary}>Editar</button>
+      </td>
+    </tr>
+  );
+}
 
 function EditableRow({ 
   contact, 
@@ -236,7 +283,7 @@ export default function AdminPage() {
   const [phoneModel, setPhoneModel] = useState('');
   const [newCity, setNewCity] = useState('sao_gabriel');
   const [adminCity, setAdminCity] = useState('sao_gabriel');
-  const [activeTab, setActiveTab] = useState<'ramais' | 'reports' | 'users' | 'stats'>('ramais');
+  const [activeTab, setActiveTab] = useState<'ramais' | 'reports' | 'users' | 'stats' | 'descriptions'>('ramais');
   const [reports, setReports] = useState<Report[]>([]);
   const [systemUsers, setSystemUsers] = useState<Omit<User, 'password'>[]>([]);
   const [expandedDeps, setExpandedDeps] = useState<Record<string, boolean>>({});
@@ -245,6 +292,7 @@ export default function AdminPage() {
     setExpandedDeps(prev => ({ ...prev, [dep]: !prev[dep] }));
   };
   const [stats, setStats] = useState<DailyStats[]>([]);
+  const [descriptions, setDescriptions] = useState<Record<string, string>>({});
   
   const [loading, setLoading] = useState(false);
 
@@ -286,10 +334,12 @@ export default function AdminPage() {
     try {
       const data = await getContacts();
       const reportsData = await getReports();
+      const descData = await getDepartmentDescriptions();
       setContacts(data || []);
       setReports(reportsData || []);
+      setDescriptions(descData || {});
     } catch (error) {
-      console.error("Failed to load contacts", error);
+      console.error("Failed to load data", error);
       setContacts([]);
     } finally {
       setLoading(false);
@@ -457,6 +507,14 @@ export default function AdminPage() {
           >
             Relatórios de Erro {reports.length > 0 && `(${reports.length})`}
           </button>
+          {canEdit && (
+            <button 
+              className={activeTab === 'descriptions' ? styles.btnPrimary : styles.btnSecondary}
+              onClick={() => setActiveTab('descriptions')}
+            >
+              Balões de Informação
+            </button>
+          )}
           {canEdit && (
             <>
               <button 
@@ -655,6 +713,45 @@ export default function AdminPage() {
               </table>
             </div>
           )}
+        </section>
+            ) : activeTab === 'descriptions' && canEdit ? (
+        <section className={styles.listSection}>
+          <h2>Balões de Informação</h2>
+          <p style={{ marginBottom: '1rem', color: '#ccc' }}>Edite os textos exibidos nos balões de informação de cada setor. Deixe em branco para ocultar o balão.</p>
+          <div className={styles.tableResponsive}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Setor</th>
+                  <th style={{ width: '60%' }}>Texto do Balão</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Array.from(new Set(contacts.map(c => c.department))).map(dep => {
+                  const normalized = dep.toLowerCase().replace(/–/g, '-').trim();
+                  const desc = descriptions[normalized] || '';
+                  return (
+                    <DescriptionRow 
+                      key={dep} 
+                      department={dep} 
+                      initialDescription={desc} 
+                      onSave={async (d, newDesc) => {
+                        setLoading(true);
+                        const result = await updateDepartmentDescription(d, newDesc);
+                        if (result.success) {
+                          await loadContacts();
+                        } else {
+                          alert('Erro: ' + (result.error || 'Falha ao salvar'));
+                        }
+                        setLoading(false);
+                      }} 
+                    />
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </section>
       ) : activeTab === 'users' && canEdit ? (
         <section className={styles.listSection}>

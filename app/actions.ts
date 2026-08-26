@@ -21,6 +21,13 @@ const getDbPath = () => {
     : path.join(process.cwd(), 'ramais.json');
 };
 
+const getDescriptionsPath = () => {
+  const dataDir = path.join(process.cwd(), 'data');
+  return fs.existsSync(dataDir) 
+    ? path.join(dataDir, 'descriptions.json') 
+    : path.join(process.cwd(), 'descriptions.json');
+};
+
 const getSeedPath = () => path.join(process.cwd(), 'ramais.json.seed');
 
 export async function getLastUpdated(): Promise<string> {
@@ -492,3 +499,41 @@ export async function getAnalytics() {
   return readAnalytics();
 }
 
+
+export async function getDepartmentDescriptions(): Promise<Record<string, string>> {
+  try {
+    const dbPath = getDescriptionsPath();
+    if (fs.existsSync(dbPath)) {
+      const data = fs.readFileSync(dbPath, 'utf8');
+      return JSON.parse(data);
+    }
+  } catch (e) {
+    console.error('Failed to read descriptions.json', e);
+  }
+  return {};
+}
+
+export async function updateDepartmentDescription(department: string, description: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const dbPath = getDescriptionsPath();
+    let data: Record<string, string> = {};
+    if (fs.existsSync(dbPath)) {
+      data = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+    }
+    
+    // Normalize department name similarly to how it's handled in frontend
+    const normalized = department.toLowerCase().replace(/–/g, '-').trim();
+    
+    if (description.trim() === '') {
+      delete data[normalized];
+    } else {
+      data[normalized] = description;
+    }
+    
+    fs.writeFileSync(dbPath, JSON.stringify(data, null, 2), 'utf8');
+    return { success: true };
+  } catch (e) {
+    console.error('Failed to update description', e);
+    return { success: false, error: 'Falha ao salvar a descrição' };
+  }
+}
