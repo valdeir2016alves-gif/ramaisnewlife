@@ -503,6 +503,12 @@ export async function getAnalytics() {
 export async function getDepartmentDescriptions(): Promise<Record<string, string>> {
   try {
     const dbPath = getDescriptionsPath();
+    const seedPath = path.join(process.cwd(), 'descriptions.json');
+    
+    if (!fs.existsSync(dbPath) && fs.existsSync(seedPath)) {
+      fs.copyFileSync(seedPath, dbPath);
+    }
+
     if (fs.existsSync(dbPath)) {
       const data = fs.readFileSync(dbPath, 'utf8');
       return JSON.parse(data);
