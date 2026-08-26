@@ -38,39 +38,21 @@ function getDepartmentDescription(dept: string, descriptions: Record<string, str
   return '';
 }
 
-function InfoTooltip({ department, text }: { department: string; text: string }) {
-  const [isOpen, setIsOpen] = useState(false);
-
+function InfoTooltip({ department, text, onClick }: { department: string; text: string; onClick: () => void }) {
   if (!text) return null;
 
   return (
-    <>
-      <button 
-        type="button" 
-        className={styles.infoButton}
-        aria-label={`Informações sobre ${department}`}
-        onClick={(e) => {
-          e.stopPropagation();
-          setIsOpen(true);
-        }}
-      >
-        !
-      </button>
-      
-      {isOpen && (
-        <div className={styles.modalOverlay} onClick={(e) => { e.stopPropagation(); setIsOpen(false); }} style={{ zIndex: 9999 }}>
-          <div className={styles.modalContent} style={{ maxWidth: '500px' }} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h3 style={{ textTransform: 'uppercase', fontSize: '1.1rem', margin: 0, color: 'var(--primary-color)' }}>{department}</h3>
-              <button className={styles.closeButton} onClick={() => setIsOpen(false)}>✕</button>
-            </div>
-            <div className={styles.modalBody} style={{ padding: '2rem 1.5rem', lineHeight: '1.6', fontSize: '1.05rem', textAlign: 'center' }}>
-              <p>{text}</p>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+    <button 
+      type="button" 
+      className={styles.infoButton}
+      aria-label={`Informações sobre ${department}`}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+    >
+      !
+    </button>
   );
 }
 
@@ -78,6 +60,7 @@ export default function ClientPage({ initialContacts, lastUpdated, initialDescri
   const [search, setSearch] = useState('');
   const [city, setCity] = useState('sao_gabriel');
   const [theme, setTheme] = useState('dark');
+  const [activeTooltip, setActiveTooltip] = useState<{ department: string; text: string } | null>(null);
   const [showInstructions, setShowInstructions] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportName, setReportName] = useState('');
@@ -192,7 +175,20 @@ export default function ClientPage({ initialContacts, lastUpdated, initialDescri
             </div>
           ))}
         </div>
-      </main>
+            {activeTooltip && (
+        <div className={styles.modalOverlay} onClick={() => setActiveTooltip(null)} style={{ zIndex: 99999 }}>
+          <div className={styles.modalContent} style={{ maxWidth: '500px' }} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3 style={{ textTransform: 'uppercase', fontSize: '1.2rem', margin: 0, color: 'var(--primary-color)' }}>{activeTooltip.department}</h3>
+              <button className={styles.closeButton} onClick={() => setActiveTooltip(null)}>✕</button>
+            </div>
+            <div className={styles.modalBody} style={{ padding: '2rem 1.5rem', lineHeight: '1.6', fontSize: '1.05rem', textAlign: 'center' }}>
+              <p>{activeTooltip.text}</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </main>
     );
   }
 
@@ -241,7 +237,20 @@ export default function ClientPage({ initialContacts, lastUpdated, initialDescri
             </button>
           </form>
         </div>
-      </main>
+            {activeTooltip && (
+        <div className={styles.modalOverlay} onClick={() => setActiveTooltip(null)} style={{ zIndex: 99999 }}>
+          <div className={styles.modalContent} style={{ maxWidth: '500px' }} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3 style={{ textTransform: 'uppercase', fontSize: '1.2rem', margin: 0, color: 'var(--primary-color)' }}>{activeTooltip.department}</h3>
+              <button className={styles.closeButton} onClick={() => setActiveTooltip(null)}>✕</button>
+            </div>
+            <div className={styles.modalBody} style={{ padding: '2rem 1.5rem', lineHeight: '1.6', fontSize: '1.05rem', textAlign: 'center' }}>
+              <p>{activeTooltip.text}</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </main>
     );
   }
 
@@ -309,7 +318,7 @@ export default function ClientPage({ initialContacts, lastUpdated, initialDescri
                   <h2 className={styles.departmentTitle}>Colaborador(a) e Contatos</h2>
                 </div>
                 <div className={styles.departmentHeaderRight}>
-                  <InfoTooltip department="Contatos Regionais e Externos" text={getDepartmentDescription("Contatos Regionais e Externos", initialDescriptions)} />
+                  <InfoTooltip department="Contatos Regionais e Externos" text={getDepartmentDescription("Contatos Regionais e Externos", initialDescriptions)} onClick={() => setActiveTooltip({ department: "Contatos Regionais e Externos", text: getDepartmentDescription("Contatos Regionais e Externos", initialDescriptions) })} />
                 </div>
               </div>
               <div className={styles.contactList}>
@@ -401,7 +410,7 @@ export default function ClientPage({ initialContacts, lastUpdated, initialDescri
                       </a>
                     </div>
                   )}
-                  <InfoTooltip department={department} text={description} />
+                  <InfoTooltip department={department} text={description} onClick={() => setActiveTooltip({ department, text: description })} />
                 </div>
               </div>
               
@@ -539,6 +548,19 @@ export default function ClientPage({ initialContacts, lastUpdated, initialDescri
                 {isSubmittingReport ? 'Enviando...' : 'Enviar Relato'}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+          {activeTooltip && (
+        <div className={styles.modalOverlay} onClick={() => setActiveTooltip(null)} style={{ zIndex: 99999 }}>
+          <div className={styles.modalContent} style={{ maxWidth: '500px' }} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3 style={{ textTransform: 'uppercase', fontSize: '1.2rem', margin: 0, color: 'var(--primary-color)' }}>{activeTooltip.department}</h3>
+              <button className={styles.closeButton} onClick={() => setActiveTooltip(null)}>✕</button>
+            </div>
+            <div className={styles.modalBody} style={{ padding: '2rem 1.5rem', lineHeight: '1.6', fontSize: '1.05rem', textAlign: 'center' }}>
+              <p>{activeTooltip.text}</p>
+            </div>
           </div>
         </div>
       )}
