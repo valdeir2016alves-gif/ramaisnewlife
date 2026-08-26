@@ -458,7 +458,19 @@ export default function ClientPage({ initialContacts, lastUpdated, initialDescri
         )}
       </section>
 
-      <footer className={styles.footer}>
+            <footer className={styles.footer}>
+        <div className={styles.footerLogos}>
+          <div title="Sistema MK Solutions - Utilizado no dia a dia">
+            <a href="https://sac.newlifefibra.com.br/mk" target="_blank" rel="noopener noreferrer">
+              <Image src="/mk-logo.webp" alt="MK Solutions" width={110} height={40} style={{ objectFit: 'contain', filter: 'var(--logo-filter)' }} />
+            </a>
+          </div>
+          <div title="Sistema Octadesk - Utilizado no dia a dia">
+            <a href="https://app.octadesk.com/login?" target="_blank" rel="noopener noreferrer">
+              <Image src="/octadesk-logo.png" alt="Octadesk" width={110} height={40} style={{ objectFit: 'contain', filter: 'var(--logo-filter)' }} />
+            </a>
+          </div>
+        </div>
         <div style={{ height: '50px', width: '100%', maxWidth: '400px', margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
           <UnderlineText text={`Atualizado em: ${lastUpdated} - NOC`} />
         </div>
