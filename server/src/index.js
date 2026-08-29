@@ -2,6 +2,7 @@ const path = require('path');
 const express = require('express');
 const cors = require('cors');
 
+const migrate = require('./db/migrate');
 const contactsRouter = require('./routes/contacts');
 const reportsRouter = require('./routes/reports');
 const usersRouter = require('./routes/users');
@@ -33,6 +34,13 @@ app.get(/^(?!\/api\/).*/, (req, res) => {
   res.sendFile(path.join(clientDist, 'index.html'));
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-});
+migrate()
+  .then(() => {
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`Servidor rodando na porta ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('Falha ao migrar/conectar no Postgres:', err);
+    process.exit(1);
+  });

@@ -3,24 +3,24 @@ const db = require('../data');
 
 const router = express.Router();
 
-router.get('/', (req, res) => {
-  res.json(db.getUsers());
+router.get('/', async (req, res) => {
+  res.json(await db.getUsers());
 });
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { username, password, role } = req.body;
-  res.json(db.addUser(username, password, role));
+  res.json(await db.addUser(username, password, role));
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   const id = Number(req.params.id);
   const { username, password, role } = req.body;
-  res.json(db.updateUser(id, username, password, role));
+  res.json(await db.updateUser(id, username, password, role));
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   const id = Number(req.params.id);
-  res.json(db.deleteUser(id));
+  res.json(await db.deleteUser(id));
 });
 
 module.exports = router;
