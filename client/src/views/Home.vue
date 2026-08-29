@@ -242,9 +242,9 @@ function openTooltip(department, text) {
             <img
               src="/logo.png"
               alt="New Life"
-              width="220"
-              height="88"
-              style="object-fit: contain; filter: var(--logo-filter); max-width: 100%; height: auto; max-height: 75px"
+              width="320"
+              height="128"
+              style="object-fit: contain; filter: var(--logo-filter); max-width: 100%; height: auto; max-height: 110px"
             />
           </a>
         </div>
@@ -307,7 +307,7 @@ function openTooltip(department, text) {
               <div v-for="contact in regionalContacts" :key="contact.id" :class="styles.contactItem">
                 <span :class="styles.chevron">
                   <img v-if="isWhatsAppNumber(contact)" src="/whatsapp-icon.svg" alt="WhatsApp" width="16" height="16" style="vertical-align: middle" />
-                  <template v-else>📞</template>
+                  <img v-else src="/phone-icon.svg" alt="Telefone" width="16" height="16" style="vertical-align: middle" />
                 </span>
                 <span :class="styles.contactName">{{ contact.name }}</span>
                 <a v-if="isWhatsAppNumber(contact)" :href="waLink(contact)" target="_blank" rel="noopener noreferrer" :class="styles.whatsappLink">
@@ -365,7 +365,7 @@ function openTooltip(department, text) {
               <div v-for="contact in deptContacts" :key="contact.id" :class="styles.contactItem">
                 <span :class="styles.chevron">
                   <img v-if="isWhatsAppNumber(contact)" src="/whatsapp-icon.svg" alt="WhatsApp" width="16" height="16" style="vertical-align: middle" />
-                  <template v-else>📞</template>
+                  <img v-else src="/phone-icon.svg" alt="Telefone" width="16" height="16" style="vertical-align: middle" />
                 </span>
                 <span :class="styles.contactName">{{ contact.name }}</span>
                 <a v-if="isWhatsAppNumber(contact)" :href="waLink(contact)" target="_blank" rel="noopener noreferrer" :class="styles.whatsappLink">
