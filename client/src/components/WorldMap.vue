@@ -47,19 +47,16 @@ function createCurvedPath(dot: Dot) {
 </script>
 
 <template>
-  <div class="relative w-full rounded-lg font-sans bg-transparent" style="aspect-ratio: 2/1">
+  <div style="position: relative; width: 100%; height: 100%; font-family: sans-serif; background: transparent;">
     <img
       :src="`data:image/svg+xml;utf8,${encodeURIComponent(svgMap)}`"
-      class="pointer-events-none w-full h-full select-none"
-      style="mask-image: linear-gradient(to bottom, transparent, white 10%, white 90%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, white 10%, white 90%, transparent);"
+      style="pointer-events: none; width: 100%; height: 100%; user-select: none; mask-image: linear-gradient(to bottom, transparent, white 10%, white 90%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, white 10%, white 90%, transparent); object-fit: contain;"
       alt="world map"
-      height="495"
-      width="1056"
       draggable="false"
     />
     <svg
       viewBox="0 0 800 400"
-      class="pointer-events-none absolute inset-0 w-full h-full select-none"
+      style="pointer-events: none; position: absolute; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: 100%; user-select: none;"
     >
       <g
         v-for="(dot, i) in props.dots"
