@@ -3,12 +3,12 @@ const db = require('../data');
 
 const router = express.Router();
 
-router.get('/', (req, res) => {
-  res.json(db.getAnalytics());
+router.get('/', async (req, res) => {
+  res.json(await db.getAnalytics());
 });
 
-router.post('/visit', (req, res) => {
-  res.json(db.registerVisit());
+router.post('/visit', async (req, res) => {
+  res.json(await db.registerVisit());
 });
 
 module.exports = router;

@@ -3,8 +3,8 @@ const db = require('../data');
 
 const router = express.Router();
 
-router.get('/', (req, res) => {
-  res.json(db.getReports());
+router.get('/', async (req, res) => {
+  res.json(await db.getReports());
 });
 
 router.post('/', async (req, res) => {
@@ -12,9 +12,9 @@ router.post('/', async (req, res) => {
   res.json(await db.submitReport(name, ramal, message));
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   const id = Number(req.params.id);
-  res.json(db.deleteReport(id));
+  res.json(await db.deleteReport(id));
 });
 
 module.exports = router;

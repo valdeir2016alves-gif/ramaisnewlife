@@ -9,8 +9,10 @@
     "server:only": "node src/index.js"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "concurrently": "^10.0.5",
     "cors": "^2.8.5",
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "pg": "^8.13.1"
   }
 }

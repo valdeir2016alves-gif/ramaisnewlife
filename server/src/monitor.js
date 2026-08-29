@@ -1,15 +1,8 @@
-const fs = require('fs');
 const net = require('net');
-const path = require('path');
+const pool = require('./db/pool');
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
-
-// NOTE: kept identical to the previous monitor.js, including the fact that
-// it points at data/contacts.json rather than data/ramais.json (the actual
-// contacts file written by the app). This mismatch pre-dates this port.
-const ROOT_DIR = path.join(__dirname, '..', '..');
-const contactsFile = path.join(ROOT_DIR, 'data', 'contacts.json');
 
 let offlineIPs = new Set();
 
@@ -68,10 +61,9 @@ async function sendTelegramAlert(contact, isDown) {
 
 async function checkIPs() {
   try {
-    if (!fs.existsSync(contactsFile)) return;
-    const data = JSON.parse(fs.readFileSync(contactsFile, 'utf-8'));
+    const { rows } = await pool.query("SELECT id, name, department, ip, phone FROM contacts WHERE ip <> ''");
 
-    for (const contact of data) {
+    for (const contact of rows) {
       if (!contact.ip) continue;
 
       const isOnline = await pingIp(contact.ip);
@@ -91,6 +83,17 @@ async function checkIPs() {
   }
 }
 
+async function waitForContactsTable() {
+  for (let attempt = 0; attempt < 30; attempt++) {
+    const { rows } = await pool.query("SELECT to_regclass('public.contacts') AS reg");
+    if (rows[0].reg) return;
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+  console.error('[Monitor] Tabela contacts não apareceu a tempo; seguindo mesmo assim.');
+}
+
 console.log('[Monitor] Iniciando monitoramento de IP...');
-setInterval(checkIPs, 3 * 60 * 1000);
-checkIPs();
+waitForContactsTable().then(() => {
+  setInterval(checkIPs, 3 * 60 * 1000);
+  checkIPs();
+});

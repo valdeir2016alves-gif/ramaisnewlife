@@ -1,222 +1,116 @@
-const fs = require('fs');
-const path = require('path');
+const bcrypt = require('bcryptjs');
+const pool = require('./db/pool');
 
-// IMPORTANT: paths and filenames below are kept identical to the previous
-// Next.js version (app/actions.ts) so the existing production Docker volume
-// (mounted at /app/data) keeps working without any migration step.
-
-const ROOT_DIR = path.join(__dirname, '..', '..');
-
-const getDataDir = () => path.join(ROOT_DIR, 'data');
-
-const getDbPath = () => {
-  const dataDir = getDataDir();
-  return fs.existsSync(dataDir)
-    ? path.join(dataDir, 'ramais.json')
-    : path.join(ROOT_DIR, 'ramais.json');
-};
-
-const getDescriptionsPath = () => {
-  const dataDir = getDataDir();
-  return fs.existsSync(dataDir)
-    ? path.join(dataDir, 'descriptions.json')
-    : path.join(ROOT_DIR, 'descriptions.json');
-};
-
-const getSeedPath = () => path.join(ROOT_DIR, 'ramais.json.seed');
-
-const getReportsPath = () => {
-  const dataDir = getDataDir();
-  return fs.existsSync(dataDir)
-    ? path.join(dataDir, 'reports.json')
-    : path.join(ROOT_DIR, 'reports.json');
-};
-
-const getUsersPath = () => {
-  const dataDir = getDataDir();
-  return fs.existsSync(dataDir)
-    ? path.join(dataDir, 'users.json')
-    : path.join(ROOT_DIR, 'users.json');
-};
-
-const getAnalyticsPath = () => {
-  const dataDir = getDataDir();
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-  }
-  return path.join(dataDir, 'analytics.json');
-};
-
-function getLastUpdated() {
-  try {
-    const dbPath = getDbPath();
-    if (fs.existsSync(dbPath)) {
-      const stats = fs.statSync(dbPath);
-      return stats.mtime.toLocaleDateString('pt-BR');
-    }
-    return new Date().toLocaleDateString('pt-BR');
-  } catch (e) {
-    return new Date().toLocaleDateString('pt-BR');
-  }
+function rowToContact(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    phone: row.phone,
+    department: row.department,
+    ip: row.ip,
+    city: row.city,
+    phoneModel: row.phone_model,
+    hidden: row.hidden,
+  };
 }
 
-function ensureDefaultContacts(contacts) {
-  let changed = false;
-  contacts.forEach(c => {
-    if (c.department === 'Contatos Regionais e Externos' && c.city !== 'all') {
-      c.city = 'all';
-      changed = true;
-    } else if (!c.city) {
-      c.city = 'sao_gabriel';
-      changed = true;
-    }
-  });
-  return changed;
+async function getLastUpdated() {
+  const { rows } = await pool.query('SELECT MAX(updated_at) AS last_updated FROM contacts');
+  const lastUpdated = rows[0].last_updated;
+  return (lastUpdated ? new Date(lastUpdated) : new Date()).toLocaleDateString('pt-BR');
 }
 
-function readContacts() {
-  const dbPath = getDbPath();
-
-  if (!fs.existsSync(dbPath)) {
-    const seedPath = getSeedPath();
-    if (fs.existsSync(seedPath)) {
-      console.log('Restaurando json a partir do seed...');
-      fs.copyFileSync(seedPath, dbPath);
-    } else {
-      return [];
-    }
-  }
-
-  try {
-    const content = fs.readFileSync(dbPath, 'utf-8');
-    const parsed = JSON.parse(content);
-    const changed = ensureDefaultContacts(parsed);
-    if (changed) {
-      fs.writeFileSync(dbPath, JSON.stringify(parsed, null, 2), 'utf-8');
-    }
-    return parsed;
-  } catch (error) {
-    console.error('Erro ao ler ramais.json:', error);
-    return [];
-  }
-}
-
-function writeContacts(data) {
-  fs.writeFileSync(getDbPath(), JSON.stringify(data, null, 2), 'utf-8');
-}
-
-function getContacts(query) {
-  const contacts = readContacts();
+async function getContacts(query) {
+  let result;
   if (query) {
-    const q = query.toLowerCase();
-    return contacts.filter(
-      c => c.name.toLowerCase().includes(q) ||
-           c.phone.toLowerCase().includes(q) ||
-           c.department.toLowerCase().includes(q)
+    const q = `%${query}%`;
+    result = await pool.query(
+      `SELECT * FROM contacts WHERE name ILIKE $1 OR phone ILIKE $1 OR department ILIKE $1 ORDER BY sort_order`,
+      [q]
     );
+  } else {
+    result = await pool.query('SELECT * FROM contacts ORDER BY sort_order');
   }
-  return contacts;
+  return result.rows.map(rowToContact);
 }
 
-function addContact(name, phone, department, ip = '', city = 'sao_gabriel', phoneModel = '') {
-  const contacts = readContacts();
-  const newId = contacts.length > 0 ? Math.max(...contacts.map(c => c.id)) + 1 : 1;
-  const newContact = { id: newId, name, phone, department, ip, city, phoneModel };
-  contacts.push(newContact);
-  writeContacts(contacts);
-  return { success: true, contact: newContact };
+async function addContact(name, phone, department, ip = '', city = 'sao_gabriel', phoneModel = '') {
+  const { rows } = await pool.query(
+    `INSERT INTO contacts (id, name, phone, department, ip, city, phone_model, sort_order)
+     VALUES (
+       COALESCE((SELECT MAX(id) FROM contacts), 0) + 1,
+       $1, $2, $3, $4, $5, $6,
+       COALESCE((SELECT MAX(sort_order) FROM contacts), -1) + 1
+     )
+     RETURNING *`,
+    [name, phone, department, ip, city, phoneModel]
+  );
+  return { success: true, contact: rowToContact(rows[0]) };
 }
 
-function toggleContactVisibility(id, hidden) {
-  const contacts = readContacts();
-  const index = contacts.findIndex(c => c.id === id);
-  if (index !== -1) {
-    contacts[index].hidden = hidden;
-    writeContacts(contacts);
-    return { success: true };
-  }
-  return { success: false, error: 'Contato não encontrado' };
-}
-
-function deleteContact(id) {
-  const contacts = readContacts();
-  const newContacts = contacts.filter(c => c.id !== id);
-  writeContacts(newContacts);
+async function toggleContactVisibility(id, hidden) {
+  const result = await pool.query(
+    'UPDATE contacts SET hidden = $1, updated_at = now() WHERE id = $2',
+    [hidden, id]
+  );
+  if (result.rowCount === 0) return { success: false, error: 'Contato não encontrado' };
   return { success: true };
 }
 
-function updateContact(id, name, phone, department, ip = '', city = 'sao_gabriel', phoneModel = '') {
-  const contacts = readContacts();
-  const index = contacts.findIndex(c => c.id === id);
-  if (index !== -1) {
-    contacts[index] = { id, name, phone, department, ip, city, phoneModel };
-    writeContacts(contacts);
-  }
+async function deleteContact(id) {
+  await pool.query('DELETE FROM contacts WHERE id = $1', [id]);
   return { success: true };
 }
 
-function reorderContact(id, direction) {
-  const contacts = readContacts();
-  const index = contacts.findIndex(c => c.id === id);
+async function updateContact(id, name, phone, department, ip = '', city = 'sao_gabriel', phoneModel = '') {
+  await pool.query(
+    `UPDATE contacts
+     SET name = $1, phone = $2, department = $3, ip = $4, city = $5, phone_model = $6, updated_at = now()
+     WHERE id = $7`,
+    [name, phone, department, ip, city, phoneModel, id]
+  );
+  return { success: true };
+}
+
+async function reorderContact(id, direction) {
+  const { rows } = await pool.query('SELECT id, sort_order FROM contacts ORDER BY sort_order');
+  const index = rows.findIndex((r) => r.id === id);
   if (index === -1) return { success: false, error: 'Contact not found' };
 
-  if (direction === 'up' && index > 0) {
-    const temp = contacts[index - 1];
-    contacts[index - 1] = contacts[index];
-    contacts[index] = temp;
-    writeContacts(contacts);
-  } else if (direction === 'down' && index < contacts.length - 1) {
-    const temp = contacts[index + 1];
-    contacts[index + 1] = contacts[index];
-    contacts[index] = temp;
-    writeContacts(contacts);
-  }
-  return { success: true };
-}
+  const swapWith = direction === 'up' ? index - 1 : direction === 'down' ? index + 1 : -1;
+  if (swapWith < 0 || swapWith >= rows.length) return { success: true };
 
-function renameDepartment(oldDepartment, newDepartment) {
-  const contacts = readContacts();
-  let updated = false;
-  contacts.forEach(c => {
-    if (c.department === oldDepartment) {
-      c.department = newDepartment;
-      updated = true;
-    }
-  });
-  if (updated) {
-    writeContacts(contacts);
-  }
-  return { success: true };
-}
+  const current = rows[index];
+  const neighbor = rows[swapWith];
 
-function readReports() {
-  const dbPath = getReportsPath();
-  if (!fs.existsSync(dbPath)) return [];
+  const client = await pool.connect();
   try {
-    const content = fs.readFileSync(dbPath, 'utf-8');
-    return JSON.parse(content);
-  } catch (error) {
-    console.error('Erro ao ler reports.json:', error);
-    return [];
+    await client.query('BEGIN');
+    await client.query('UPDATE contacts SET sort_order = $1 WHERE id = $2', [neighbor.sort_order, current.id]);
+    await client.query('UPDATE contacts SET sort_order = $1 WHERE id = $2', [current.sort_order, neighbor.id]);
+    await client.query('COMMIT');
+  } catch (e) {
+    await client.query('ROLLBACK');
+    throw e;
+  } finally {
+    client.release();
   }
+  return { success: true };
 }
 
-function writeReports(data) {
-  fs.writeFileSync(getReportsPath(), JSON.stringify(data, null, 2), 'utf-8');
+async function renameDepartment(oldDepartment, newDepartment) {
+  await pool.query(
+    'UPDATE contacts SET department = $1, updated_at = now() WHERE department = $2',
+    [newDepartment, oldDepartment]
+  );
+  return { success: true };
 }
 
 async function submitReport(name, ramal, message) {
-  const reports = readReports();
-  const newId = reports.length > 0 ? Math.max(...reports.map(r => r.id)) + 1 : 1;
-  const newReport = {
-    id: newId,
-    date: new Date().toISOString(),
-    name,
-    ramal,
-    message
-  };
-  reports.push(newReport);
-  writeReports(reports);
+  await pool.query(
+    'INSERT INTO reports (name, ramal, message) VALUES ($1, $2, $3)',
+    [name, ramal, message]
+  );
 
   const telegramToken = process.env.TELEGRAM_BOT_TOKEN;
   const telegramChatId = process.env.TELEGRAM_CHAT_ID;
@@ -243,188 +137,112 @@ async function submitReport(name, ramal, message) {
   return { success: true };
 }
 
-function getReports() {
-  return readReports();
+async function getReports() {
+  const { rows } = await pool.query('SELECT * FROM reports ORDER BY date DESC');
+  return rows.map((r) => ({ id: r.id, date: r.date.toISOString(), name: r.name, ramal: r.ramal, message: r.message }));
 }
 
-function deleteReport(id) {
-  const reports = readReports();
-  const newReports = reports.filter(r => r.id !== id);
-  writeReports(newReports);
+async function deleteReport(id) {
+  await pool.query('DELETE FROM reports WHERE id = $1', [id]);
   return { success: true };
 }
 
-function ensureDefaultUser(users) {
-  if (users.length === 0) {
-    users.push({
-      id: 1,
-      username: 'admin',
-      password: 'newlife33',
-      role: 'admin'
-    });
-    return true;
-  }
-  return false;
-}
-
-function readUsers() {
-  const dbPath = getUsersPath();
-  let users = [];
-  if (fs.existsSync(dbPath)) {
-    try {
-      const content = fs.readFileSync(dbPath, 'utf-8');
-      users = JSON.parse(content);
-    } catch (error) {
-      console.error('Erro ao ler users.json:', error);
-    }
-  }
-
-  if (ensureDefaultUser(users)) {
-    writeUsers(users);
-  }
-  return users;
-}
-
-function writeUsers(data) {
-  fs.writeFileSync(getUsersPath(), JSON.stringify(data, null, 2), 'utf-8');
-}
-
-function authenticateUser(username, password) {
-  const users = readUsers();
-  const user = users.find(u => u.username === username && u.password === password);
-  if (user) {
-    const { password: _pw, ...userWithoutPassword } = user;
-    return { success: true, user: userWithoutPassword };
+async function authenticateUser(username, password) {
+  const { rows } = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+  const user = rows[0];
+  if (user && bcrypt.compareSync(password, user.password_hash)) {
+    return { success: true, user: { id: user.id, username: user.username, role: user.role } };
   }
   return { success: false, error: 'Usuário ou senha incorretos.' };
 }
 
-function getUsers() {
-  const users = readUsers();
-  return users.map(({ password, ...u }) => u);
+async function getUsers() {
+  const { rows } = await pool.query('SELECT id, username, role FROM users ORDER BY id');
+  return rows;
 }
 
-function addUser(username, password, role) {
-  const users = readUsers();
-  if (users.find(u => u.username === username)) {
+async function addUser(username, password, role) {
+  const { rows } = await pool.query('SELECT id FROM users WHERE username = $1', [username]);
+  if (rows.length > 0) {
     return { success: false, error: 'Usuário já existe.' };
   }
-  const newId = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
-  users.push({ id: newId, username, password, role });
-  writeUsers(users);
+  const passwordHash = bcrypt.hashSync(password, 10);
+  await pool.query(
+    'INSERT INTO users (username, password_hash, role) VALUES ($1, $2, $3)',
+    [username, passwordHash, role]
+  );
   return { success: true };
 }
 
-function updateUser(id, username, password, role) {
-  const users = readUsers();
-  const index = users.findIndex(u => u.id === id);
-  if (index === -1) return { success: false, error: 'Usuário não encontrado.' };
+async function updateUser(id, username, password, role) {
+  const { rows } = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+  const existing = rows[0];
+  if (!existing) return { success: false, error: 'Usuário não encontrado.' };
 
-  if (username !== users[index].username && users.find(u => u.username === username)) {
-    return { success: false, error: 'Usuário já existe.' };
+  if (username !== existing.username) {
+    const { rows: clash } = await pool.query('SELECT id FROM users WHERE username = $1', [username]);
+    if (clash.length > 0) return { success: false, error: 'Usuário já existe.' };
   }
 
-  users[index].username = username;
-  if (password) users[index].password = password;
-  if (role) users[index].role = role;
-
-  writeUsers(users);
+  const passwordHash = password ? bcrypt.hashSync(password, 10) : existing.password_hash;
+  await pool.query(
+    'UPDATE users SET username = $1, password_hash = $2, role = $3 WHERE id = $4',
+    [username, passwordHash, role || existing.role, id]
+  );
   return { success: true };
 }
 
-function deleteUser(id) {
-  const users = readUsers();
-  if (users.length <= 1) return { success: false, error: 'Não é possível deletar o último usuário do sistema.' };
-  const newUsers = users.filter(u => u.id !== id);
-  writeUsers(newUsers);
+async function deleteUser(id) {
+  const { rows } = await pool.query('SELECT COUNT(*)::int AS count FROM users');
+  if (rows[0].count <= 1) return { success: false, error: 'Não é possível deletar o último usuário do sistema.' };
+  await pool.query('DELETE FROM users WHERE id = $1', [id]);
   return { success: true };
 }
 
-function readAnalytics() {
+async function registerVisit() {
   try {
-    const filePath = getAnalyticsPath();
-    if (!fs.existsSync(filePath)) {
-      return [];
-    }
-    const data = fs.readFileSync(filePath, 'utf8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error('Error reading analytics:', error);
-    return [];
-  }
-}
-
-function writeAnalytics(data) {
-  try {
-    fs.writeFileSync(getAnalyticsPath(), JSON.stringify(data, null, 2), 'utf8');
-  } catch (error) {
-    console.error('Error writing analytics:', error);
-  }
-}
-
-function registerVisit() {
-  try {
-    const stats = readAnalytics();
     const today = new Date().toISOString().split('T')[0];
-
-    const todayStat = stats.find(s => s.date === today);
-    if (todayStat) {
-      todayStat.visits += 1;
-    } else {
-      stats.push({ date: today, visits: 1 });
-    }
-
-    if (stats.length > 30) {
-      stats.shift();
-    }
-
-    writeAnalytics(stats);
+    await pool.query(
+      `INSERT INTO analytics (date, visits) VALUES ($1, 1)
+       ON CONFLICT (date) DO UPDATE SET visits = analytics.visits + 1`,
+      [today]
+    );
+    await pool.query(
+      `DELETE FROM analytics WHERE date NOT IN (SELECT date FROM analytics ORDER BY date DESC LIMIT 30)`
+    );
     return { success: true };
   } catch (error) {
     return { success: false };
   }
 }
 
-function getAnalytics() {
-  return readAnalytics();
+async function getAnalytics() {
+  const { rows } = await pool.query('SELECT * FROM analytics ORDER BY date');
+  return rows.map((r) => ({ date: r.date.toISOString().split('T')[0], visits: r.visits }));
 }
 
-function getDepartmentDescriptions() {
-  try {
-    const dbPath = getDescriptionsPath();
-    const seedPath = path.join(ROOT_DIR, 'descriptions.json');
-
-    if (!fs.existsSync(dbPath) && fs.existsSync(seedPath)) {
-      fs.copyFileSync(seedPath, dbPath);
-    }
-
-    if (fs.existsSync(dbPath)) {
-      const data = fs.readFileSync(dbPath, 'utf8');
-      return JSON.parse(data);
-    }
-  } catch (e) {
-    console.error('Failed to read descriptions.json', e);
+async function getDepartmentDescriptions() {
+  const { rows } = await pool.query('SELECT department_key, description FROM descriptions');
+  const result = {};
+  for (const row of rows) {
+    result[row.department_key] = row.description;
   }
-  return {};
+  return result;
 }
 
-function updateDepartmentDescription(department, description) {
+async function updateDepartmentDescription(department, description) {
   try {
-    const dbPath = getDescriptionsPath();
-    let data = {};
-    if (fs.existsSync(dbPath)) {
-      data = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
-    }
-
     const normalized = department.toLowerCase().replace(/–/g, '-').trim();
 
     if (description.trim() === '') {
-      delete data[normalized];
+      await pool.query('DELETE FROM descriptions WHERE department_key = $1', [normalized]);
     } else {
-      data[normalized] = description;
+      await pool.query(
+        `INSERT INTO descriptions (department_key, description) VALUES ($1, $2)
+         ON CONFLICT (department_key) DO UPDATE SET description = $2`,
+        [normalized, description]
+      );
     }
-
-    fs.writeFileSync(dbPath, JSON.stringify(data, null, 2), 'utf8');
     return { success: true };
   } catch (e) {
     console.error('Failed to update description', e);

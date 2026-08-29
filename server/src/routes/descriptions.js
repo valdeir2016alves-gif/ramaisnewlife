@@ -3,13 +3,13 @@ const db = require('../data');
 
 const router = express.Router();
 
-router.get('/', (req, res) => {
-  res.json(db.getDepartmentDescriptions());
+router.get('/', async (req, res) => {
+  res.json(await db.getDepartmentDescriptions());
 });
 
-router.put('/', (req, res) => {
+router.put('/', async (req, res) => {
   const { department, description } = req.body;
-  res.json(db.updateDepartmentDescription(department, description));
+  res.json(await db.updateDepartmentDescription(department, description));
 });
 
 module.exports = router;

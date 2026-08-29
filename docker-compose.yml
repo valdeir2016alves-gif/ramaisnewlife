@@ -2,18 +2,83 @@
 
 services:
   web:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     container_name: ramais-new-life
     restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql://ramais:${POSTGRES_PASSWORD}@postgres:5432/ramais
+      - MINIO_ENDPOINT=minio
+      - MINIO_PORT=9000
+      - MINIO_ACCESS_KEY=${MINIO_ROOT_USER}
+      - MINIO_SECRET_KEY=${MINIO_ROOT_PASSWORD}
+      - MINIO_BUCKET=ramais-media
     ports:
       - "3001:3000"
-    # IMPORTANTE: Usamos um Docker Named Volume (ramais_data) para armazenar os dados.
-    # Isso garante que o banco de dados seja salvo permanentemente sem causar
-    # erros de "Segmentation Fault" (código 139) que ocorrem ao usar pastas do Windows.
+    # IMPORTANTE: dados legados (JSON) continuam no volume ramais_data — são
+    # lidos uma única vez pela migração automática que popula o Postgres na
+    # primeira subida. Depois disso o volume fica sem uso, mas não é apagado.
     volumes:
       - ramais_data:/app/data
 
+  postgres:
+    image: postgres:16-alpine
+    container_name: ramais-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=ramais
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=ramais
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ramais"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    container_name: ramais-minio
+    restart: unless-stopped
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    ports:
+      # Só o console fica exposto pro host, para administração manual do
+      # bucket. A API S3 (9000) fica só na rede interna do compose até
+      # existir uma feature que precise acessá-la de fora.
+      - "9001:9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio-init:
+    image: minio/mc:latest
+    container_name: ramais-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD &&
+      mc mb --ignore-existing local/ramais-media
+      "
+    restart: "no"
+
 volumes:
   ramais_data:
+  postgres_data:
+  minio_data:
