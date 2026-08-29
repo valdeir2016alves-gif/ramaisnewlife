@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ramais - New Life
 
-## Getting Started
+Diretório de contatos internos, com painel de administração. Migrado de Next.js/React para **Vue 3 (Vite) + Express**.
 
-First, run the development server:
+## Estrutura
+
+- `client/` — frontend em Vue 3 + Vite (SPA).
+- `server/` — backend em Express, expõe a API em `/api/*` e, em produção, também serve os arquivos estáticos do frontend.
+- `data/` — arquivos JSON com os dados (contatos, usuários, relatórios, descrições, estatísticas de acesso). Em produção é um volume Docker persistente.
+
+## Rodando em desenvolvimento
+
+Instale as dependências do backend e do frontend:
+
+```bash
+npm run install:all
+```
+
+Suba os dois serviços em paralelo (backend na porta 3000, frontend com hot-reload na porta 5173, com proxy de `/api` para o backend):
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Acesse [http://localhost:5173](http://localhost:5173).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Build de produção
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+Isso gera o build do Vue em `client/dist`, copia para `server/public`, e sobe o Express (porta 3000, configurável via `PORT`) servindo tudo — API e frontend — num único processo.
 
-To learn more about Next.js, take a look at the following resources:
+## Docker
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+docker compose up -d --build
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+O `docker-compose.yml` mantém o mesmo volume nomeado `ramais_data` montado em `/app/data`, usado nas versões anteriores do projeto — os dados existentes não são perdidos.
 
-## Deploy on Vercel
+## Variáveis de ambiente opcionais
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` — habilitam notificações no Telegram para relatos de contato incorreto e alertas do monitor de IP.

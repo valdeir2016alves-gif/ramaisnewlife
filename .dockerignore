@@ -1,10 +1,11 @@
 Dockerfile
 .dockerignore
 node_modules
+client/node_modules
+server/node_modules
 npm-debug.log
 README.md
-.next
+client/dist
+data
 .git
 .gitignore
-ramais.db-shm
-ramais.db-wal

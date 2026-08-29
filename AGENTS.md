@@ -1,9 +1,7 @@
-<!-- BEGIN:nextjs-agent-rules -->
+# Ramais New Life
 
-# This is NOT the Next.js you know
+Migrado de Next.js/React para **Vue 3 (Vite) + Express**. Ver [README.md](README.md) para como rodar.
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
-
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
-
-<!-- END:nextjs-agent-rules -->
+- `client/` — SPA em Vue 3 + Vite. Fala com o backend via `/api/*` (proxy do Vite em dev, mesmo servidor em produção).
+- `server/` — API Express. Toda a persistência é feita em arquivos JSON dentro de `data/` (`ramais.json`, `users.json`, `reports.json`, `descriptions.json`, `analytics.json`) — não há banco SQL real em uso, apesar do nome do volume Docker (`ramais_data`). Em produção esse diretório é um volume Docker nomeado; não apagar nem recriar.
+- Em produção, o Express serve tanto a API quanto os arquivos estáticos do build do Vue (pasta `server/public`, gerada por `npm run build`), num único container.

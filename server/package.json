@@ -1,0 +1,16 @@
+{
+  "name": "ramais-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "start": "concurrently \"node src/index.js\" \"node src/monitor.js\"",
+    "dev": "concurrently \"node --watch src/index.js\" \"node src/monitor.js\"",
+    "server:only": "node src/index.js"
+  },
+  "dependencies": {
+    "concurrently": "^10.0.5",
+    "cors": "^2.8.5",
+    "express": "^4.21.2"
+  }
+}

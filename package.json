@@ -1,27 +1,14 @@
 {
   "name": "ramais",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"next dev\" \"node monitor.js\"",
-    "build": "next build",
-    "start": "concurrently \"next start\" \"node monitor.js\"",
-    "lint": "eslint"
-  },
-  "dependencies": {
-    "@types/better-sqlite3": "^9.6.0",
-    "concurrently": "^10.0.5",
-    "next": "16.3.0",
-    "react": "19.2.8",
-    "react-dom": "19.2.8",
-    "recharts": "^3.10.1"
+    "install:all": "npm install --prefix server && npm install --prefix client",
+    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "build": "npm run build --prefix client && rm -rf server/public && cp -r client/dist server/public",
+    "start": "npm run start --prefix server"
   },
   "devDependencies": {
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.3.0",
-    "typescript": "^5"
+    "concurrently": "^10.0.5"
   }
 }
