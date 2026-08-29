@@ -3,6 +3,7 @@ import { ref, reactive, computed, onMounted, watch } from 'vue';
 import styles from '../styles/page.module.css';
 import UnderlineText from '../components/UnderlineText.vue';
 import GlowCard from '../components/GlowCard.vue';
+import WorldMap from '../components/WorldMap.vue';
 import InfoButton from '../components/InfoButton.vue';
 import {
   getContacts, getLastUpdated, getDepartmentDescriptions,
@@ -57,6 +58,18 @@ const city = ref('sao_gabriel');
 const theme = ref('dark');
 const activeTooltip = ref(null);
 const showInstructions = ref(false);
+const showMap = ref(false);
+
+const mapDots = [
+  {
+    start: { lat: -28.2628, lng: -52.4067, label: "Passo Fundo" },
+    end: { lat: -30.3361, lng: -54.3204, label: "São Gabriel" }
+  },
+  {
+    start: { lat: -30.3361, lng: -54.3204, label: "São Gabriel" },
+    end: { lat: -31.3285, lng: -54.1068, label: "Bagé" }
+  }
+];
 const showReportModal = ref(false);
 const reportName = ref('');
 const reportRamal = ref('');
@@ -272,6 +285,16 @@ function openTooltip(department, text) {
               ❓ Instruções
             </button>
           </GlowCard>
+          <GlowCard :inner-class-name="styles.glowButtonInner" :class-name="styles.instructionsButtonWrapper" :style="{ '--glow-color': 'rgba(255, 255, 255, 0.4)' }">
+            <button
+              @click="showMap = true"
+              :class="styles.instructionsButton"
+              title="Mapa de Filiais"
+              style="border: none; background: transparent"
+            >
+              🗺️ Mapa
+            </button>
+          </GlowCard>
           <button
             @click="toggleTheme"
             :class="styles.themeToggle"
@@ -436,6 +459,23 @@ function openTooltip(department, text) {
                 </div>
               </div>
             </GlowCard>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="showMap" :class="styles.modalOverlay" @click="showMap = false">
+        <div :class="styles.modalContent" style="max-width: 900px" @click.stop>
+          <div :class="styles.modalHeader">
+            <h3>Mapa das Filiais</h3>
+            <button :class="styles.closeButton" @click="showMap = false">✕</button>
+          </div>
+          <div :class="styles.modalBody" style="padding: 1rem; width: 100%; height: 500px; display: flex; justify-content: center; align-items: center">
+            <WorldMap 
+              :dots="mapDots"
+              lineColor="#0EA5E9"
+              mapColor="#ffffff"
+              mapBgColor="#000000"
+            />
           </div>
         </div>
       </div>
