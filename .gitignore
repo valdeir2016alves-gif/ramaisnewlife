@@ -1,24 +1,15 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+node_modules
+client/node_modules
+server/node_modules
 
-# testing
-/coverage
+# build output
+client/dist
+server/public
 
-# next.js
-/.next/
-/out/
-
-# production
-/build
+# local runtime data (production data lives in the Docker named volume)
+/data
+*.tsbuildinfo
 
 # misc
 .DS_Store
@@ -32,10 +23,3 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
