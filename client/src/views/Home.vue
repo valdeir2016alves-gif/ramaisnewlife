@@ -3,7 +3,7 @@ import { ref, reactive, computed, onMounted, watch } from 'vue';
 import styles from '../styles/page.module.css';
 import UnderlineText from '../components/UnderlineText.vue';
 import GlowCard from '../components/GlowCard.vue';
-import WorldMap from '../components/WorldMap.vue';
+import MapImage from '../components/MapImage.vue';
 import InfoButton from '../components/InfoButton.vue';
 import {
   getContacts, getLastUpdated, getDepartmentDescriptions,
@@ -470,12 +470,7 @@ function openTooltip(department, text) {
             <button :class="styles.closeButton" @click="showMap = false">✕</button>
           </div>
           <div :class="styles.modalBody" style="padding: 1rem; width: 100%; height: 500px; display: flex; justify-content: center; align-items: center">
-            <WorldMap 
-              :dots="mapDots"
-              lineColor="#0EA5E9"
-              mapColor="#ffffff"
-              mapBgColor="#000000"
-            />
+            <MapImage />
           </div>
         </div>
       </div>
