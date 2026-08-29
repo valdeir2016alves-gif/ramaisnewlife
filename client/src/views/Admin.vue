@@ -295,7 +295,7 @@ async function handleSaveDescription(dept, newDesc, done) {
       <div :class="[styles.loginBox, 'glass']">
         <div style="display: flex; justify-content: center; margin-bottom: 1.5rem">
           <GlareCard :style="{ width: '220px', height: '120px' }">
-            <img src="/admin-logo-glare.png" alt="Admin Logo" width="220" height="120" style="object-fit: contain; filter: drop-shadow(0 0 10px rgba(255,255,255,0.2))" />
+            <img src="/novo-logo.jpg" alt="Admin Logo" width="220" height="120" style="object-fit: contain; filter: drop-shadow(0 0 10px rgba(255,255,255,0.2))" />
           </GlareCard>
         </div>
         <h1 :class="styles.title">Admin - Contatos</h1>

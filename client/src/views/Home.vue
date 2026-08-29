@@ -202,7 +202,7 @@ function openTooltip(department, text) {
       <div style="max-width: 320px; margin: 40px auto; background: var(--card-bg); padding: 1.5rem 1.5rem; border-radius: 12px; border: 1px solid var(--card-border); box-shadow: 0 10px 25px rgba(0,0,0,0.1)">
         <div style="text-align: center; margin-bottom: 1.5rem">
           <div style="display: flex; justify-content: center; width: 100%; margin-bottom: 1rem">
-            <img src="/logo.png" alt="New Life Logo" width="220" height="75" style="object-fit: contain; filter: var(--logo-filter); max-height: 75px; width: auto" />
+            <img src="/novo-logo.jpg" alt="New Life Logo" width="220" height="75" style="object-fit: contain; filter: var(--logo-filter); max-height: 75px; width: auto" />
           </div>
           <h2 style="color: var(--primary-color); margin-top: 0; margin-bottom: 0.5rem; font-size: 1.25rem">Acesso Interno</h2>
           <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.4">
@@ -240,7 +240,7 @@ function openTooltip(department, text) {
         <div :class="styles.logoContainer">
           <a href="https://minhanewlife.com.br/" target="_blank" rel="noopener noreferrer" style="display: inline-block">
             <img
-              src="/logo.png"
+              src="/novo-logo.jpg"
               alt="New Life"
               width="320"
               height="128"
