@@ -195,6 +195,24 @@ function isImoveisDept(department) {
 function openTooltip(department, text) {
   activeTooltip.value = { department, text };
 }
+
+const expandedPersons = ref([]);
+function togglePerson(key) {
+  const idx = expandedPersons.value.indexOf(key);
+  if (idx > -1) expandedPersons.value.splice(idx, 1);
+  else expandedPersons.value.push(key);
+}
+
+function groupContactsByName(deptContacts) {
+  if (!deptContacts) return [];
+  const groups = {};
+  deptContacts.forEach(c => {
+    const name = c.name.trim();
+    if (!groups[name]) groups[name] = [];
+    groups[name].push(c);
+  });
+  return Object.entries(groups).map(([name, phones]) => ({ name, phones }));
+}
 </script>
 
 <template>
@@ -323,16 +341,26 @@ function openTooltip(department, text) {
               </div>
             </div>
             <div :class="styles.contactList">
-              <div v-for="contact in regionalContacts" :key="contact.id" :class="styles.contactItem">
-                <span :class="styles.chevron">
-                  <img v-if="isWhatsAppNumber(contact)" src="/whatsapp-icon.svg" alt="WhatsApp" width="16" height="16" style="vertical-align: middle" />
-                  <img v-else src="/phone-icon.svg" alt="Telefone" width="16" height="16" style="vertical-align: middle" />
-                </span>
-                <span :class="styles.contactName">{{ contact.name }}</span>
-                <a v-if="isWhatsAppNumber(contact)" :href="waLink(contact)" target="_blank" rel="noopener noreferrer" :class="styles.whatsappLink">
-                  {{ contact.phone }}
-                </a>
-                <span v-else :class="styles.contactPhone">{{ contact.phone }}</span>
+              <div v-for="person in groupContactsByName(regionalContacts)" :key="person.name" style="margin-bottom: 0.25rem;">
+                <div @click="togglePerson('Regional-' + person.name)" style="display: flex; align-items: center; cursor: pointer; user-select: none;">
+                  <span :class="styles.chevron" :style="{ width: '16px', marginRight: '6px', transform: expandedPersons.includes('Regional-' + person.name) ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease', display: 'inline-flex', justifyContent: 'center' }">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                  </span>
+                  <span :class="styles.contactName" style="margin: 0;">{{ person.name }}</span>
+                </div>
+                
+                <div v-if="expandedPersons.includes('Regional-' + person.name)" style="padding-left: 22px; display: flex; flex-direction: column; gap: 4px; margin-top: 6px;">
+                  <div v-for="contact in person.phones" :key="contact.id" :class="styles.contactItem" style="margin-bottom: 2px;">
+                    <span :class="styles.chevron" style="width: 16px;">
+                      <img v-if="isWhatsAppNumber(contact)" src="/whatsapp-icon.svg" alt="WhatsApp" width="14" height="14" style="vertical-align: middle" />
+                      <img v-else src="/phone-icon.svg" alt="Telefone" width="14" height="14" style="vertical-align: middle" />
+                    </span>
+                    <a v-if="isWhatsAppNumber(contact)" :href="waLink(contact)" target="_blank" rel="noopener noreferrer" :class="styles.whatsappLink" style="font-size: 0.85rem">
+                      {{ contact.phone }}
+                    </a>
+                    <span v-else :class="styles.contactPhone" style="font-size: 0.85rem">{{ contact.phone }}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -381,16 +409,26 @@ function openTooltip(department, text) {
             </div>
 
             <div :class="styles.contactList">
-              <div v-for="contact in deptContacts" :key="contact.id" :class="styles.contactItem">
-                <span :class="styles.chevron">
-                  <img v-if="isWhatsAppNumber(contact)" src="/whatsapp-icon.svg" alt="WhatsApp" width="16" height="16" style="vertical-align: middle" />
-                  <img v-else src="/phone-icon.svg" alt="Telefone" width="16" height="16" style="vertical-align: middle" />
-                </span>
-                <span :class="styles.contactName">{{ contact.name }}</span>
-                <a v-if="isWhatsAppNumber(contact)" :href="waLink(contact)" target="_blank" rel="noopener noreferrer" :class="styles.whatsappLink">
-                  {{ contact.phone }}
-                </a>
-                <span v-else :class="styles.contactPhone">{{ contact.phone }}</span>
+              <div v-for="person in groupContactsByName(deptContacts)" :key="person.name" style="margin-bottom: 0.25rem;">
+                <div @click="togglePerson(department + '-' + person.name)" style="display: flex; align-items: center; cursor: pointer; user-select: none;">
+                  <span :class="styles.chevron" :style="{ width: '16px', marginRight: '6px', transform: expandedPersons.includes(department + '-' + person.name) ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease', display: 'inline-flex', justifyContent: 'center' }">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                  </span>
+                  <span :class="styles.contactName" style="margin: 0;">{{ person.name }}</span>
+                </div>
+                
+                <div v-if="expandedPersons.includes(department + '-' + person.name)" style="padding-left: 22px; display: flex; flex-direction: column; gap: 4px; margin-top: 6px;">
+                  <div v-for="contact in person.phones" :key="contact.id" :class="styles.contactItem" style="margin-bottom: 2px;">
+                    <span :class="styles.chevron" style="width: 16px;">
+                      <img v-if="isWhatsAppNumber(contact)" src="/whatsapp-icon.svg" alt="WhatsApp" width="14" height="14" style="vertical-align: middle" />
+                      <img v-else src="/phone-icon.svg" alt="Telefone" width="14" height="14" style="vertical-align: middle" />
+                    </span>
+                    <a v-if="isWhatsAppNumber(contact)" :href="waLink(contact)" target="_blank" rel="noopener noreferrer" :class="styles.whatsappLink" style="font-size: 0.85rem">
+                      {{ contact.phone }}
+                    </a>
+                    <span v-else :class="styles.contactPhone" style="font-size: 0.85rem">{{ contact.phone }}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
