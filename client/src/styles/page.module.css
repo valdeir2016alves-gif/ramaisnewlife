@@ -142,31 +142,32 @@
 }
 
 .content {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-  align-items: start;
+  column-count: 1;
+  column-gap: 1rem;
 }
 
 @media (min-width: 768px) {
   .content {
-    grid-template-columns: repeat(2, 1fr);
+    column-count: 2;
   }
 }
 
 @media (min-width: 1200px) {
   .content {
-    grid-template-columns: repeat(3, 1fr);
+    column-count: 3;
   }
 }
 
 @media (min-width: 1600px) {
   .content {
-    grid-template-columns: repeat(4, 1fr);
+    column-count: 4;
   }
 }
 
 .departmentSection {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  margin-bottom: 0.85rem;
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: 12px;
