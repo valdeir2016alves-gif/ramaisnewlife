@@ -56,7 +56,7 @@ const contentStyles = computed(() => ({
 }
 
 .glowBorderContent {
-  background: var(--card-bg); /* Use theme background */
+  background: var(--bg-color); /* Use theme background solid to hide gradient in the center */
   width: 100%;
   height: 100%;
   z-index: 2;
