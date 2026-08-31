@@ -5,6 +5,7 @@ import GlareCard from '../components/GlareCard.vue';
 import EditableRow from '../components/EditableRow.vue';
 import DescriptionRow from '../components/DescriptionRow.vue';
 import StatsChart from '../components/StatsChart.vue';
+import Aurora from '../components/Aurora.vue';
 import {
   getContacts, addContact, deleteContact, updateContact, renameDepartment,
   getReports, deleteReport, authenticateUser, getUsers as fetchUsers,
@@ -290,6 +291,9 @@ async function handleSaveDescription(dept, newDesc, done) {
 </script>
 
 <template>
+  <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;">
+    <Aurora :color-stops="['#000B18', '#0047AB', '#000B18']" :blend="0.8" :amplitude="1.5" :speed="0.5" />
+  </div>
   <main :class="styles.container">
     <template v-if="!currentUser">
       <div :class="[styles.loginBox, 'glass']">
