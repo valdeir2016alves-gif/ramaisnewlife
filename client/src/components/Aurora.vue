@@ -133,8 +133,18 @@ let animateId = 0;
 let renderer: InstanceType<typeof Renderer> | null = null;
 let program: InstanceType<typeof Program> | null = null;
 let resizeHandler: (() => void) | null = null;
+let observer: MutationObserver | null = null;
+
+const isLightMode = ref(false);
 
 onMounted(() => {
+  isLightMode.value = document.documentElement.getAttribute('data-theme') === 'light' || localStorage.getItem('theme') === 'light';
+  
+  observer = new MutationObserver(() => {
+    isLightMode.value = document.documentElement.getAttribute('data-theme') === 'light';
+  });
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
   const ctn = ctnDom.value;
   if (!ctn) return;
 
@@ -196,7 +206,12 @@ onMounted(() => {
       program.uniforms.uTime.value = time * speed * 0.1;
       program.uniforms.uAmplitude.value = props.amplitude ?? 1.0;
       program.uniforms.uBlend.value = props.blend ?? 0.5;
-      program.uniforms.uColorStops.value = (props.colorStops ?? ['#171D22', '#7cff67', '#171D22']).map(
+      
+      const colorsToUse = isLightMode.value 
+        ? ['#EFF6FF', '#93C5FD', '#EFF6FF'] // Cores claras pro tema branco (azuis e brancos suaves)
+        : (props.colorStops ?? ['#171D22', '#7cff67', '#171D22']);
+
+      program.uniforms.uColorStops.value = colorsToUse.map(
         (hex: string) => {
           const c = new Color(hex);
           return [c.r, c.g, c.b];
@@ -212,6 +227,9 @@ onMounted(() => {
 
 onUnmounted(() => {
   cancelAnimationFrame(animateId);
+  if (observer) {
+    observer.disconnect();
+  }
   if (resizeHandler) {
     window.removeEventListener('resize', resizeHandler);
   }
