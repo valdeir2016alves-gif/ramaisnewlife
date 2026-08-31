@@ -396,7 +396,7 @@ function shouldGroupDepartment(department) {
         </button>
       </div>
 
-      <section :class="styles.content" style="margin-bottom: 5rem;">
+      <section :class="styles.content" style="margin-bottom: 15rem;">
         <div v-if="showNoResults" :class="styles.noResults">
           {{ noResultsText }}
         </div>
