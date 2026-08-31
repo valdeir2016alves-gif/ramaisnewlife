@@ -196,7 +196,7 @@ function openTooltip(department, text) {
 </script>
 
 <template>
-  <main :class="styles.main">
+  <main :class="styles.main" style="min-height: 100vh; display: flex; flex-direction: column;">
     <template v-if="isCheckingAuth">
       <div :class="styles.skeletonHeader"></div>
       <div :class="styles.skeletonTabs"></div>
@@ -392,12 +392,12 @@ function openTooltip(department, text) {
         </template>
       </section>
 
-      <footer :class="styles.footer">
-        <div style="display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem;">
+      <footer :class="styles.footer" style="margin-top: auto;">
+        <div style="display: flex; gap: 1rem; justify-content: flex-start; flex-wrap: wrap; margin-bottom: 2rem;">
           <GlowCard :style="{ '--glow-color': 'rgba(255,255,255,0.2)' }">
-            <div style="padding: 1.5rem; background: var(--card-bg); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; height: 100%; width: 280px;">
-              <h4 style="margin: 0; color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Acessos do dia a dia</h4>
-              <div :class="styles.footerLogos" style="margin: 0; gap: 1rem;">
+            <div style="padding: 1.25rem; background: var(--card-bg); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; height: 100%; width: 220px;">
+              <h4 style="margin: 0; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">Acessos do dia a dia</h4>
+              <div style="margin: 0; gap: 1rem; display: flex; align-items: center; justify-content: center;">
                 <div title="Sistema MK Solutions - Utilizado no dia a dia">
                   <a href="https://sac.newlifefibra.com.br/mk" target="_blank" rel="noopener noreferrer">
                     <img src="/mk-logo.webp" alt="MK Solutions" width="100" height="35" style="object-fit: contain; filter: var(--logo-filter)" />
@@ -413,9 +413,9 @@ function openTooltip(department, text) {
           </GlowCard>
 
           <GlowCard :style="{ '--glow-color': 'rgba(255,255,255,0.2)' }">
-            <button @click="showMap = true" style="padding: 1.5rem; background: var(--card-bg); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; height: 100%; cursor: pointer; border: none; width: 280px; font-family: inherit; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">
-              <h4 style="margin: 0; color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Presença no RS</h4>
-              <div style="font-size: 2.5rem; margin-top: 0.5rem;">🗺️</div>
+            <button @click="showMap = true" style="padding: 1.25rem; background: var(--card-bg); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; height: 100%; cursor: pointer; border: none; width: 220px; font-family: inherit; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">
+              <h4 style="margin: 0; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">Presença no RS</h4>
+              <div style="font-size: 2.2rem; margin-top: 0.5rem;">🗺️</div>
             </button>
           </GlowCard>
         </div>
