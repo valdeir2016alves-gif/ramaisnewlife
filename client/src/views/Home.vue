@@ -180,9 +180,19 @@ const groupedContacts = computed(() => {
 });
 
 const regionalContacts = computed(() => groupedContacts.value['Contatos Regionais e Externos']);
-const otherDepartments = computed(() =>
-  Object.entries(groupedContacts.value).filter(([dep]) => dep !== 'Contatos Regionais e Externos')
-);
+const otherDepartments = computed(() => {
+  const deps = Object.entries(groupedContacts.value).filter(([dep]) => dep !== 'Contatos Regionais e Externos');
+  // Ordenar para que os departamentos agrupados fiquem juntos (no início)
+  deps.sort((a, b) => {
+    const isA = shouldGroupDepartment(a[0]);
+    const isB = shouldGroupDepartment(b[0]);
+    if (isA && !isB) return -1;
+    if (!isA && isB) return 1;
+    if (isA && isB) return a[0].localeCompare(b[0]); // alfabético entre os agrupados
+    return 0; // mantém a ordem pros demais
+  });
+  return deps;
+});
 const showNoResults = computed(() => otherDepartments.value.length === 0 && !regionalContacts.value);
 const noResultsText = computed(() =>
   search.value.trim() !== '' || city.value !== 'passo_fundo' ? 'Nenhum contato encontrado.' : 'Em breve'
