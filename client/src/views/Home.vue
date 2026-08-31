@@ -3,6 +3,7 @@ import { ref, reactive, computed, onMounted, watch } from 'vue';
 import styles from '../styles/page.module.css';
 import UnderlineText from '../components/UnderlineText.vue';
 import GlowCard from '../components/GlowCard.vue';
+import GlowBorder from '../components/GlowBorder.vue';
 import MapImage from '../components/MapImage.vue';
 import InfoButton from '../components/InfoButton.vue';
 import Aurora from '../components/Aurora.vue';
@@ -324,16 +325,16 @@ function shouldGroupDepartment(department) {
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
           </div>
-          <GlowCard :inner-class-name="styles.glowButtonInner" :class-name="styles.instructionsButtonWrapper" :style="{ '--glow-color': 'rgba(255, 255, 255, 0.4)' }">
+          <GlowBorder :color="['#A07CFE', '#FE8FB5', '#FFBE7B']" :duration="4" :border-width="2" :border-radius="10" :class="styles.instructionsButtonWrapper">
             <button
               @click="showInstructions = true"
               :class="styles.instructionsButton"
               title="Instruções de Uso"
-              style="border: none; background: transparent"
+              style="border: none; background: transparent; display: flex; align-items: center; justify-content: center; height: 100%; width: 100%;"
             >
               ❓ Instruções
             </button>
-          </GlowCard>
+          </GlowBorder>
 
           <button
             @click="toggleTheme"
