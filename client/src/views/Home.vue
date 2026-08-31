@@ -395,17 +395,17 @@ function openTooltip(department, text) {
       <footer :class="styles.footer" style="margin-top: auto;">
         <div style="display: flex; gap: 1rem; justify-content: flex-start; flex-wrap: wrap; margin-bottom: 2rem;">
           <GlowCard :style="{ '--glow-color': 'rgba(255,255,255,0.2)' }">
-            <div style="padding: 1.25rem; background: var(--card-bg); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; height: 100%; width: 220px;">
-              <h4 style="margin: 0; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">Acessos do dia a dia</h4>
-              <div style="margin: 0; gap: 1rem; display: flex; align-items: center; justify-content: center;">
+            <div style="padding: 0.75rem 1rem; background: var(--card-bg); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; height: 100%; width: 180px;">
+              <h4 style="margin: 0; color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">Acessos dia a dia</h4>
+              <div style="margin: 0; gap: 0.5rem; display: flex; align-items: center; justify-content: center;">
                 <div title="Sistema MK Solutions - Utilizado no dia a dia">
                   <a href="https://sac.newlifefibra.com.br/mk" target="_blank" rel="noopener noreferrer">
-                    <img src="/mk-logo.webp" alt="MK Solutions" width="100" height="35" style="object-fit: contain; filter: var(--logo-filter)" />
+                    <img src="/mk-logo.webp" alt="MK Solutions" width="70" height="25" style="object-fit: contain; filter: var(--logo-filter)" />
                   </a>
                 </div>
                 <div title="Sistema Octadesk - Utilizado no dia a dia">
                   <a href="https://app.octadesk.com/login?" target="_blank" rel="noopener noreferrer">
-                    <img src="/octadesk-logo.png" alt="Octadesk" width="100" height="35" style="object-fit: contain; filter: var(--logo-filter)" />
+                    <img src="/octadesk-logo.png" alt="Octadesk" width="70" height="25" style="object-fit: contain; filter: var(--logo-filter)" />
                   </a>
                 </div>
               </div>
@@ -413,9 +413,11 @@ function openTooltip(department, text) {
           </GlowCard>
 
           <GlowCard :style="{ '--glow-color': 'rgba(255,255,255,0.2)' }">
-            <button @click="showMap = true" style="padding: 1.25rem; background: var(--card-bg); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; height: 100%; cursor: pointer; border: none; width: 220px; font-family: inherit; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">
-              <h4 style="margin: 0; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">Presença no RS</h4>
-              <div style="font-size: 2.2rem; margin-top: 0.5rem;">🗺️</div>
+            <button @click="showMap = true" style="padding: 0.75rem 1rem; background: var(--card-bg); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; height: 100%; cursor: pointer; border: none; width: 180px; font-family: inherit; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">
+              <h4 style="margin: 0; color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">Presença no RS</h4>
+              <div style="margin-top: 0.25rem;">
+                <img src="/mapa-rs.png" alt="Mapa RS" width="50" height="35" style="object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));" />
+              </div>
             </button>
           </GlowCard>
         </div>
