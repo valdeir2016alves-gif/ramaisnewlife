@@ -233,11 +233,7 @@ function shouldGroupDepartment(department) {
     'comercial - (fideliza)',
     'agendamento',
     'estoque',
-    'recuperação de crédito - (valoriza)',
-    'comercial',
-    'gerência',
-    'caixa',
-    'financeiro'
+    'recuperação de crédito - (valoriza)'
   ].includes(d);
 }
 </script>
