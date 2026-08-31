@@ -392,39 +392,34 @@ function openTooltip(department, text) {
         </template>
       </section>
 
-      <footer :class="styles.footer" style="margin-top: auto;">
-        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem;">
-          
-          <GlowCard :inner-class-name="styles.glowButtonInner" :class-name="styles.instructionsButtonWrapper" :style="{ '--glow-color': 'rgba(255,255,255,0.2)' }">
-            <div :class="styles.instructionsButton" style="height: 36px; padding: 0 0.85rem; border: 1px solid rgba(255,255,255,0.1); cursor: default; gap: 0.75rem; animation: none;">
-              <span style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Acessos rápidos:</span>
-              <div style="display: flex; gap: 0.5rem; align-items: center;">
-                <a href="https://sac.newlifefibra.com.br/mk" target="_blank" rel="noopener noreferrer" title="Sistema MK Solutions" style="display: flex; align-items: center; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">
-                  <img src="/mk-logo.webp" alt="MK" width="50" height="16" style="object-fit: contain; filter: var(--logo-filter)" />
-                </a>
-                <div style="width: 1px; height: 14px; background: rgba(255,255,255,0.2);"></div>
-                <a href="https://app.octadesk.com/login?" target="_blank" rel="noopener noreferrer" title="Sistema Octadesk" style="display: flex; align-items: center; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">
-                  <img src="/octadesk-logo.png" alt="Octadesk" width="50" height="16" style="object-fit: contain; filter: var(--logo-filter)" />
-                </a>
-              </div>
-            </div>
-          </GlowCard>
-
-          <GlowCard :inner-class-name="styles.glowButtonInner" :class-name="styles.instructionsButtonWrapper" :style="{ '--glow-color': 'rgba(255,255,255,0.2)' }">
-            <button @click="showMap = true" :class="styles.instructionsButton" style="height: 36px; padding: 0 0.85rem; border: 1px solid rgba(255,255,255,0.1); gap: 0.5rem; font-family: inherit; animation: none;">
-              <img src="/mapa-rs.png" alt="Mapa" width="16" height="16" style="object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));" />
-              <span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Presença no RS</span>
-            </button>
-          </GlowCard>
-          
+      <footer :class="styles.footer" style="margin-top: auto; flex-direction: row; justify-content: space-between; align-items: flex-end; padding: 2rem 1rem 1rem 1rem; border-top: 1px solid rgba(255,255,255,0.05); flex-wrap: wrap;">
+        
+        <!-- Esquerda: Info e Erros -->
+        <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start;">
+          <div style="height: 30px; display: flex; justify-content: flex-start; align-items: center;">
+            <UnderlineText :text="`Atualizado em: ${lastUpdated} - NOC`" />
+          </div>
+          <button @click="showReportModal = true" :class="styles.reportLinkBtn" style="padding: 0; background: transparent; border: none; font-family: inherit; cursor: pointer;">
+            Encontrou um contato errado? Avise aqui!
+          </button>
         </div>
 
-        <div style="height: 50px; width: 100%; max-width: 400px; margin: 0 auto; display: flex; justify-content: center; align-items: center; gap: 8px">
-          <UnderlineText :text="`Atualizado em: ${lastUpdated} - NOC`" />
+        <!-- Direita: Links Úteis (No estilo do site principal) -->
+        <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start; min-width: 150px; margin-top: 1rem;">
+          <h4 style="color: var(--primary-color); font-size: 1rem; margin: 0 0 0.25rem 0; font-weight: 600;">links úteis</h4>
+          
+          <a href="https://sac.newlifefibra.com.br/mk" target="_blank" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s;" onmouseover="this.style.color='var(--text-main)'" onmouseout="this.style.color='var(--text-muted)'">
+            MK Solutions
+          </a>
+          
+          <a href="https://app.octadesk.com/login?" target="_blank" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s;" onmouseover="this.style.color='var(--text-main)'" onmouseout="this.style.color='var(--text-muted)'">
+            Octadesk
+          </a>
+          
+          <a href="#" @click.prevent="showMap = true" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s;" onmouseover="this.style.color='var(--text-main)'" onmouseout="this.style.color='var(--text-muted)'">
+            Presença no RS
+          </a>
         </div>
-        <button @click="showReportModal = true" :class="styles.reportLinkBtn">
-          Encontrou um contato errado? Avise aqui!
-        </button>
       </footer>
 
       <div v-if="showInstructions" :class="styles.modalOverlay" @click="showInstructions = false">
