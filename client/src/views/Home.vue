@@ -364,17 +364,41 @@ function shouldGroupDepartment(department) {
               </div>
             </div>
             <div :class="styles.contactList">
-              <div v-for="contact in regionalContacts" :key="contact.id" :class="styles.contactItem">
-                <span :class="styles.chevron">
-                  <img v-if="isWhatsAppNumber(contact)" src="/whatsapp-icon.svg" alt="WhatsApp" width="16" height="16" style="vertical-align: middle" />
-                  <img v-else src="/phone-icon.svg" alt="Telefone" width="16" height="16" style="vertical-align: middle" />
-                </span>
-                <span :class="styles.contactName">{{ contact.name }}</span>
-                <a v-if="isWhatsAppNumber(contact)" :href="waLink(contact)" target="_blank" rel="noopener noreferrer" :class="styles.whatsappLink">
-                  {{ contact.phone }}
-                </a>
-                <span v-else :class="styles.contactPhone">{{ contact.phone }}</span>
-              </div>
+              <template v-for="person in groupContactsByName(regionalContacts)" :key="person.name">
+                <div v-if="person.phones.length > 1" style="margin-bottom: 0.25rem;">
+                  <div @click="togglePerson('Regional-' + person.name)" style="display: flex; align-items: center; cursor: pointer; user-select: none;">
+                    <span :class="styles.chevron" :style="{ width: '16px', marginRight: '6px', transform: expandedPersons.includes('Regional-' + person.name) ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease', display: 'inline-flex', justifyContent: 'center' }">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                    </span>
+                    <span :class="styles.contactName" style="margin: 0;">{{ person.name }}</span>
+                  </div>
+                  
+                  <div v-if="expandedPersons.includes('Regional-' + person.name)" style="padding-left: 22px; display: flex; flex-direction: column; gap: 4px; margin-top: 6px;">
+                    <div v-for="contact in person.phones" :key="contact.id" :class="styles.contactItem" style="margin-bottom: 2px;">
+                      <span :class="styles.chevron" style="width: 16px;">
+                        <img v-if="isWhatsAppNumber(contact)" src="/whatsapp-icon.svg" alt="WhatsApp" width="14" height="14" style="vertical-align: middle" />
+                        <img v-else src="/phone-icon.svg" alt="Telefone" width="14" height="14" style="vertical-align: middle" />
+                      </span>
+                      <a v-if="isWhatsAppNumber(contact)" :href="waLink(contact)" target="_blank" rel="noopener noreferrer" :class="styles.whatsappLink" style="font-size: 0.85rem">
+                        {{ contact.phone }}
+                      </a>
+                      <span v-else :class="styles.contactPhone" style="font-size: 0.85rem">{{ contact.phone }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div v-else v-for="contact in person.phones" :key="contact.id" :class="styles.contactItem">
+                  <span :class="styles.chevron">
+                    <img v-if="isWhatsAppNumber(contact)" src="/whatsapp-icon.svg" alt="WhatsApp" width="16" height="16" style="vertical-align: middle" />
+                    <img v-else src="/phone-icon.svg" alt="Telefone" width="16" height="16" style="vertical-align: middle" />
+                  </span>
+                  <span :class="styles.contactName">{{ contact.name }}</span>
+                  <a v-if="isWhatsAppNumber(contact)" :href="waLink(contact)" target="_blank" rel="noopener noreferrer" :class="styles.whatsappLink">
+                    {{ contact.phone }}
+                  </a>
+                  <span v-else :class="styles.contactPhone">{{ contact.phone }}</span>
+                </div>
+              </template>
             </div>
           </div>
         </div>
@@ -422,9 +446,10 @@ function shouldGroupDepartment(department) {
             </div>
 
             <div :class="styles.contactList">
-              <!-- Modo agrupado: APENAS para os setores especificados -->
-              <template v-if="shouldGroupDepartment(department)">
-                <div v-for="person in groupContactsByName(deptContacts)" :key="person.name" style="margin-bottom: 0.25rem;">
+              <template v-for="person in groupContactsByName(deptContacts)" :key="person.name">
+                
+                <!-- Modo agrupado: se a pessoa tiver + de 1 número OU se for um departamento forçado -->
+                <div v-if="person.phones.length > 1 || shouldGroupDepartment(department)" style="margin-bottom: 0.25rem;">
                   <div @click="togglePerson(department + '-' + person.name)" style="display: flex; align-items: center; cursor: pointer; user-select: none;">
                     <span :class="styles.chevron" :style="{ width: '16px', marginRight: '6px', transform: expandedPersons.includes(department + '-' + person.name) ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease', display: 'inline-flex', justifyContent: 'center' }">
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
@@ -445,11 +470,9 @@ function shouldGroupDepartment(department) {
                     </div>
                   </div>
                 </div>
-              </template>
-              
-              <!-- Modo lista normal para os demais -->
-              <template v-else>
-                <div v-for="contact in deptContacts" :key="contact.id" :class="styles.contactItem">
+
+                <!-- Modo lista normal: apenas 1 contato e departamento não forçado -->
+                <div v-else v-for="contact in person.phones" :key="contact.id" :class="styles.contactItem">
                   <span :class="styles.chevron">
                     <img v-if="isWhatsAppNumber(contact)" src="/whatsapp-icon.svg" alt="WhatsApp" width="16" height="16" style="vertical-align: middle" />
                     <img v-else src="/phone-icon.svg" alt="Telefone" width="16" height="16" style="vertical-align: middle" />
@@ -460,6 +483,7 @@ function shouldGroupDepartment(department) {
                   </a>
                   <span v-else :class="styles.contactPhone">{{ contact.phone }}</span>
                 </div>
+
               </template>
             </div>
           </div>
