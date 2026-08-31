@@ -474,7 +474,7 @@ function openTooltip(department, text) {
             <h3 style="text-transform: uppercase;">Presença no RS</h3>
             <button :class="styles.closeButton" @click="showMap = false">✕</button>
           </div>
-          <div :class="styles.modalBody" style="padding: 1rem; width: 100%; height: 500px; display: flex; justify-content: center; align-items: center">
+          <div :class="styles.modalBody" style="padding: 1rem; width: 100%; min-height: 450px; height: 60vh; max-height: 600px; display: flex; justify-content: center; align-items: center; overflow-y: auto;">
             <MapImage />
           </div>
         </div>
