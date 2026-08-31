@@ -213,6 +213,18 @@ function groupContactsByName(deptContacts) {
   });
   return Object.entries(groups).map(([name, phones]) => ({ name, phones }));
 }
+
+function shouldGroupDepartment(department) {
+  const d = department.toLowerCase().trim();
+  return [
+    'renovações',
+    'cancelamento',
+    'comercial - (fideliza)',
+    'agendamento',
+    'estoque',
+    'recuperação de crédito - (valoriza)'
+  ].includes(d);
+}
 </script>
 
 <template>
@@ -399,8 +411,8 @@ function groupContactsByName(deptContacts) {
             </div>
 
             <div :class="styles.contactList">
-              <!-- Modo agrupado: APENAS para Renovações (teste) -->
-              <template v-if="department.toLowerCase() === 'renovações'">
+              <!-- Modo agrupado: APENAS para os setores especificados -->
+              <template v-if="shouldGroupDepartment(department)">
                 <div v-for="person in groupContactsByName(deptContacts)" :key="person.name" style="margin-bottom: 0.25rem;">
                   <div @click="togglePerson(department + '-' + person.name)" style="display: flex; align-items: center; cursor: pointer; user-select: none;">
                     <span :class="styles.chevron" :style="{ width: '16px', marginRight: '6px', transform: expandedPersons.includes(department + '-' + person.name) ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease', display: 'inline-flex', justifyContent: 'center' }">
