@@ -1,7 +1,7 @@
 <template>
   <div class="map-container" style="position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;">
-    <div style="position: relative; max-width: 100%; max-height: 100%; display: inline-block;">
-      <img src="/mapa-rs.png" alt="Mapa Rio Grande do Sul" style="max-width: 100%; max-height: 100vh; object-fit: contain; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));" />
+    <div style="position: relative; max-width: 100%; height: 100%; display: inline-block;">
+      <img src="/mapa-rs.png" alt="Mapa Rio Grande do Sul" style="max-width: 100%; max-height: 100%; object-fit: contain; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5)); display: block; height: 100%;" />
       
       <!-- Os valores top/left e width/height são aproximados para cobrir as bolinhas desenhadas no mapa.
            Como o link é invisível, o usuário clica sobre a área da bolinha/texto na imagem. -->

@@ -285,16 +285,7 @@ function openTooltip(department, text) {
               ❓ Instruções
             </button>
           </GlowCard>
-          <GlowCard :inner-class-name="styles.glowButtonInner" :class-name="styles.instructionsButtonWrapper" :style="{ '--glow-color': 'rgba(255, 255, 255, 0.4)' }">
-            <button
-              @click="showMap = true"
-              :class="styles.instructionsButton"
-              title="Mapa de Filiais"
-              style="border: none; background: transparent"
-            >
-              🗺️ Mapa
-            </button>
-          </GlowCard>
+
           <button
             @click="toggleTheme"
             :class="styles.themeToggle"
@@ -402,18 +393,33 @@ function openTooltip(department, text) {
       </section>
 
       <footer :class="styles.footer">
-        <div :class="styles.footerLogos">
-          <div title="Sistema MK Solutions - Utilizado no dia a dia">
-            <a href="https://sac.newlifefibra.com.br/mk" target="_blank" rel="noopener noreferrer">
-              <img src="/mk-logo.webp" alt="MK Solutions" width="110" height="40" style="object-fit: contain; filter: var(--logo-filter)" />
-            </a>
-          </div>
-          <div title="Sistema Octadesk - Utilizado no dia a dia">
-            <a href="https://app.octadesk.com/login?" target="_blank" rel="noopener noreferrer">
-              <img src="/octadesk-logo.png" alt="Octadesk" width="110" height="40" style="object-fit: contain; filter: var(--logo-filter)" />
-            </a>
-          </div>
+        <div style="display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem;">
+          <GlowCard :style="{ '--glow-color': 'rgba(255,255,255,0.2)' }">
+            <div style="padding: 1.5rem; background: var(--card-bg); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; height: 100%; width: 280px;">
+              <h4 style="margin: 0; color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Acessos do dia a dia</h4>
+              <div :class="styles.footerLogos" style="margin: 0; gap: 1rem;">
+                <div title="Sistema MK Solutions - Utilizado no dia a dia">
+                  <a href="https://sac.newlifefibra.com.br/mk" target="_blank" rel="noopener noreferrer">
+                    <img src="/mk-logo.webp" alt="MK Solutions" width="100" height="35" style="object-fit: contain; filter: var(--logo-filter)" />
+                  </a>
+                </div>
+                <div title="Sistema Octadesk - Utilizado no dia a dia">
+                  <a href="https://app.octadesk.com/login?" target="_blank" rel="noopener noreferrer">
+                    <img src="/octadesk-logo.png" alt="Octadesk" width="100" height="35" style="object-fit: contain; filter: var(--logo-filter)" />
+                  </a>
+                </div>
+              </div>
+            </div>
+          </GlowCard>
+
+          <GlowCard :style="{ '--glow-color': 'rgba(255,255,255,0.2)' }">
+            <button @click="showMap = true" style="padding: 1.5rem; background: var(--card-bg); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; height: 100%; cursor: pointer; border: none; width: 280px; font-family: inherit; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">
+              <h4 style="margin: 0; color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">Presença no RS</h4>
+              <div style="font-size: 2.5rem; margin-top: 0.5rem;">🗺️</div>
+            </button>
+          </GlowCard>
         </div>
+
         <div style="height: 50px; width: 100%; max-width: 400px; margin: 0 auto; display: flex; justify-content: center; align-items: center; gap: 8px">
           <UnderlineText :text="`Atualizado em: ${lastUpdated} - NOC`" />
         </div>
@@ -466,7 +472,7 @@ function openTooltip(department, text) {
       <div v-if="showMap" :class="styles.modalOverlay" @click="showMap = false">
         <div :class="styles.modalContent" style="max-width: 900px" @click.stop>
           <div :class="styles.modalHeader">
-            <h3>Mapa das Filiais</h3>
+            <h3 style="text-transform: uppercase;">Presença no RS</h3>
             <button :class="styles.closeButton" @click="showMap = false">✕</button>
           </div>
           <div :class="styles.modalBody" style="padding: 1rem; width: 100%; height: 500px; display: flex; justify-content: center; align-items: center">
