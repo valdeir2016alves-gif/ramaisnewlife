@@ -401,12 +401,20 @@ function openTooltip(department, text) {
         
         <!-- Esquerda: Info e Erros -->
         <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start;">
-          <div style="height: 30px; display: flex; justify-content: flex-start; align-items: center;">
-            <UnderlineText :text="`Atualizado em: ${lastUpdated} - NOC`" />
-          </div>
           <button @click="showReportModal = true" :class="styles.reportLinkBtn" style="padding: 0; background: transparent; border: none; font-family: inherit; cursor: pointer;">
             Encontrou um contato errado? Avise aqui!
           </button>
+          
+          <div style="display: flex; justify-content: flex-start; align-items: center; gap: 6px; flex-wrap: wrap;">
+            <UnderlineText :text="`Atualizado em: ${lastUpdated} - NOC`" />
+            
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 2px;">
+              <path d="M12 20h.01"/>
+              <path d="M2 8.82a15 15 0 0 1 20 0"/>
+              <path d="M5 12.86a10 10 0 0 1 14 0"/>
+              <path d="M8.5 16.43a5 5 0 0 1 7 0"/>
+            </svg>
+          </div>
         </div>
 
         <!-- Direita: Links Úteis (No estilo do site principal) -->
