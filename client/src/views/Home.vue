@@ -422,15 +422,18 @@ function openTooltip(department, text) {
             />
           </h4>
           
-          <a href="https://sac.newlifefibra.com.br/mk" target="_blank" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s;" onmouseover="this.style.color='var(--text-main)'" onmouseout="this.style.color='var(--text-muted)'">
+          <a href="https://sac.newlifefibra.com.br/mk" target="_blank" style="display: flex; align-items: center; gap: 8px; color: var(--text-muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s;" onmouseover="this.style.color='var(--text-main)'" onmouseout="this.style.color='var(--text-muted)'">
+            <img src="/mk-logo.webp" alt="MK" height="14" style="height: 14px; width: auto; object-fit: contain; filter: var(--logo-filter)" />
             MK Solutions
           </a>
           
-          <a href="https://app.octadesk.com/login?" target="_blank" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s;" onmouseover="this.style.color='var(--text-main)'" onmouseout="this.style.color='var(--text-muted)'">
+          <a href="https://app.octadesk.com/login?" target="_blank" style="display: flex; align-items: center; gap: 8px; color: var(--text-muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s;" onmouseover="this.style.color='var(--text-main)'" onmouseout="this.style.color='var(--text-muted)'">
+            <img src="/octadesk-logo.png" alt="Octadesk" height="14" style="height: 14px; width: auto; object-fit: contain; filter: var(--logo-filter)" />
             Octadesk
           </a>
           
-          <a href="#" @click.prevent="showMap = true" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s;" onmouseover="this.style.color='var(--text-main)'" onmouseout="this.style.color='var(--text-muted)'">
+          <a href="#" @click.prevent="showMap = true" style="display: flex; align-items: center; gap: 8px; color: var(--text-muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s;" onmouseover="this.style.color='var(--text-main)'" onmouseout="this.style.color='var(--text-muted)'">
+            <img src="/mapa-rs.png" alt="Mapa" height="16" style="height: 16px; width: auto; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));" />
             Presença no RS
           </a>
         </div>
