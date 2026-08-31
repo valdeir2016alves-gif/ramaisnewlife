@@ -6,6 +6,7 @@ import GlowCard from '../components/GlowCard.vue';
 import MapImage from '../components/MapImage.vue';
 import InfoButton from '../components/InfoButton.vue';
 import Aurora from '../components/Aurora.vue';
+import TrueFocus from '../components/TrueFocus.vue';
 import {
   getContacts, getLastUpdated, getDepartmentDescriptions,
   submitReport, registerVisit, authenticateUser,
@@ -410,7 +411,16 @@ function openTooltip(department, text) {
 
         <!-- Direita: Links Úteis (No estilo do site principal) -->
         <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start; min-width: 150px; margin-top: 1rem;">
-          <h4 style="color: var(--primary-color); font-size: 1rem; margin: 0 0 0.25rem 0; font-weight: 600;">links úteis</h4>
+          <h4 style="color: var(--primary-color); font-size: 1rem; margin: 0 0 0.25rem 0; font-weight: 600;">
+            <TrueFocus 
+              sentence="LINKS ÚTEIS"
+              :manual-mode="false"
+              :blur-amount="2"
+              border-color="var(--primary-color)"
+              :animation-duration="1.5"
+              :pause-between-animations="2"
+            />
+          </h4>
           
           <a href="https://sac.newlifefibra.com.br/mk" target="_blank" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s;" onmouseover="this.style.color='var(--text-main)'" onmouseout="this.style.color='var(--text-muted)'">
             MK Solutions
