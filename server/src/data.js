@@ -250,6 +250,43 @@ async function updateDepartmentDescription(department, description) {
   }
 }
 
+async function getTeamsContacts() {
+  const { rows } = await pool.query('SELECT * FROM teams_contacts ORDER BY department, sort_order');
+  return rows;
+}
+
+async function getTeamsContactsByDepartment(department) {
+  const { rows } = await pool.query(
+    'SELECT * FROM teams_contacts WHERE department = $1 ORDER BY sort_order',
+    [department]
+  );
+  return rows;
+}
+
+async function addTeamsContact(department, name, email) {
+  const { rows } = await pool.query(
+    `INSERT INTO teams_contacts (department, name, email, sort_order)
+     VALUES ($1, $2, $3, COALESCE((SELECT MAX(sort_order) FROM teams_contacts WHERE department = $1), -1) + 1)
+     RETURNING *`,
+    [department, name, email]
+  );
+  return { success: true, contact: rows[0] };
+}
+
+async function updateTeamsContact(id, department, name, email) {
+  const result = await pool.query(
+    'UPDATE teams_contacts SET department = $1, name = $2, email = $3 WHERE id = $4',
+    [department, name, email, id]
+  );
+  if (result.rowCount === 0) return { success: false, error: 'Contato Teams não encontrado' };
+  return { success: true };
+}
+
+async function deleteTeamsContact(id) {
+  await pool.query('DELETE FROM teams_contacts WHERE id = $1', [id]);
+  return { success: true };
+}
+
 module.exports = {
   getLastUpdated,
   getContacts,
@@ -271,4 +308,9 @@ module.exports = {
   getAnalytics,
   getDepartmentDescriptions,
   updateDepartmentDescription,
+  getTeamsContacts,
+  getTeamsContactsByDepartment,
+  addTeamsContact,
+  updateTeamsContact,
+  deleteTeamsContact,
 };

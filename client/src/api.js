@@ -98,3 +98,24 @@ export const updateDepartmentDescription = (department, description) =>
     method: 'PUT',
     body: JSON.stringify({ department, description }),
   });
+
+// Teams Contacts
+export const getTeamsContacts = () => request(`${BASE}/teams`);
+
+export const getTeamsContactsByDepartment = (department) =>
+  request(`${BASE}/teams/${encodeURIComponent(department)}`);
+
+export const addTeamsContact = (department, name, email) =>
+  request(`${BASE}/teams`, {
+    method: 'POST',
+    body: JSON.stringify({ department, name, email }),
+  });
+
+export const updateTeamsContact = (id, department, name, email) =>
+  request(`${BASE}/teams/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ department, name, email }),
+  });
+
+export const deleteTeamsContact = (id) =>
+  request(`${BASE}/teams/${id}`, { method: 'DELETE' });

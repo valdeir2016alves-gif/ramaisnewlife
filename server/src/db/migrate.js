@@ -77,6 +77,15 @@ async function createSchema(client) {
       date DATE PRIMARY KEY,
       visits INTEGER NOT NULL DEFAULT 0
     );
+
+    CREATE TABLE IF NOT EXISTS teams_contacts (
+      id SERIAL PRIMARY KEY,
+      department TEXT NOT NULL,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
   `);
 }
 

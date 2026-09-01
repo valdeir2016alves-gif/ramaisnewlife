@@ -11,6 +11,7 @@ import {
   getReports, deleteReport, authenticateUser, getUsers as fetchUsers,
   addUser as createUser, updateUser as editUser, deleteUser as removeUser,
   getAnalytics, reorderContact, toggleContactVisibility, getDepartmentDescriptions, updateDepartmentDescription,
+  getTeamsContacts, addTeamsContact, updateTeamsContact, deleteTeamsContact,
 } from '../api';
 
 const departmentEmojis = {
@@ -53,6 +54,15 @@ const expandedDeps = ref({});
 const stats = ref([]);
 const descriptions = ref({});
 const loading = ref(false);
+
+const teamsContacts = ref([]);
+const teamsName = ref('');
+const teamsEmail = ref('');
+const teamsDepartment = ref('');
+const editingTeamsId = ref(null);
+const editTeamsName = ref('');
+const editTeamsEmail = ref('');
+const editTeamsDepartment = ref('');
 
 // New user form
 const newUsername = ref('');
@@ -288,6 +298,57 @@ async function handleSaveDescription(dept, newDesc, done) {
   loading.value = false;
   done?.();
 }
+
+async function loadTeamsContacts() {
+  teamsContacts.value = await getTeamsContacts() || [];
+}
+
+async function handleAddTeams(e) {
+  e.preventDefault();
+  if (!teamsDepartment.value || !teamsName.value || !teamsEmail.value) return;
+  await addTeamsContact(teamsDepartment.value, teamsName.value, teamsEmail.value);
+  teamsDepartment.value = '';
+  teamsName.value = '';
+  teamsEmail.value = '';
+  await loadTeamsContacts();
+}
+
+function startEditTeams(contact) {
+  editingTeamsId.value = contact.id;
+  editTeamsName.value = contact.name;
+  editTeamsEmail.value = contact.email;
+  editTeamsDepartment.value = contact.department;
+}
+
+async function saveEditTeams(id) {
+  await updateTeamsContact(id, editTeamsDepartment.value, editTeamsName.value, editTeamsEmail.value);
+  editingTeamsId.value = null;
+  await loadTeamsContacts();
+}
+
+function cancelEditTeams() {
+  editingTeamsId.value = null;
+}
+
+async function handleDeleteTeams(id) {
+  if (!confirm('Excluir este contato Teams?')) return;
+  await deleteTeamsContact(id);
+  await loadTeamsContacts();
+}
+
+const teamsGrouped = computed(() => {
+  const groups = {};
+  teamsContacts.value.forEach(c => {
+    if (!groups[c.department]) groups[c.department] = [];
+    groups[c.department].push(c);
+  });
+  return groups;
+});
+
+const uniqueDepartments = computed(() => {
+  const depts = new Set(contacts.value.map(c => c.department));
+  return [...depts].sort();
+});
 </script>
 
 <template>
@@ -337,6 +398,9 @@ async function handleSaveDescription(dept, newDesc, done) {
             </button>
             <button :class="activeTab === 'stats' ? styles.btnPrimary : styles.btnSecondary" @click="activeTab = 'stats'">
               Acessos
+            </button>
+            <button v-if="canEdit" :class="activeTab === 'teams' ? styles.btnPrimary : styles.btnSecondary" @click="activeTab = 'teams'; loadTeamsContacts()">
+              Contatos Teams
             </button>
           </template>
           <a href="/" :class="styles.link" style="margin-left: 1rem">Voltar ao Site</a>
@@ -552,6 +616,65 @@ async function handleSaveDescription(dept, newDesc, done) {
             <StatsChart :stats="stats" />
           </div>
         </div>
+      </section>
+
+      <section v-else-if="activeTab === 'teams' && canEdit" :class="styles.listSection">
+        <h2>Contatos Teams</h2>
+        <form @submit="handleAddTeams" :class="styles.addForm">
+          <input v-model="teamsDepartment" placeholder="Departamento" :class="styles.formInput" required list="teamsDeptList" />
+          <datalist id="teamsDeptList">
+            <option v-for="dept in uniqueDepartments" :key="dept" :value="dept" />
+          </datalist>
+          <input v-model="teamsName" placeholder="Nome" :class="styles.formInput" required />
+          <input v-model="teamsEmail" type="email" placeholder="Email Teams" :class="styles.formInput" required />
+          <button type="submit" :class="styles.btnPrimary">Adicionar</button>
+        </form>
+
+        <div v-if="teamsContacts.length === 0" style="text-align: center; padding: 2rem; color: var(--text-muted)">
+          Nenhum contato Teams cadastrado.
+        </div>
+
+        <template v-else>
+          <div v-for="(group, dept) in teamsGrouped" :key="dept" style="margin-bottom: 1.5rem;">
+            <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--primary-color);">{{ dept }}</h3>
+            <table :class="styles.reportTable">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Email</th>
+                  <th>Departamento</th>
+                  <th v-if="canEdit">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="contact in group" :key="contact.id">
+                  <template v-if="editingTeamsId === contact.id">
+                    <td><input v-model="editTeamsName" :class="styles.formInput" style="width: 100%; min-width: 80px" /></td>
+                    <td><input v-model="editTeamsEmail" type="email" :class="styles.formInput" style="width: 100%; min-width: 120px" /></td>
+                    <td><input v-model="editTeamsDepartment" :class="styles.formInput" style="width: 100%; min-width: 80px" list="teamsDeptListEdit" />
+                      <datalist id="teamsDeptListEdit">
+                        <option v-for="d in uniqueDepartments" :key="d" :value="d" />
+                      </datalist>
+                    </td>
+                    <td style="white-space: nowrap;">
+                      <button :class="styles.btnPrimary" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" @click="saveEditTeams(contact.id)">Salvar</button>
+                      <button :class="styles.btnSecondary" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" @click="cancelEditTeams">Cancelar</button>
+                    </td>
+                  </template>
+                  <template v-else>
+                    <td>{{ contact.name }}</td>
+                    <td>{{ contact.email }}</td>
+                    <td>{{ contact.department }}</td>
+                    <td v-if="canEdit" style="white-space: nowrap;">
+                      <button :class="styles.btnSecondary" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" @click="startEditTeams(contact)">Editar</button>
+                      <button :class="styles.btnSecondary" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; color: #f87171;" @click="handleDeleteTeams(contact.id)">Excluir</button>
+                    </td>
+                  </template>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </template>
       </section>
     </template>
   </main>

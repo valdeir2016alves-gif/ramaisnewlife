@@ -1,6 +1,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue';
 import styles from '../styles/page.module.css';
+import TeamsButton from '../components/TeamsButton.vue';
 import UnderlineText from '../components/UnderlineText.vue';
 import GlowCard from '../components/GlowCard.vue';
 import GlowBorder from '../components/GlowBorder.vue';
@@ -10,7 +11,7 @@ import Aurora from '../components/Aurora.vue';
 import TrueFocus from '../components/TrueFocus.vue';
 import {
   getContacts, getLastUpdated, getDepartmentDescriptions,
-  submitReport, registerVisit, authenticateUser,
+  submitReport, registerVisit, authenticateUser, getTeamsContacts,
 } from '../api';
 
 function getDepartmentDescription(dept, descriptions) {
@@ -88,6 +89,7 @@ const isCheckingAuth = ref(true);
 const contacts = ref([]);
 const lastUpdated = ref('');
 const descriptions = ref({});
+const teamsContacts = ref([]);
 
 async function handleReportSubmit(e) {
   e.preventDefault();
@@ -142,14 +144,16 @@ onMounted(async () => {
     sessionStorage.setItem('visited', 'true');
   }
 
-  const [contactsData, lastUpdatedData, descriptionsData] = await Promise.all([
+  const [contactsData, lastUpdatedData, descriptionsData, teamsData] = await Promise.all([
     getContacts(),
     getLastUpdated(),
     getDepartmentDescriptions(),
+    getTeamsContacts(),
   ]);
   contacts.value = contactsData || [];
   lastUpdated.value = lastUpdatedData;
   descriptions.value = descriptionsData || {};
+  teamsContacts.value = teamsData || [];
 
   isCheckingAuth.value = false;
 });
@@ -198,6 +202,15 @@ const showNoResults = computed(() => otherDepartments.value.length === 0 && !reg
 const noResultsText = computed(() =>
   search.value.trim() !== '' || city.value !== 'passo_fundo' ? 'Nenhum contato encontrado.' : 'Em breve'
 );
+
+const teamsContactsByDept = computed(() => {
+  const groups = {};
+  teamsContacts.value.forEach(c => {
+    if (!groups[c.department]) groups[c.department] = [];
+    groups[c.department].push(c);
+  });
+  return groups;
+});
 
 function isImoveisDept(department) {
   return department.toLowerCase().includes('imóveis') || department.toLowerCase().includes('imobiliária');
@@ -356,6 +369,10 @@ function shouldGroupDepartment(department) {
                 <h2 :class="styles.departmentTitle">Colaborador(a) e Contatos</h2>
               </div>
               <div :class="styles.departmentHeaderRight">
+                <TeamsButton
+                  department="Contatos Regionais e Externos"
+                  :contacts="teamsContactsByDept['Contatos Regionais e Externos'] || []"
+                />
                 <InfoButton
                   department="Contatos Regionais e Externos"
                   :text="getDepartmentDescription('Contatos Regionais e Externos', descriptions)"
@@ -437,6 +454,10 @@ function shouldGroupDepartment(department) {
                     <img src="/logo-imoveis.png" alt="New Life Imóveis" width="70" height="50" style="object-fit: contain; max-height: 40px; width: auto" />
                   </a>
                 </div>
+                <TeamsButton
+                  :department="department"
+                  :contacts="teamsContactsByDept[department] || []"
+                />
                 <InfoButton
                   :department="department"
                   :text="getDepartmentDescription(department, descriptions)"
