@@ -46,7 +46,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div v-if="contacts.length > 0" ref="wrapperRef" :class="styles.teamsButtonWrapper">
+  <div ref="wrapperRef" :class="styles.teamsButtonWrapper">
     <button
       type="button"
       :class="styles.teamsButton"
@@ -60,6 +60,9 @@ onUnmounted(() => {
         <span>Contatos Teams</span>
       </div>
       <div :class="styles.teamsPopoverBody">
+        <div v-if="contacts.length === 0" style="padding: 1rem 0.5rem; text-align: center; color: var(--text-muted); font-size: 0.8rem;">
+          Nenhum contato Teams cadastrado.
+        </div>
         <div
           v-for="contact in contacts"
           :key="contact.id"
