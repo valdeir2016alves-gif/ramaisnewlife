@@ -550,6 +550,10 @@ function shouldGroupDepartment(department) {
             <a href="https://app.octadesk.com/login?" target="_blank" title="Octadesk" style="display: flex; align-items: center; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1">
               <img src="/octadesk-logo.png" alt="Octadesk" height="16" style="height: 16px; width: auto; object-fit: contain; filter: var(--logo-filter)" />
             </a>
+
+            <a href="https://downdetector.com.br/" target="_blank" title="Downdetector" style="display: flex; align-items: center; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1">
+              <img src="/downdetector-logo.svg" alt="Downdetector" height="16" style="height: 16px; width: auto; object-fit: contain; filter: var(--logo-filter)" />
+            </a>
           </div>
           
           <a href="#" @click.prevent="showMap = true" style="display: flex; align-items: center; gap: 8px; color: var(--text-muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s;" onmouseover="this.style.color='var(--text-main)'" onmouseout="this.style.color='var(--text-muted)'">
