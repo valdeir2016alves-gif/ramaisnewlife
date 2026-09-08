@@ -301,49 +301,66 @@ async function handleSaveDescription(dept, newDesc, done) {
 
 async function loadTeamsContacts() {
   teamsContacts.value = await getTeamsContacts() || [];
+  const inputs = {};
+  teamsContacts.value.forEach(tc => {
+    inputs[`${tc.department}|||${tc.name}`] = tc.email;
+  });
+  teamsInputs.value = inputs;
 }
 
-async function handleAddTeams(e) {
-  e.preventDefault();
-  if (!teamsDepartment.value || !teamsName.value || !teamsEmail.value) return;
-  await addTeamsContact(teamsDepartment.value, teamsName.value, teamsEmail.value);
-  teamsDepartment.value = '';
-  teamsName.value = '';
-  teamsEmail.value = '';
+const teamsInputs = ref({});
+
+async function saveTeamsContact(dept, name, email) {
+  loading.value = true;
+  const existing = teamsContacts.value.find(c => c.department === dept && c.name === name);
+  
+  if (!email || email.trim() === '') {
+    if (existing) await deleteTeamsContact(existing.id);
+  } else {
+    if (existing) {
+      await updateTeamsContact(existing.id, dept, name, email);
+    } else {
+      await addTeamsContact(dept, name, email);
+    }
+  }
   await loadTeamsContacts();
+  loading.value = false;
+  
+  // Exibe um feedback rápido
+  const key = `${dept}|||${name}`;
+  const btn = document.getElementById(`btn-save-${key}`);
+  if (btn) {
+    const originalText = btn.innerText;
+    btn.innerText = 'Salvo!';
+    btn.style.backgroundColor = '#10b981';
+    setTimeout(() => {
+      btn.innerText = originalText;
+      btn.style.backgroundColor = '';
+    }, 1500);
+  }
 }
 
-function startEditTeams(contact) {
-  editingTeamsId.value = contact.id;
-  editTeamsName.value = contact.name;
-  editTeamsEmail.value = contact.email;
-  editTeamsDepartment.value = contact.department;
-}
-
-async function saveEditTeams(id) {
-  await updateTeamsContact(id, editTeamsDepartment.value, editTeamsName.value, editTeamsEmail.value);
-  editingTeamsId.value = null;
-  await loadTeamsContacts();
-}
-
-function cancelEditTeams() {
-  editingTeamsId.value = null;
-}
-
-async function handleDeleteTeams(id) {
-  if (!confirm('Excluir este contato Teams?')) return;
-  await deleteTeamsContact(id);
-  await loadTeamsContacts();
-}
-
-const teamsGrouped = computed(() => {
+const allContactsGroupedByDept = computed(() => {
   const groups = {};
-  teamsContacts.value.forEach(c => {
+  contacts.value.forEach(c => {
     if (!groups[c.department]) groups[c.department] = [];
     groups[c.department].push(c);
   });
   return groups;
 });
+
+function uniqueNamesInDept(deptContacts) {
+  const names = new Set();
+  const unique = [];
+  deptContacts.forEach(c => {
+    const trimmed = c.name.trim();
+    if (!names.has(trimmed)) {
+      names.add(trimmed);
+      unique.push({ name: trimmed });
+    }
+  });
+  return unique.sort((a, b) => a.name.localeCompare(b.name));
+}
 
 const uniqueDepartments = computed(() => {
   const depts = new Set(contacts.value.map(c => c.department));
@@ -620,61 +637,47 @@ const uniqueDepartments = computed(() => {
 
       <section v-else-if="activeTab === 'teams' && canEdit" :class="styles.listSection">
         <h2>Contatos Teams</h2>
-        <form @submit="handleAddTeams" :class="styles.addForm">
-          <input v-model="teamsDepartment" placeholder="Departamento" :class="styles.formInput" required list="teamsDeptList" />
-          <datalist id="teamsDeptList">
-            <option v-for="dept in uniqueDepartments" :key="dept" :value="dept" />
-          </datalist>
-          <input v-model="teamsName" placeholder="Nome" :class="styles.formInput" required />
-          <input v-model="teamsEmail" type="email" placeholder="Email Teams" :class="styles.formInput" required />
-          <button type="submit" :class="styles.btnPrimary">Adicionar</button>
-        </form>
+        <p style="margin-bottom: 1.5rem; color: var(--text-muted);">
+          Abaixo estão listados todos os contatos agrupados por setor. Digite o email do Teams para ativar o ícone na página inicial. Apague o email para remover.
+        </p>
 
-        <div v-if="teamsContacts.length === 0" style="text-align: center; padding: 2rem; color: var(--text-muted)">
-          Nenhum contato Teams cadastrado.
+        <div v-for="(deptContacts, dept) in allContactsGroupedByDept" :key="dept" style="margin-bottom: 2rem;">
+          <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--primary-color);">{{ dept }}</h3>
+          <table :class="styles.reportTable">
+            <thead>
+              <tr>
+                <th style="width: 30%">Nome</th>
+                <th>Email Teams</th>
+                <th style="width: 100px">Ação</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="person in uniqueNamesInDept(deptContacts)" :key="person.name">
+                <td>{{ person.name }}</td>
+                <td>
+                  <input 
+                    v-model="teamsInputs[`${dept}|||${person.name}`]" 
+                    placeholder="exemplo@newlifefibra.com.br" 
+                    type="email"
+                    :class="styles.formInput" 
+                    style="width: 100%; margin: 0; padding: 0.4rem 0.5rem;" 
+                  />
+                </td>
+                <td style="white-space: nowrap;">
+                  <button 
+                    :id="`btn-save-${dept}|||${person.name}`"
+                    @click="saveTeamsContact(dept, person.name, teamsInputs[`${dept}|||${person.name}`])" 
+                    :class="styles.btnPrimary" 
+                    style="padding: 0.3rem 0.8rem; font-size: 0.85rem; width: 100%; transition: background-color 0.2s;"
+                    :disabled="loading"
+                  >
+                    Salvar
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-
-        <template v-else>
-          <div v-for="(group, dept) in teamsGrouped" :key="dept" style="margin-bottom: 1.5rem;">
-            <h3 style="margin: 0 0 0.5rem; font-size: 1rem; color: var(--primary-color);">{{ dept }}</h3>
-            <table :class="styles.reportTable">
-              <thead>
-                <tr>
-                  <th>Nome</th>
-                  <th>Email</th>
-                  <th>Departamento</th>
-                  <th v-if="canEdit">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="contact in group" :key="contact.id">
-                  <template v-if="editingTeamsId === contact.id">
-                    <td><input v-model="editTeamsName" :class="styles.formInput" style="width: 100%; min-width: 80px" /></td>
-                    <td><input v-model="editTeamsEmail" type="email" :class="styles.formInput" style="width: 100%; min-width: 120px" /></td>
-                    <td><input v-model="editTeamsDepartment" :class="styles.formInput" style="width: 100%; min-width: 80px" list="teamsDeptListEdit" />
-                      <datalist id="teamsDeptListEdit">
-                        <option v-for="d in uniqueDepartments" :key="d" :value="d" />
-                      </datalist>
-                    </td>
-                    <td style="white-space: nowrap;">
-                      <button :class="styles.btnPrimary" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" @click="saveEditTeams(contact.id)">Salvar</button>
-                      <button :class="styles.btnSecondary" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" @click="cancelEditTeams">Cancelar</button>
-                    </td>
-                  </template>
-                  <template v-else>
-                    <td>{{ contact.name }}</td>
-                    <td>{{ contact.email }}</td>
-                    <td>{{ contact.department }}</td>
-                    <td v-if="canEdit" style="white-space: nowrap;">
-                      <button :class="styles.btnSecondary" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" @click="startEditTeams(contact)">Editar</button>
-                      <button :class="styles.btnSecondary" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; color: #f87171;" @click="handleDeleteTeams(contact.id)">Excluir</button>
-                    </td>
-                  </template>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </template>
       </section>
     </template>
   </main>
