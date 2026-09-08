@@ -542,7 +542,7 @@ function shouldGroupDepartment(department) {
             />
           </h4>
           
-          <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 0.25rem;">
+          <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 0.5rem;">
             <a href="https://sac.newlifefibra.com.br/mk" target="_blank" title="MK Solutions" style="display: flex; align-items: center; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1">
               <img src="/mk-logo.webp" alt="MK" height="16" style="height: 16px; width: auto; object-fit: contain; filter: var(--logo-filter)" />
             </a>
@@ -550,11 +550,12 @@ function shouldGroupDepartment(department) {
             <a href="https://app.octadesk.com/login?" target="_blank" title="Octadesk" style="display: flex; align-items: center; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1">
               <img src="/octadesk-logo.png" alt="Octadesk" height="16" style="height: 16px; width: auto; object-fit: contain; filter: var(--logo-filter)" />
             </a>
-
-            <a href="https://downdetector.com.br/" target="_blank" title="Downdetector" style="display: flex; align-items: center; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1">
-              <img src="/downdetector-logo.svg" alt="Downdetector" height="16" style="height: 16px; width: auto; object-fit: contain; filter: var(--logo-filter)" />
-            </a>
           </div>
+
+          <a href="https://downdetector.com.br/" target="_blank" title="Downdetector" style="display: flex; align-items: center; gap: 8px; color: var(--text-muted); text-decoration: none; font-size: 0.85rem; margin-bottom: 0.25rem; transition: color 0.2s;" onmouseover="this.style.color='var(--text-main)'" onmouseout="this.style.color='var(--text-muted)'">
+            <img src="/downdetector-logo.svg" alt="Downdetector" height="16" style="height: 16px; width: auto; object-fit: contain; filter: var(--logo-filter)" />
+            Downdetector
+          </a>
           
           <a href="#" @click.prevent="showMap = true" style="display: flex; align-items: center; gap: 8px; color: var(--text-muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s;" onmouseover="this.style.color='var(--text-main)'" onmouseout="this.style.color='var(--text-muted)'">
             <img src="/mapa-rs.png" alt="Mapa" height="16" style="height: 16px; width: auto; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));" />
