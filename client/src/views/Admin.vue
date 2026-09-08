@@ -416,9 +416,6 @@ const uniqueDepartments = computed(() => {
             <button :class="activeTab === 'stats' ? styles.btnPrimary : styles.btnSecondary" @click="activeTab = 'stats'">
               Acessos
             </button>
-            <button v-if="canEdit" :class="activeTab === 'teams' ? styles.btnPrimary : styles.btnSecondary" @click="activeTab = 'teams'; loadTeamsContacts()">
-              Contatos Teams
-            </button>
           </template>
           <a href="/" :class="styles.link" style="margin-left: 1rem">Voltar ao Site</a>
           <button @click="currentUser = null" :class="styles.btnDanger" style="margin-left: auto">

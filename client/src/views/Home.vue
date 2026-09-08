@@ -369,10 +369,6 @@ function shouldGroupDepartment(department) {
                 <h2 :class="styles.departmentTitle">Colaborador(a) e Contatos</h2>
               </div>
               <div :class="styles.departmentHeaderRight">
-                <TeamsButton
-                  department="Contatos Regionais e Externos"
-                  :contacts="teamsContactsByDept['Contatos Regionais e Externos'] || []"
-                />
                 <InfoButton
                   department="Contatos Regionais e Externos"
                   :text="getDepartmentDescription('Contatos Regionais e Externos', descriptions)"
@@ -454,10 +450,6 @@ function shouldGroupDepartment(department) {
                     <img src="/logo-imoveis.png" alt="New Life Imóveis" width="70" height="50" style="object-fit: contain; max-height: 40px; width: auto" />
                   </a>
                 </div>
-                <TeamsButton
-                  :department="department"
-                  :contacts="teamsContactsByDept[department] || []"
-                />
                 <InfoButton
                   :department="department"
                   :text="getDepartmentDescription(department, descriptions)"
