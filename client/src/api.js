@@ -169,3 +169,4 @@ export const getSchedule = (sectorId, from, to) => request(`${BASE}/sectors/${se
 export const createScheduleMember = (sectorId, data) => request(`${BASE}/sectors/${sectorId}/schedule/members`, { method: 'POST', body: JSON.stringify(data) });
 export const updateScheduleMember = (sectorId, memberId, data) => request(`${BASE}/sectors/${sectorId}/schedule/members/${memberId}`, { method: 'PATCH', body: JSON.stringify(data) });
 export const saveScheduleEntries = (sectorId, entries) => request(`${BASE}/sectors/${sectorId}/schedule/entries`, { method: 'PUT', body: JSON.stringify({ entries }) });
+export const getScheduleSummary = (sectorId, from) => request(`${BASE}/sectors/${sectorId}/schedule/summary${from ? `?from=${from}` : ''}`);

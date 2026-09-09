@@ -16,6 +16,70 @@ function validDate(value) {
   return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
 }
 
+function isoUtc(date) { return date.toISOString().slice(0, 10); }
+function todayInBusinessTimezone() {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).formatToParts(new Date());
+  const value = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${value.year}-${value.month}-${value.day}`;
+}
+
+router.get('/summary', requireSectorView, featureEnabled, async (req, res, next) => {
+  const reference = req.query.from || todayInBusinessTimezone();
+  if (!validDate(reference)) return res.status(400).json({ success: false, error: 'Data de referência inválida.' });
+  const current = new Date(`${reference}T00:00:00Z`);
+  const sunday = new Date(current);
+  sunday.setUTCDate(sunday.getUTCDate() + ((7 - sunday.getUTCDay()) % 7));
+  const monday = new Date(current);
+  const weekday = monday.getUTCDay() || 7;
+  monday.setUTCDate(monday.getUTCDate() - weekday + 1);
+  const weekEnd = new Date(monday);
+  weekEnd.setUTCDate(weekEnd.getUTCDate() + 6);
+  try {
+    const { rows: nextHolidayRows } = await pool.query(
+      `SELECT h.id, h.date, h.name, h.city FROM holidays h
+       WHERE h.date >= $1 AND (h.city IS NULL OR EXISTS (
+         SELECT 1 FROM schedule_members sm WHERE sm.sector_id = $2 AND sm.active = true AND sm.city = h.city
+       )) ORDER BY h.date, h.city NULLS FIRST LIMIT 1`,
+      [reference, req.sectorId]
+    );
+    const nextHoliday = nextHolidayRows[0] || null;
+    const [{ rows: sundayPeople }, { rows: daysOff }, holidayPeopleResult] = await Promise.all([
+      pool.query(
+        `SELECT sm.id, sm.name, sm.city FROM schedule_entries se
+         JOIN schedule_members sm ON sm.id = se.member_id
+         WHERE sm.sector_id = $1 AND sm.active = true AND se.date = $2 AND se.status = 'PLANTAO'
+         ORDER BY sm.sort_order, sm.name`,
+        [req.sectorId, isoUtc(sunday)]
+      ),
+      pool.query(
+        `SELECT sm.id AS member_id, sm.name, sm.city, se.date, se.note FROM schedule_entries se
+         JOIN schedule_members sm ON sm.id = se.member_id
+         WHERE sm.sector_id = $1 AND sm.active = true AND se.date BETWEEN $2 AND $3 AND se.status = 'FOLGA'
+         ORDER BY se.date, sm.sort_order, sm.name`,
+        [req.sectorId, isoUtc(monday), isoUtc(weekEnd)]
+      ),
+      nextHoliday
+        ? pool.query(
+          `SELECT sm.id, sm.name, sm.city FROM schedule_entries se
+           JOIN schedule_members sm ON sm.id = se.member_id
+           WHERE sm.sector_id = $1 AND sm.active = true AND se.date = $2 AND se.status = 'PLANTAO'
+             AND ($3::text IS NULL OR sm.city = $3)
+           ORDER BY sm.sort_order, sm.name`,
+          [req.sectorId, nextHoliday.date, nextHoliday.city]
+        )
+        : Promise.resolve({ rows: [] }),
+    ]);
+    res.json({
+      success: true,
+      next_sunday: { date: isoUtc(sunday), people: sundayPeople },
+      next_holiday: nextHoliday ? { ...nextHoliday, people: holidayPeopleResult.rows } : null,
+      week: { from: isoUtc(monday), to: isoUtc(weekEnd), days_off: daysOff },
+    });
+  } catch (error) { next(error); }
+});
+
 router.get('/', requireSectorView, featureEnabled, async (req, res, next) => {
   const from = req.query.from;
   const to = req.query.to;

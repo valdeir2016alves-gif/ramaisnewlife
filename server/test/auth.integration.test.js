@@ -364,7 +364,7 @@ test('secure authentication lifecycle and API access', { skip: !databaseUrl }, a
     assert.equal((await request(`/api/sectors/${commercial.id}/schedule/entries`, {
       method: 'PUT', body: JSON.stringify({ entries: [
         { member_id: member.id, date: '2026-09-13', status: 'PLANTAO', note: 'Domingo' },
-        { member_id: member.id, date: '2026-09-15', status: 'FOLGA' },
+        { member_id: member.id, date: '2026-09-10', status: 'FOLGA' },
       ] }),
     }, editorCookie)).status, 200);
     const schedule = await request(`/api/sectors/${commercial.id}/schedule?from=2026-09-07&to=2026-09-20`, {}, viewerCookie);
@@ -379,6 +379,28 @@ test('secure authentication lifecycle and API access', { skip: !databaseUrl }, a
     assert.equal((await request('/api/admin/holidays', {
       method: 'POST', body: JSON.stringify({ date: '2026-09-20', name: 'Feriado Municipal', city: 'sao_gabriel' }),
     }, adminCookie)).status, 201);
+  });
+
+  await t.test('returns a scoped schedule summary without the full grid', async () => {
+    const commercial = (await pool.query("SELECT id FROM sectors WHERE slug = 'comercial'")).rows[0];
+    const member = (await pool.query("SELECT id FROM schedule_members WHERE name = 'João da Escala'")).rows[0];
+    const editorLogin = await login('editor-test', 'editor-password');
+    const editorCookie = editorLogin.cookie.split(';', 1)[0];
+    const viewerLogin = await login('viewer-test', 'viewer-password');
+    const viewerCookie = viewerLogin.cookie.split(';', 1)[0];
+    await request(`/api/sectors/${commercial.id}/schedule/entries`, {
+      method: 'PUT', body: JSON.stringify({ entries: [{ member_id: member.id, date: '2026-09-20', status: 'PLANTAO' }] }),
+    }, editorCookie);
+    const response = await request(`/api/sectors/${commercial.id}/schedule/summary?from=2026-09-09`, {}, viewerCookie);
+    assert.equal(response.status, 200);
+    const summary = await response.json();
+    assert.equal(summary.next_sunday.date, '2026-09-13');
+    assert.equal(summary.next_sunday.people[0].name, 'João da Escala');
+    assert.equal(String(summary.next_holiday.date).slice(0, 10), '2026-09-20');
+    assert.equal(summary.next_holiday.people[0].name, 'João da Escala');
+    assert.equal(summary.week.days_off[0].name, 'João da Escala');
+    assert.equal(summary.members, undefined);
+    assert.equal(summary.entries, undefined);
   });
 
   await t.test('invalidates logout and expired sessions', async () => {
