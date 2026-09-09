@@ -44,3 +44,15 @@ O `docker-compose.yml` mantém o mesmo volume nomeado `ramais_data` montado em `
 ## Variáveis de ambiente opcionais
 
 - `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID` — habilitam notificações no Telegram para relatos de contato incorreto e alertas do monitor de IP.
+
+## Usuários e papéis globais
+
+O nível global de acesso de cada usuário é um destes três valores:
+
+- `admin` — administração completa;
+- `editor` — poderá administrar somente setores pelos quais for responsável;
+- `viewer` — acesso comum, sem administração.
+
+Na atualização de uma base existente, a role legada `readonly` é convertida para
+`viewer`. Qualquer outro valor desconhecido também é convertido para `viewer` e
+registrado no log da migration, evitando promoção acidental de privilégios.

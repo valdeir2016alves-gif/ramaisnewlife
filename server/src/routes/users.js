@@ -11,18 +11,21 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
   const { username, password, role } = req.body;
-  res.json(await db.addUser(username, password, role));
+  const result = await db.addUser(username, password, role);
+  res.status(result.success ? 201 : 400).json(result);
 });
 
 router.put('/:id', async (req, res) => {
   const id = Number(req.params.id);
   const { username, password, role } = req.body;
-  res.json(await db.updateUser(id, username, password, role));
+  const result = await db.updateUser(id, username, password, role);
+  res.status(result.success ? 200 : 400).json(result);
 });
 
 router.delete('/:id', async (req, res) => {
   const id = Number(req.params.id);
-  res.json(await db.deleteUser(id));
+  const result = await db.deleteUser(id);
+  res.status(result.success ? 200 : 400).json(result);
 });
 
 module.exports = router;

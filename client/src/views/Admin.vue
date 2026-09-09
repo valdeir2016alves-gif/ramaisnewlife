@@ -37,6 +37,12 @@ const departmentEmojis = {
   'Agendamento': '📅',
 };
 
+const roleLabels = {
+  admin: 'Administrador',
+  editor: 'Editor',
+  viewer: 'Visualização',
+};
+
 const getEmoji = (dept) => departmentEmojis[dept] || '🏢';
 
 const contacts = ref([]);
@@ -68,7 +74,7 @@ const editTeamsDepartment = ref('');
 // New user form
 const newUsername = ref('');
 const newUserPassword = ref('');
-const newUserRole = ref('readonly');
+const newUserRole = ref('viewer');
 
 const canEdit = computed(() => currentUser.value?.role === 'admin');
 
@@ -220,7 +226,7 @@ async function handleCreateUser(e) {
     alert('Usuário criado!');
     newUsername.value = '';
     newUserPassword.value = '';
-    newUserRole.value = 'readonly';
+    newUserRole.value = 'viewer';
     await loadUsers();
   } else {
     alert('Erro: ' + result.error);
@@ -228,13 +234,13 @@ async function handleCreateUser(e) {
 }
 
 async function handleChangeRole(u, newRole) {
-  if (confirm(`Mudar nível de acesso de ${u.username} para ${newRole === 'admin' ? 'Administrador' : 'Leitura'}?`)) {
+  if (confirm(`Mudar nível de acesso de ${u.username} para ${roleLabels[newRole]}?`)) {
     loading.value = true;
     const res = await editUser(u.id, u.username, undefined, newRole);
     loading.value = false;
     if (res.success) {
       await loadUsers();
-      if (u.username === currentUser.value.username && newRole === 'readonly') {
+      if (u.username === currentUser.value.username && newRole !== 'admin') {
         window.location.reload();
       }
     } else {
@@ -539,8 +545,9 @@ async function handleLogout() {
             <input type="text" v-model="newUsername" placeholder="Nome de Usuário" :class="styles.input" required />
             <input type="password" v-model="newUserPassword" placeholder="Senha" :class="styles.input" required />
             <select v-model="newUserRole" :class="styles.input" required>
-              <option value="readonly">Somente Leitura</option>
               <option value="admin">Administrador</option>
+              <option value="editor">Editor</option>
+              <option value="viewer">Visualização</option>
             </select>
             <button type="submit" :class="styles.btnPrimary" :disabled="loading">Criar</button>
           </form>
@@ -567,7 +574,8 @@ async function handleLogout() {
                     style="padding: 0.3rem; margin: 0; width: 100%; font-size: 0.9rem"
                   >
                     <option value="admin">Administrador</option>
-                    <option value="readonly">Leitura</option>
+                    <option value="editor">Editor</option>
+                    <option value="viewer">Visualização</option>
                   </select>
                 </td>
                 <td>

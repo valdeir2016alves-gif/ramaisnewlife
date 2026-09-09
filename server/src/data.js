@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const pool = require('./db/pool');
+const { isValidUserRole, normalizeRole } = require('./users/roles');
 
 function rowToContact(row) {
   return {
@@ -150,7 +151,7 @@ async function deleteReport(id) {
 async function authenticateUser(username, password) {
   const { rows } = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
   const user = rows[0];
-  if (user && bcrypt.compareSync(password, user.password_hash)) {
+  if (user && isValidUserRole(user.role) && bcrypt.compareSync(password, user.password_hash)) {
     return { success: true, user: { id: user.id, username: user.username, role: user.role } };
   }
   return { success: false, error: 'Usuário ou senha incorretos.' };
@@ -162,6 +163,9 @@ async function getUsers() {
 }
 
 async function addUser(username, password, role) {
+  if (!isValidUserRole(role)) {
+    return { success: false, error: 'Role deve ser admin, editor ou viewer.' };
+  }
   const { rows } = await pool.query('SELECT id FROM users WHERE username = $1', [username]);
   if (rows.length > 0) {
     return { success: false, error: 'Usuário já existe.' };
@@ -169,37 +173,93 @@ async function addUser(username, password, role) {
   const passwordHash = bcrypt.hashSync(password, 10);
   await pool.query(
     'INSERT INTO users (username, password_hash, role) VALUES ($1, $2, $3)',
-    [username, passwordHash, role]
+    [username, passwordHash, normalizeRole(role)]
   );
   return { success: true };
 }
 
 async function updateUser(id, username, password, role) {
-  const { rows } = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
-  const existing = rows[0];
-  if (!existing) return { success: false, error: 'Usuário não encontrado.' };
-
-  if (username !== existing.username) {
-    const { rows: clash } = await pool.query('SELECT id FROM users WHERE username = $1', [username]);
-    if (clash.length > 0) return { success: false, error: 'Usuário já existe.' };
+  if (role !== undefined && !isValidUserRole(role)) {
+    return { success: false, error: 'Role deve ser admin, editor ou viewer.' };
   }
 
-  const passwordHash = password ? bcrypt.hashSync(password, 10) : existing.password_hash;
-  await pool.query(
-    'UPDATE users SET username = $1, password_hash = $2, role = $3 WHERE id = $4',
-    [username, passwordHash, role || existing.role, id]
-  );
-  if (password) {
-    await pool.query('DELETE FROM user_sessions WHERE user_id = $1', [id]);
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('LOCK TABLE users IN SHARE ROW EXCLUSIVE MODE');
+    const { rows } = await client.query('SELECT * FROM users WHERE id = $1', [id]);
+    const existing = rows[0];
+    if (!existing) {
+      await client.query('ROLLBACK');
+      return { success: false, error: 'Usuário não encontrado.' };
+    }
+
+    const nextRole = role === undefined ? existing.role : normalizeRole(role);
+    if (existing.role === 'admin' && nextRole !== 'admin') {
+      const { rows: adminCount } = await client.query(
+        "SELECT COUNT(*)::int AS count FROM users WHERE role = 'admin'"
+      );
+      if (adminCount[0].count <= 1) {
+        await client.query('ROLLBACK');
+        return { success: false, error: 'Não é possível rebaixar o último administrador.' };
+      }
+    }
+
+    if (username !== existing.username) {
+      const { rows: clash } = await client.query('SELECT id FROM users WHERE username = $1', [username]);
+      if (clash.length > 0) {
+        await client.query('ROLLBACK');
+        return { success: false, error: 'Usuário já existe.' };
+      }
+    }
+
+    const passwordHash = password ? bcrypt.hashSync(password, 10) : existing.password_hash;
+    await client.query(
+      'UPDATE users SET username = $1, password_hash = $2, role = $3 WHERE id = $4',
+      [username, passwordHash, nextRole, id]
+    );
+    if (password) {
+      await client.query('DELETE FROM user_sessions WHERE user_id = $1', [id]);
+    }
+    await client.query('COMMIT');
+    return { success: true };
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
   }
-  return { success: true };
 }
 
 async function deleteUser(id) {
-  const { rows } = await pool.query('SELECT COUNT(*)::int AS count FROM users');
-  if (rows[0].count <= 1) return { success: false, error: 'Não é possível deletar o último usuário do sistema.' };
-  await pool.query('DELETE FROM users WHERE id = $1', [id]);
-  return { success: true };
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('LOCK TABLE users IN SHARE ROW EXCLUSIVE MODE');
+    const { rows } = await client.query('SELECT id, role FROM users WHERE id = $1', [id]);
+    const existing = rows[0];
+    if (!existing) {
+      await client.query('ROLLBACK');
+      return { success: false, error: 'Usuário não encontrado.' };
+    }
+    if (existing.role === 'admin') {
+      const { rows: adminCount } = await client.query(
+        "SELECT COUNT(*)::int AS count FROM users WHERE role = 'admin'"
+      );
+      if (adminCount[0].count <= 1) {
+        await client.query('ROLLBACK');
+        return { success: false, error: 'Não é possível excluir o último administrador.' };
+      }
+    }
+    await client.query('DELETE FROM users WHERE id = $1', [id]);
+    await client.query('COMMIT');
+    return { success: true };
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 async function registerVisit() {

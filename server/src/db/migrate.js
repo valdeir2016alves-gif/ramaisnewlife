@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 const pool = require('./pool');
+const { normalizeLegacyRole } = require('../users/roles');
 
 // Mirrors the legacy file locations from the JSON-based server/src/data.js,
 // which this migration reads from once to seed Postgres.
@@ -100,6 +101,38 @@ async function createSchema(client) {
   `);
 }
 
+async function migrateUserRoles(client) {
+  const { rows } = await client.query(
+    'SELECT role, COUNT(*)::int AS count FROM users GROUP BY role ORDER BY role'
+  );
+
+  for (const row of rows) {
+    const normalized = normalizeLegacyRole(row.role);
+    if (!normalized.recognized) {
+      console.warn(
+        `[migrate] Role legada desconhecida "${row.role}" em ${row.count} usuário(s); convertida para viewer.`
+      );
+    }
+    if (row.role !== normalized.role) {
+      await client.query('UPDATE users SET role = $1 WHERE role = $2', [normalized.role, row.role]);
+    }
+  }
+
+  await client.query("ALTER TABLE users ALTER COLUMN role SET DEFAULT 'viewer'");
+  await client.query(`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint
+        WHERE conname = 'users_role_check' AND conrelid = 'users'::regclass
+      ) THEN
+        ALTER TABLE users
+          ADD CONSTRAINT users_role_check CHECK (role IN ('admin', 'editor', 'viewer'));
+      END IF;
+    END $$;
+  `);
+}
+
 function normalizeCity(contact) {
   if (contact.department === 'Contatos Regionais e Externos') return 'all';
   return contact.city || 'sao_gabriel';
@@ -147,10 +180,16 @@ async function importUsers(client) {
   for (const u of users) {
     maxId = Math.max(maxId, u.id);
     const passwordHash = bcrypt.hashSync(u.password, 10);
+    const normalizedRole = normalizeLegacyRole(u.role);
+    if (!normalizedRole.recognized) {
+      console.warn(
+        `[migrate] Role legada desconhecida "${u.role}" do usuário "${u.username}"; convertida para viewer.`
+      );
+    }
     await client.query(
       `INSERT INTO users (id, username, password_hash, role) VALUES ($1, $2, $3, $4)
        ON CONFLICT (id) DO NOTHING`,
-      [u.id, u.username, passwordHash, u.role]
+      [u.id, u.username, passwordHash, normalizedRole.role]
     );
   }
   await client.query(`SELECT setval(pg_get_serial_sequence('users', 'id'), $1)`, [maxId]);
@@ -216,6 +255,7 @@ async function migrate() {
   const client = await pool.connect();
   try {
     await createSchema(client);
+    await migrateUserRoles(client);
     await importContacts(client);
     await importUsers(client);
     await importReports(client);
