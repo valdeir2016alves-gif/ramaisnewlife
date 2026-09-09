@@ -152,6 +152,22 @@ async function createSchema(client) {
     CREATE INDEX IF NOT EXISTS personal_notes_user_idx
       ON personal_notes(user_id, pinned DESC, updated_at DESC);
 
+    CREATE TABLE IF NOT EXISTS sector_notes (
+      id SERIAL PRIMARY KEY,
+      sector_id INTEGER NOT NULL REFERENCES sectors(id),
+      author_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      title TEXT,
+      content TEXT NOT NULL,
+      pinned BOOLEAN NOT NULL DEFAULT false,
+      expires_at TIMESTAMPTZ,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      CONSTRAINT sector_notes_content_not_blank CHECK (btrim(content) <> '')
+    );
+    CREATE INDEX IF NOT EXISTS sector_notes_sector_idx
+      ON sector_notes(sector_id, pinned DESC, updated_at DESC);
+    CREATE INDEX IF NOT EXISTS sector_notes_expiry_idx ON sector_notes(expires_at);
+
     CREATE TABLE IF NOT EXISTS reports (
       id SERIAL PRIMARY KEY,
       date TIMESTAMPTZ NOT NULL DEFAULT now(),

@@ -318,6 +318,33 @@ test('secure authentication lifecycle and API access', { skip: !databaseUrl }, a
     assert.equal((await updated.json()).note.completed, true);
   });
 
+  await t.test('scopes sector notes and restricts their management', async () => {
+    const commercial = (await pool.query("SELECT id FROM sectors WHERE slug = 'comercial'")).rows[0];
+    const finance = (await pool.query("SELECT id FROM sectors WHERE slug = 'financeiro'")).rows[0];
+    const viewerLogin = await login('viewer-test', 'viewer-password');
+    const viewerCookie = viewerLogin.cookie.split(';', 1)[0];
+    const editorLogin = await login('editor-test', 'editor-password');
+    const editorCookie = editorLogin.cookie.split(';', 1)[0];
+
+    const denied = await request(`/api/sectors/${commercial.id}/notes`, {
+      method: 'POST', body: JSON.stringify({ content: 'Não permitido' }),
+    }, viewerCookie);
+    assert.equal(denied.status, 403);
+    const created = await request(`/api/sectors/${commercial.id}/notes`, {
+      method: 'POST', body: JSON.stringify({ title: 'Aviso', content: 'Reunião às 14h', pinned: true, author_user_id: 1 }),
+    }, editorCookie);
+    assert.equal(created.status, 201);
+    const note = (await created.json()).note;
+    assert.notEqual(note.author_user_id, 1);
+    assert.equal((await request(`/api/sectors/${commercial.id}/notes`, {}, viewerCookie).then((r) => r.json())).notes.length, 1);
+    assert.equal((await request(`/api/sectors/${finance.id}/notes`, {
+      method: 'POST', body: JSON.stringify({ content: 'Bloqueado' }),
+    }, editorCookie)).status, 403);
+    assert.equal((await request(`/api/sectors/${finance.id}/notes/${note.id}`, {
+      method: 'PATCH', body: JSON.stringify({ content: 'Ataque cruzado' }),
+    }, adminCookie)).status, 404);
+  });
+
   await t.test('invalidates logout and expired sessions', async () => {
     const logout = await request('/api/auth/logout', { method: 'POST' }, adminCookie);
     assert.equal(logout.status, 200);

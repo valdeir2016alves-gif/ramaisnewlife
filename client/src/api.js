@@ -161,3 +161,7 @@ export const getPersonalNotes = () => request(`${BASE}/notes`).then((result) => 
 export const createPersonalNote = (data) => request(`${BASE}/notes`, { method: 'POST', body: JSON.stringify(data) });
 export const updatePersonalNote = (id, data) => request(`${BASE}/notes/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
 export const deletePersonalNote = (id) => request(`${BASE}/notes/${id}`, { method: 'DELETE' });
+export const getSectorNotes = (sectorId) => request(`${BASE}/sectors/${sectorId}/notes`).then((result) => result.notes);
+export const createSectorNote = (sectorId, data) => request(`${BASE}/sectors/${sectorId}/notes`, { method: 'POST', body: JSON.stringify(data) });
+export const updateSectorNote = (sectorId, id, data) => request(`${BASE}/sectors/${sectorId}/notes/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+export const deleteSectorNote = (sectorId, id) => request(`${BASE}/sectors/${sectorId}/notes/${id}`, { method: 'DELETE' });
