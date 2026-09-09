@@ -297,6 +297,27 @@ test('secure authentication lifecycle and API access', { skip: !databaseUrl }, a
     }, editorCookie)).status, 403);
   });
 
+  await t.test('isolates personal notes by authenticated owner', async () => {
+    const viewerLogin = await login('viewer-test', 'viewer-password');
+    const viewerCookie = viewerLogin.cookie.split(';', 1)[0];
+    const editorLogin = await login('editor-test', 'editor-password');
+    const editorCookie = editorLogin.cookie.split(';', 1)[0];
+    const created = await request('/api/notes', {
+      method: 'POST', body: JSON.stringify({ content: 'Minha nota', pinned: true, user_id: 1 }),
+    }, viewerCookie);
+    assert.equal(created.status, 201);
+    const note = (await created.json()).note;
+    assert.equal((await request('/api/notes', {}, viewerCookie).then((r) => r.json())).notes.length, 1);
+    assert.equal((await request('/api/notes', {}, editorCookie).then((r) => r.json())).notes.length, 0);
+    assert.equal((await request(`/api/notes/${note.id}`, {
+      method: 'PATCH', body: JSON.stringify({ completed: true }),
+    }, editorCookie)).status, 404);
+    const updated = await request(`/api/notes/${note.id}`, {
+      method: 'PATCH', body: JSON.stringify({ completed: true }),
+    }, viewerCookie);
+    assert.equal((await updated.json()).note.completed, true);
+  });
+
   await t.test('invalidates logout and expired sessions', async () => {
     const logout = await request('/api/auth/logout', { method: 'POST' }, adminCookie);
     assert.equal(logout.status, 200);

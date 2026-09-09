@@ -157,3 +157,7 @@ export const getSectorShortcuts = (sectorId) => request(`${BASE}/sectors/${secto
 export const createSectorShortcut = (sectorId, data) => request(`${BASE}/sectors/${sectorId}/shortcuts`, { method: 'POST', body: JSON.stringify(data) });
 export const updateSectorShortcut = (sectorId, id, data) => request(`${BASE}/sectors/${sectorId}/shortcuts/${id}`, { method: 'PUT', body: JSON.stringify(data) });
 export const deleteSectorShortcut = (sectorId, id) => request(`${BASE}/sectors/${sectorId}/shortcuts/${id}`, { method: 'DELETE' });
+export const getPersonalNotes = () => request(`${BASE}/notes`).then((result) => result.notes);
+export const createPersonalNote = (data) => request(`${BASE}/notes`, { method: 'POST', body: JSON.stringify(data) });
+export const updatePersonalNote = (id, data) => request(`${BASE}/notes/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+export const deletePersonalNote = (id) => request(`${BASE}/notes/${id}`, { method: 'DELETE' });

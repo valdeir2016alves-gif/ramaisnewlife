@@ -13,6 +13,7 @@ const adminSectorsRouter = require('./routes/adminSectors');
 const sectorsRouter = require('./routes/sectors');
 const favoritesRouter = require('./routes/favorites');
 const sectorShortcutsRouter = require('./routes/sectorShortcuts');
+const personalNotesRouter = require('./routes/personalNotes');
 const { requireAuth } = require('./middleware/auth');
 
 const app = express();
@@ -35,6 +36,7 @@ app.use('/api/admin/sectors', adminSectorsRouter);
 app.use('/api/sectors', sectorsRouter);
 app.use('/api/favorites', favoritesRouter);
 app.use('/api/sectors/:sectorId/shortcuts', sectorShortcutsRouter);
+app.use('/api/notes', personalNotesRouter);
 
 const clientDist = path.join(__dirname, '..', 'public');
 app.use(express.static(clientDist));
