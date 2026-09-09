@@ -147,3 +147,13 @@ export const getSectors = () => request(`${BASE}/sectors`).then((result) => resu
 
 export const getSector = (id) =>
   request(`${BASE}/sectors/${id}`).then((result) => result.sector);
+
+export const getPersonalFavorites = () => request(`${BASE}/favorites`).then((result) => result.favorites);
+export const createPersonalFavorite = (data) => request(`${BASE}/favorites`, { method: 'POST', body: JSON.stringify(data) });
+export const updatePersonalFavorite = (id, data) => request(`${BASE}/favorites/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+export const deletePersonalFavorite = (id) => request(`${BASE}/favorites/${id}`, { method: 'DELETE' });
+export const reorderPersonalFavorites = (ids) => request(`${BASE}/favorites/order/all`, { method: 'PUT', body: JSON.stringify({ ids }) });
+export const getSectorShortcuts = (sectorId) => request(`${BASE}/sectors/${sectorId}/shortcuts`).then((result) => result.shortcuts);
+export const createSectorShortcut = (sectorId, data) => request(`${BASE}/sectors/${sectorId}/shortcuts`, { method: 'POST', body: JSON.stringify(data) });
+export const updateSectorShortcut = (sectorId, id, data) => request(`${BASE}/sectors/${sectorId}/shortcuts/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+export const deleteSectorShortcut = (sectorId, id) => request(`${BASE}/sectors/${sectorId}/shortcuts/${id}`, { method: 'DELETE' });

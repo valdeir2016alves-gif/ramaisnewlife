@@ -264,6 +264,39 @@ test('secure authentication lifecycle and API access', { skip: !databaseUrl }, a
     assert.equal((await invoke(requireSectorFeature('schedule'), users.admin, finance.id)).status, 403);
   });
 
+  await t.test('isolates personal favorites and protects sector shortcuts', async () => {
+    const commercial = (await pool.query("SELECT id FROM sectors WHERE slug = 'comercial'")).rows[0];
+    const finance = (await pool.query("SELECT id FROM sectors WHERE slug = 'financeiro'")).rows[0];
+    const viewerLogin = await login('viewer-test', 'viewer-password');
+    const viewerCookie = viewerLogin.cookie.split(';', 1)[0];
+    const editorLogin = await login('editor-test', 'editor-password');
+    const editorCookie = editorLogin.cookie.split(';', 1)[0];
+
+    const created = await request('/api/favorites', {
+      method: 'POST',
+      body: JSON.stringify({ title: 'ERP', url: 'https://erp.example.com', user_id: 1 }),
+    }, viewerCookie);
+    assert.equal(created.status, 201);
+    const favorite = (await created.json()).favorite;
+    assert.equal((await request('/api/favorites', {}, viewerCookie).then((r) => r.json())).favorites.length, 1);
+    assert.equal((await request('/api/favorites', {}, adminCookie).then((r) => r.json())).favorites.length, 0);
+    assert.equal((await request(`/api/favorites/${favorite.id}`, {
+      method: 'PUT', body: JSON.stringify({ title: 'Inválido', url: 'https://example.com' }),
+    }, adminCookie)).status, 404);
+
+    assert.equal((await request(`/api/sectors/${commercial.id}/shortcuts`, {
+      method: 'POST', body: JSON.stringify({ title: 'Bloqueado', url: 'https://example.com' }),
+    }, viewerCookie)).status, 403);
+    const shortcut = await request(`/api/sectors/${commercial.id}/shortcuts`, {
+      method: 'POST', body: JSON.stringify({ title: 'Painel Comercial', url: 'https://example.com/comercial' }),
+    }, editorCookie);
+    assert.equal(shortcut.status, 201);
+    assert.equal((await request(`/api/sectors/${commercial.id}/shortcuts`, {}, viewerCookie).then((r) => r.json())).shortcuts.length, 1);
+    assert.equal((await request(`/api/sectors/${finance.id}/shortcuts`, {
+      method: 'POST', body: JSON.stringify({ title: 'Bloqueado', url: 'https://example.com' }),
+    }, editorCookie)).status, 403);
+  });
+
   await t.test('invalidates logout and expired sessions', async () => {
     const logout = await request('/api/auth/logout', { method: 'POST' }, adminCookie);
     assert.equal(logout.status, 200);

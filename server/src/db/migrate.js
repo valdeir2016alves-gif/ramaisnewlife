@@ -114,6 +114,31 @@ async function createSchema(client) {
       CONSTRAINT sector_features_key_not_blank CHECK (btrim(feature_key) <> '')
     );
 
+    CREATE TABLE IF NOT EXISTS personal_favorites (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      title TEXT NOT NULL,
+      url TEXT NOT NULL,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+    CREATE INDEX IF NOT EXISTS personal_favorites_user_order_idx
+      ON personal_favorites(user_id, sort_order, id);
+
+    CREATE TABLE IF NOT EXISTS sector_shortcuts (
+      id SERIAL PRIMARY KEY,
+      sector_id INTEGER NOT NULL REFERENCES sectors(id),
+      title TEXT NOT NULL,
+      url TEXT NOT NULL,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+    CREATE INDEX IF NOT EXISTS sector_shortcuts_sector_order_idx
+      ON sector_shortcuts(sector_id, sort_order, id);
+
     CREATE TABLE IF NOT EXISTS reports (
       id SERIAL PRIMARY KEY,
       date TIMESTAMPTZ NOT NULL DEFAULT now(),
