@@ -1,9 +1,10 @@
 const express = require('express');
 const db = require('../data');
+const { requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
+router.get('/', requireAdmin, async (req, res) => {
   res.json(await db.getReports());
 });
 
@@ -12,7 +13,7 @@ router.post('/', async (req, res) => {
   res.json(await db.submitReport(name, ramal, message));
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireAdmin, async (req, res) => {
   const id = Number(req.params.id);
   res.json(await db.deleteReport(id));
 });
