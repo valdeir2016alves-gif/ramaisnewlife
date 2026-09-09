@@ -12,6 +12,7 @@ import {
   addUser as createUser, updateUser as editUser, deleteUser as removeUser,
   getAnalytics, reorderContact, toggleContactVisibility, getDepartmentDescriptions, updateDepartmentDescription,
   getTeamsContacts, addTeamsContact, updateTeamsContact, deleteTeamsContact,
+  getAdminSectors, createAdminSector, updateAdminSector, setSectorMember, setSectorManager, setSectorFeature,
 } from '../api';
 import { useAuth } from '../auth';
 
@@ -56,6 +57,9 @@ const adminCity = ref('sao_gabriel');
 const activeTab = ref('ramais');
 const reports = ref([]);
 const systemUsers = ref([]);
+const adminSectors = ref([]);
+const newSectorName = ref('');
+const newSectorCity = ref('');
 const expandedDeps = ref({});
 
 const stats = ref([]);
@@ -84,6 +88,39 @@ function toggleCollapse(dep) {
 
 async function loadUsers() {
   systemUsers.value = await fetchUsers();
+}
+
+async function loadSectors() { adminSectors.value = await getAdminSectors(); }
+function isMember(userId, sector) { return sector.members.some((user) => user.id === userId); }
+function isManager(userId, sector) { return sector.managers.some((user) => user.id === userId); }
+function permissionSummary(user) {
+  const visible = user.role === 'admin' ? adminSectors.value : adminSectors.value.filter((sector) => isMember(user.id, sector));
+  const managed = user.role === 'admin' ? adminSectors.value : adminSectors.value.filter((sector) => user.role === 'editor' && isManager(user.id, sector));
+  const schedules = managed.filter((sector) => sector.features.schedule).map((sector) => sector.name);
+  return `Pessoais: sim · Visualiza: ${visible.map((sector) => sector.name).join(', ') || 'nenhum'} · Gerencia: ${managed.map((sector) => sector.name).join(', ') || 'nenhum'} · Escalas: ${schedules.join(', ') || 'nenhuma'}`;
+}
+async function toggleMembership(user, sector, enabled) {
+  loading.value = true;
+  try { await setSectorMember(sector.id, user.id, enabled); await loadSectors(); }
+  finally { loading.value = false; }
+}
+async function toggleManager(user, sector, enabled) {
+  loading.value = true;
+  try { await setSectorManager(sector.id, user.id, enabled); await loadSectors(); }
+  finally { loading.value = false; }
+}
+async function addSector() {
+  if (!newSectorName.value.trim()) return;
+  await createAdminSector({ name: newSectorName.value, city: newSectorCity.value || null });
+  newSectorName.value = ''; newSectorCity.value = ''; await loadSectors();
+}
+async function editSector(sector) {
+  const name = prompt('Nome do setor:', sector.name);
+  if (!name) return;
+  await updateAdminSector(sector.id, { name }); await loadSectors();
+}
+async function toggleSchedule(sector, enabled) {
+  await setSectorFeature(sector.id, 'schedule', enabled); await loadSectors();
 }
 
 async function loadStats() {
@@ -227,7 +264,7 @@ async function handleCreateUser(e) {
     newUsername.value = '';
     newUserPassword.value = '';
     newUserRole.value = 'viewer';
-    await loadUsers();
+    await Promise.all([loadUsers(), loadSectors()]);
   } else {
     alert('Erro: ' + result.error);
   }
@@ -239,7 +276,7 @@ async function handleChangeRole(u, newRole) {
     const res = await editUser(u.id, u.username, undefined, newRole);
     loading.value = false;
     if (res.success) {
-      await loadUsers();
+      await Promise.all([loadUsers(), loadSectors()]);
       if (u.username === currentUser.value.username && newRole !== 'admin') {
         window.location.reload();
       }
@@ -268,7 +305,7 @@ async function handleDeleteUser(u) {
     loading.value = true;
     const res = await removeUser(u.id);
     loading.value = false;
-    if (res.success) await loadUsers();
+    if (res.success) await Promise.all([loadUsers(), loadSectors()]);
     else alert('Erro: ' + res.error);
   }
 }
@@ -354,7 +391,7 @@ const uniqueDepartments = computed(() => {
 });
 
 onMounted(async () => {
-  await Promise.all([loadContacts(), loadUsers(), loadStats(), loadTeamsContacts()]);
+  await Promise.all([loadContacts(), loadUsers(), loadSectors(), loadStats(), loadTeamsContacts()]);
 });
 
 async function handleLogout() {
@@ -387,6 +424,9 @@ async function handleLogout() {
           <template v-if="canEdit">
             <button :class="activeTab === 'users' ? styles.btnPrimary : styles.btnSecondary" @click="activeTab = 'users'">
               Usuários
+            </button>
+            <button :class="activeTab === 'sectors' ? styles.btnPrimary : styles.btnSecondary" @click="activeTab = 'sectors'">
+              Setores
             </button>
             <button :class="activeTab === 'stats' ? styles.btnPrimary : styles.btnSecondary" @click="activeTab = 'stats'">
               Acessos
@@ -537,6 +577,22 @@ async function handleLogout() {
         </div>
       </section>
 
+      <section v-else-if="activeTab === 'sectors' && canEdit" :class="styles.listSection">
+        <h2>Setores e funcionalidades</h2>
+        <form :class="styles.formRow" style="margin-bottom:2rem" @submit.prevent="addSector">
+          <input v-model="newSectorName" :class="styles.input" placeholder="Nome do setor" required />
+          <input v-model="newSectorCity" :class="styles.input" placeholder="Cidade (opcional)" />
+          <button :class="styles.btnPrimary">Criar setor</button>
+        </form>
+        <div :class="styles.tableContainer"><table :class="styles.table"><thead><tr><th>Setor</th><th>Cidade</th><th>Ativo</th><th>Escala</th><th>Ações</th></tr></thead><tbody>
+          <tr v-for="sector in adminSectors" :key="sector.id">
+            <td>{{ sector.name }}</td><td>{{ sector.city || 'Todas' }}</td><td>{{ sector.active ? 'Sim' : 'Não' }}</td>
+            <td><label><input type="checkbox" :checked="sector.features.schedule" @change="toggleSchedule(sector, $event.target.checked)" /> Habilitada</label></td>
+            <td><button :class="styles.btnSecondary" @click="editSector(sector)">Editar</button></td>
+          </tr>
+        </tbody></table></div>
+      </section>
+
       <section v-else-if="activeTab === 'users' && canEdit" :class="styles.listSection">
         <h2>Gerenciar Usuários</h2>
         <div :class="[styles.addSection, 'glass']" style="margin-bottom: 2rem">
@@ -559,6 +615,9 @@ async function handleLogout() {
               <tr>
                 <th>Usuário</th>
                 <th>Nível de Acesso</th>
+                <th>Setores</th>
+                <th>Responsável por</th>
+                <th>Permissões resultantes</th>
                 <th>Ações</th>
               </tr>
             </thead>
@@ -578,6 +637,17 @@ async function handleLogout() {
                     <option value="viewer">Visualização</option>
                   </select>
                 </td>
+                <td>
+                  <label v-for="sector in adminSectors" :key="sector.id" style="display:block;white-space:nowrap">
+                    <input type="checkbox" :checked="isMember(u.id, sector)" :disabled="loading || u.role === 'admin'" @change="toggleMembership(u, sector, $event.target.checked)" /> {{ sector.name }}
+                  </label>
+                </td>
+                <td>
+                  <label v-for="sector in adminSectors" :key="sector.id" style="display:block;white-space:nowrap">
+                    <input type="checkbox" :checked="isManager(u.id, sector)" :disabled="loading || u.role !== 'editor' || !isMember(u.id, sector)" @change="toggleManager(u, sector, $event.target.checked)" /> {{ sector.name }}
+                  </label>
+                </td>
+                <td style="min-width:260px;font-size:.82rem">{{ permissionSummary(u) }}</td>
                 <td>
                   <div :class="styles.tableActions">
                     <button @click="handleChangePassword(u)" :class="styles.btnSecondary" :disabled="loading">

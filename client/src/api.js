@@ -170,3 +170,9 @@ export const createScheduleMember = (sectorId, data) => request(`${BASE}/sectors
 export const updateScheduleMember = (sectorId, memberId, data) => request(`${BASE}/sectors/${sectorId}/schedule/members/${memberId}`, { method: 'PATCH', body: JSON.stringify(data) });
 export const saveScheduleEntries = (sectorId, entries) => request(`${BASE}/sectors/${sectorId}/schedule/entries`, { method: 'PUT', body: JSON.stringify({ entries }) });
 export const getScheduleSummary = (sectorId, from) => request(`${BASE}/sectors/${sectorId}/schedule/summary${from ? `?from=${from}` : ''}`);
+export const getAdminSectors = () => request(`${BASE}/admin/sectors`).then((result) => result.sectors);
+export const createAdminSector = (data) => request(`${BASE}/admin/sectors`, { method: 'POST', body: JSON.stringify(data) });
+export const updateAdminSector = (id, data) => request(`${BASE}/admin/sectors/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+export const setSectorMember = (sectorId, userId, enabled) => request(`${BASE}/admin/sectors/${sectorId}/members/${userId}`, { method: enabled ? 'PUT' : 'DELETE' });
+export const setSectorManager = (sectorId, userId, enabled) => request(`${BASE}/admin/sectors/${sectorId}/managers/${userId}`, { method: enabled ? 'PUT' : 'DELETE' });
+export const setSectorFeature = (sectorId, feature, enabled) => request(`${BASE}/admin/sectors/${sectorId}/features/${feature}`, { method: 'PUT', body: JSON.stringify({ enabled }) });
