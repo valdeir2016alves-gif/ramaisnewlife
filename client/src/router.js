@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Home from './views/Home.vue';
 import Admin from './views/Admin.vue';
 import Login from './views/Login.vue';
+import Schedule from './views/Schedule.vue';
 import { authState, initializeAuth } from './auth';
 
 const router = createRouter({
@@ -10,6 +11,7 @@ const router = createRouter({
     { path: '/login', name: 'login', component: Login },
     { path: '/', name: 'home', component: Home, meta: { requiresAuth: true } },
     { path: '/admin', name: 'admin', component: Admin, meta: { requiresAuth: true, roles: ['admin'] } },
+    { path: '/schedule/:sectorId', name: 'schedule', component: Schedule, meta: { requiresAuth: true } },
   ],
 });
 
