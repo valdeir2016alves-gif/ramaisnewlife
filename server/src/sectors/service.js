@@ -84,6 +84,12 @@ async function listSectors() {
   return sectorDetails(pool);
 }
 
+async function getSector(sectorId) {
+  const id = validId(sectorId);
+  if (!id) return null;
+  return (await sectorDetails(pool, id))[0] || null;
+}
+
 async function createSector(input) {
   const normalized = normalizeSectorInput(input);
   if (normalized.error) return { success: false, status: 400, error: normalized.error };
@@ -212,6 +218,7 @@ module.exports = {
   addManager,
   addMember,
   createSector,
+  getSector,
   listSectors,
   normalizeSlug,
   removeManager,

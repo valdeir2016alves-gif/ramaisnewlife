@@ -12,6 +12,13 @@ test('secure authentication lifecycle and API access', { skip: !databaseUrl }, a
   const pool = require('../src/db/pool');
   const db = require('../src/data');
   const { app } = require('../src/index');
+  const {
+    canManageSector,
+    canViewSector,
+    requireSectorFeature,
+    requireSectorManagement,
+    sectorHasFeature,
+  } = require('../src/authorization/sectors');
 
   await pool.query(`
     CREATE TABLE users (
@@ -179,6 +186,82 @@ test('secure authentication lifecycle and API access', { skip: !databaseUrl }, a
     assert.equal(listed.members.length, 2);
     assert.equal(listed.managers[0].role, 'editor');
     assert.deepEqual(listed.features, { schedule: true });
+  });
+
+  await t.test('central sector authorization enforces the complete role matrix', async () => {
+    async function createSector(name) {
+      const response = await request('/api/admin/sectors', {
+        method: 'POST',
+        body: JSON.stringify({ name }),
+      }, adminCookie);
+      assert.equal(response.status, 201);
+      return (await response.json()).sector;
+    }
+
+    const commercial = (await pool.query("SELECT id FROM sectors WHERE slug = 'comercial'")).rows[0];
+    const finance = await createSector('Financeiro');
+    const technical = await createSector('Técnico');
+    const users = Object.fromEntries(
+      (await pool.query('SELECT id, username, role FROM users')).rows.map((user) => [user.username, user])
+    );
+
+    for (const [sectorId, userId] of [
+      [finance.id, users['editor-test'].id],
+      [finance.id, users['legacy-sector-test'].id],
+    ]) {
+      assert.equal((await request(`/api/admin/sectors/${sectorId}/members/${userId}`, {
+        method: 'PUT',
+      }, adminCookie)).status, 200);
+    }
+
+    assert.equal(await canViewSector(users.admin, technical.id), true);
+    assert.equal(await canManageSector(users.admin, technical.id), true);
+    assert.equal(await canViewSector(users['editor-test'], commercial.id), true);
+    assert.equal(await canManageSector(users['editor-test'], commercial.id), true);
+    assert.equal(await canViewSector(users['editor-test'], finance.id), true);
+    assert.equal(await canManageSector(users['editor-test'], finance.id), false);
+    assert.equal(await canViewSector(users['viewer-test'], commercial.id), true);
+    assert.equal(await canManageSector(users['viewer-test'], commercial.id), false);
+    assert.equal(await canViewSector(users['viewer-test'], finance.id), false);
+    assert.equal(await canViewSector(users['editor-test'], technical.id), false);
+    assert.equal(await sectorHasFeature(commercial.id, 'schedule'), true);
+    assert.equal(await sectorHasFeature(finance.id, 'schedule'), false);
+    assert.equal(await sectorHasFeature(commercial.id, 'unknown'), false);
+
+    const editorLogin = await login('editor-test', 'editor-password');
+    const editorCookie = editorLogin.cookie.split(';', 1)[0];
+    const viewerLogin = await login('viewer-test', 'viewer-password');
+    const viewerCookie = viewerLogin.cookie.split(';', 1)[0];
+
+    const editorSectors = await request('/api/sectors', {}, editorCookie);
+    const editorBody = await editorSectors.json();
+    assert.deepEqual(editorBody.sectors.map((sector) => sector.slug).sort(), ['comercial', 'financeiro']);
+    assert.equal(editorBody.sectors.find((sector) => sector.slug === 'comercial').permissions.canManage, true);
+    assert.equal(editorBody.sectors.find((sector) => sector.slug === 'financeiro').permissions.canManage, false);
+
+    const viewerSectors = await request('/api/sectors', {}, viewerCookie);
+    assert.deepEqual((await viewerSectors.json()).sectors.map((sector) => sector.slug), ['comercial']);
+    assert.equal((await request(`/api/sectors/${finance.id}`, {}, viewerCookie)).status, 403);
+    assert.equal((await request(`/api/sectors/${commercial.id}`, {}, viewerCookie)).status, 200);
+    assert.equal((await request('/api/sectors', {}, adminCookie).then((response) => response.json())).sectors.length, 3);
+
+    async function invoke(middleware, user, sectorId) {
+      return new Promise((resolve, reject) => {
+        const req = { user, params: { sectorId: String(sectorId) } };
+        const res = {
+          statusCode: 200,
+          status(code) { this.statusCode = code; return this; },
+          json(body) { resolve({ status: this.statusCode, body }); },
+        };
+        middleware(req, res, (error) => error ? reject(error) : resolve({ next: true, req }));
+      });
+    }
+
+    assert.equal((await invoke(requireSectorManagement, users['editor-test'], commercial.id)).next, true);
+    assert.equal((await invoke(requireSectorManagement, users['editor-test'], finance.id)).status, 403);
+    assert.equal((await invoke(requireSectorManagement, users['viewer-test'], commercial.id)).status, 403);
+    assert.equal((await invoke(requireSectorFeature('schedule'), users['viewer-test'], commercial.id)).next, true);
+    assert.equal((await invoke(requireSectorFeature('schedule'), users.admin, finance.id)).status, 403);
   });
 
   await t.test('invalidates logout and expired sessions', async () => {

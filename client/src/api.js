@@ -141,3 +141,9 @@ export const updateTeamsContact = (id, department, name, email) =>
 
 export const deleteTeamsContact = (id) =>
   request(`${BASE}/teams/${id}`, { method: 'DELETE' });
+
+// Sectors available to the authenticated user
+export const getSectors = () => request(`${BASE}/sectors`).then((result) => result.sectors);
+
+export const getSector = (id) =>
+  request(`${BASE}/sectors/${id}`).then((result) => result.sector);
