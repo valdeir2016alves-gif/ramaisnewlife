@@ -10,6 +10,7 @@ import MapImage from '../components/MapImage.vue';
 import InfoButton from '../components/InfoButton.vue';
 import Aurora from '../components/Aurora.vue';
 import TrueFocus from '../components/TrueFocus.vue';
+import PortalDashboard from '../components/PortalDashboard.vue';
 import {
   getContacts, getLastUpdated, getDepartmentDescriptions,
   submitReport, registerVisit, getTeamsContacts,
@@ -287,6 +288,8 @@ function shouldGroupDepartment(department) {
           </button>
         </div>
       </header>
+
+      <PortalDashboard />
 
       <section :class="styles.heroSection">
         <div :class="styles.heroLeft">
