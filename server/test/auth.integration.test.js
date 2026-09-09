@@ -19,6 +19,7 @@ test('secure authentication lifecycle and API access', { skip: !databaseUrl }, a
     requireSectorManagement,
     sectorHasFeature,
   } = require('../src/authorization/sectors');
+  const sectorService = require('../src/sectors/service');
 
   await pool.query(`
     CREATE TABLE users (
@@ -401,6 +402,50 @@ test('secure authentication lifecycle and API access', { skip: !databaseUrl }, a
     assert.equal(summary.week.days_off[0].name, 'João da Escala');
     assert.equal(summary.members, undefined);
     assert.equal(summary.entries, undefined);
+  });
+
+  await t.test('audits the documented A-D and admin permission matrix', async () => {
+    for (const account of [
+      ['user-a', 'password-a', 'editor'], ['user-b', 'password-b', 'viewer'],
+      ['user-c', 'password-c', 'editor'], ['user-d', 'password-d', 'viewer'],
+    ]) assert.equal((await db.addUser(...account)).success, true);
+    const users = Object.fromEntries((await pool.query("SELECT id, username, role FROM users WHERE username LIKE 'user-%'")).rows.map((u) => [u.username, u]));
+    const sectorRows = Object.fromEntries((await pool.query('SELECT id, slug FROM sectors')).rows.map((s) => [s.slug, s]));
+    const commercial = sectorRows.comercial; const finance = sectorRows.financeiro; const technical = sectorRows.tecnico;
+    for (const [sectorId, userId] of [
+      [commercial.id, users['user-a'].id], [finance.id, users['user-a'].id],
+      [commercial.id, users['user-b'].id], [technical.id, users['user-c'].id],
+      [finance.id, users['user-d'].id],
+    ]) await sectorService.addMember(sectorId, userId);
+    await sectorService.addManager(commercial.id, users['user-a'].id, 1);
+    await sectorService.addManager(technical.id, users['user-c'].id, 1);
+    await sectorService.setFeature(technical.id, 'schedule', true);
+
+    const cookies = {};
+    for (const [username, password] of [['user-a','password-a'],['user-b','password-b'],['user-c','password-c'],['user-d','password-d']]) {
+      const result = await login(username, password, { role: 'admin' }); cookies[username] = result.cookie.split(';', 1)[0];
+    }
+    assert.equal((await request('/api/favorites', { method: 'POST', body: JSON.stringify({ title: 'A', url: 'https://example.com/a' }) }, cookies['user-a'])).status, 201);
+    assert.equal((await request('/api/notes', { method: 'POST', body: JSON.stringify({ content: 'Nota A' }) }, cookies['user-a'])).status, 201);
+    assert.equal((await request(`/api/sectors/${commercial.id}/notes`, { method: 'POST', body: JSON.stringify({ content: 'Comercial A' }) }, cookies['user-a'])).status, 201);
+    assert.equal((await request(`/api/sectors/${finance.id}/notes`, { method: 'POST', body: JSON.stringify({ content: 'Financeiro A' }) }, cookies['user-a'])).status, 403);
+    assert.equal((await request(`/api/sectors/${commercial.id}/schedule/members`, { method: 'POST', body: JSON.stringify({ name: 'Escala A' }) }, cookies['user-a'])).status, 201);
+    assert.equal((await request(`/api/sectors/${finance.id}/schedule/members`, { method: 'POST', body: JSON.stringify({ name: 'Bloqueado' }) }, cookies['user-a'])).status, 403);
+    assert.equal((await request('/api/users', {}, cookies['user-a'])).status, 403);
+
+    assert.equal((await request(`/api/sectors/${commercial.id}/schedule?from=2026-09-01&to=2026-09-30`, {}, cookies['user-b'])).status, 200);
+    assert.equal((await request(`/api/sectors/${commercial.id}/notes`, { method: 'POST', body: JSON.stringify({ content: 'Ataque B' }) }, cookies['user-b'])).status, 403);
+    assert.equal((await request(`/api/sectors/${commercial.id}/shortcuts`, { method: 'POST', body: JSON.stringify({ title: 'Ataque', url: 'https://example.com' }) }, cookies['user-b'])).status, 403);
+    assert.equal((await request(`/api/sectors/${commercial.id}/schedule/members`, { method: 'POST', body: JSON.stringify({ name: 'Ataque B' }) }, cookies['user-b'])).status, 403);
+    assert.equal((await request(`/api/users/${users['user-b'].id}`, { method: 'PUT', body: JSON.stringify({ username: 'user-b', role: 'admin' }) }, cookies['user-b'])).status, 403);
+
+    assert.equal((await request(`/api/sectors/${technical.id}/notes`, { method: 'POST', body: JSON.stringify({ content: 'Técnico C' }) }, cookies['user-c'])).status, 201);
+    assert.equal((await request(`/api/sectors/${commercial.id}/notes`, { method: 'POST', body: JSON.stringify({ content: 'Ataque C' }) }, cookies['user-c'])).status, 403);
+    const dSectors = await request('/api/sectors', {}, cookies['user-d']).then((r) => r.json());
+    assert.deepEqual(dSectors.sectors.map((s) => s.slug), ['financeiro']);
+    assert.equal((await request(`/api/sectors/${commercial.id}`, {}, cookies['user-d'])).status, 403);
+    assert.equal((await request('/api/admin/sectors', {}, adminCookie)).status, 200);
+    assert.equal((await request(`/api/sectors/${technical.id}/notes`, { method: 'POST', body: JSON.stringify({ content: 'Admin' }) }, adminCookie)).status, 201);
   });
 
   await t.test('invalidates logout and expired sessions', async () => {
