@@ -1,11 +1,28 @@
 const BASE = '/api';
 
-async function request(url, options) {
+export class ApiError extends Error {
+  constructor(message, status, data) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.data = data;
+  }
+}
+
+async function request(url, options = {}) {
   const res = await fetch(url, {
+    credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     ...options,
   });
-  return res.json();
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    if (res.status === 401 && !url.startsWith(`${BASE}/auth/`)) {
+      window.dispatchEvent(new Event('auth:unauthorized'));
+    }
+    throw new ApiError(data.error || 'Falha na comunicação com o servidor.', res.status, data);
+  }
+  return data;
 }
 
 // Contacts
@@ -66,6 +83,11 @@ export const authenticateUser = (username, password) =>
     method: 'POST',
     body: JSON.stringify({ username, password }),
   });
+
+export const getCurrentUser = () => request(`${BASE}/auth/me`);
+
+export const endSession = () =>
+  request(`${BASE}/auth/logout`, { method: 'POST' });
 
 export const getUsers = () => request(`${BASE}/users`);
 

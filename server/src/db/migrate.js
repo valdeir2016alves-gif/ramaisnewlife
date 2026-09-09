@@ -60,6 +60,17 @@ async function createSchema(client) {
       role TEXT NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS user_sessions (
+      token_hash TEXT PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      expires_at TIMESTAMPTZ NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      last_seen_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+
+    CREATE INDEX IF NOT EXISTS user_sessions_user_id_idx ON user_sessions(user_id);
+    CREATE INDEX IF NOT EXISTS user_sessions_expires_at_idx ON user_sessions(expires_at);
+
     CREATE TABLE IF NOT EXISTS reports (
       id SERIAL PRIMARY KEY,
       date TIMESTAMPTZ NOT NULL DEFAULT now(),

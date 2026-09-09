@@ -189,6 +189,9 @@ async function updateUser(id, username, password, role) {
     'UPDATE users SET username = $1, password_hash = $2, role = $3 WHERE id = $4',
     [username, passwordHash, role || existing.role, id]
   );
+  if (password) {
+    await pool.query('DELETE FROM user_sessions WHERE user_id = $1', [id]);
+  }
   return { success: true };
 }
 

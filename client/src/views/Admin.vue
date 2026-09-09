@@ -1,18 +1,23 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import styles from '../styles/admin.module.css';
-import GlareCard from '../components/GlareCard.vue';
 import EditableRow from '../components/EditableRow.vue';
 import DescriptionRow from '../components/DescriptionRow.vue';
 import StatsChart from '../components/StatsChart.vue';
 import Aurora from '../components/Aurora.vue';
 import {
   getContacts, addContact, deleteContact, updateContact, renameDepartment,
-  getReports, deleteReport, authenticateUser, getUsers as fetchUsers,
+  getReports, deleteReport, getUsers as fetchUsers,
   addUser as createUser, updateUser as editUser, deleteUser as removeUser,
   getAnalytics, reorderContact, toggleContactVisibility, getDepartmentDescriptions, updateDepartmentDescription,
   getTeamsContacts, addTeamsContact, updateTeamsContact, deleteTeamsContact,
 } from '../api';
+import { useAuth } from '../auth';
+
+const router = useRouter();
+const { state: auth, logout } = useAuth();
+const currentUser = computed(() => auth.user);
 
 const departmentEmojis = {
   'Contatos Regionais e Externos': '📞',
@@ -33,10 +38,6 @@ const departmentEmojis = {
 };
 
 const getEmoji = (dept) => departmentEmojis[dept] || '🏢';
-
-const currentUser = ref(null);
-const loginUsername = ref('');
-const loginPassword = ref('');
 
 const contacts = ref([]);
 const name = ref('');
@@ -97,27 +98,6 @@ async function loadContacts() {
     contacts.value = [];
   } finally {
     loading.value = false;
-  }
-}
-
-async function handleLogin(e) {
-  e.preventDefault();
-  loading.value = true;
-  const result = await authenticateUser(loginUsername.value, loginPassword.value);
-  loading.value = false;
-  if (result.success && result.user) {
-    if (result.user.username.toLowerCase() === 'admin') {
-      alert('O usuário "admin" tem permissão apenas para acessar o site principal (leitura). Use seu usuário pessoal para gerenciar.');
-      return;
-    }
-    currentUser.value = result.user;
-    await loadContacts();
-    if (result.user.role === 'admin') {
-      await loadUsers();
-      await loadStats();
-    }
-  } else {
-    alert(result.error || 'Credenciais incorretas!');
   }
 }
 
@@ -366,6 +346,15 @@ const uniqueDepartments = computed(() => {
   const depts = new Set(contacts.value.map(c => c.department));
   return [...depts].sort();
 });
+
+onMounted(async () => {
+  await Promise.all([loadContacts(), loadUsers(), loadStats(), loadTeamsContacts()]);
+});
+
+async function handleLogout() {
+  await logout();
+  await router.replace({ name: 'login' });
+}
 </script>
 
 <template>
@@ -373,26 +362,6 @@ const uniqueDepartments = computed(() => {
     <Aurora :color-stops="['#000B18', '#0047AB', '#000B18']" :blend="0.8" :amplitude="1.5" :speed="0.5" />
   </div>
   <main :class="styles.container">
-    <template v-if="!currentUser">
-      <div :class="[styles.loginBox, 'glass']">
-        <div style="display: flex; justify-content: center; margin-bottom: 1.5rem">
-          <GlareCard :style="{ width: '220px', height: '120px' }">
-            <img src="/novo-logo.jpg" alt="Admin Logo" width="220" height="120" style="object-fit: contain; filter: drop-shadow(0 0 10px rgba(255,255,255,0.2))" />
-          </GlareCard>
-        </div>
-        <h1 :class="styles.title">Admin - Contatos</h1>
-        <p :class="styles.subtitle">Digite seu usuário e senha para acessar</p>
-        <form @submit="handleLogin" :class="styles.form">
-          <input type="text" placeholder="Usuário" v-model="loginUsername" :class="styles.input" required />
-          <input type="password" placeholder="Senha" v-model="loginPassword" :class="styles.input" required />
-          <button type="submit" :class="styles.btnPrimary" :disabled="loading">
-            {{ loading ? 'Entrando...' : 'Entrar' }}
-          </button>
-        </form>
-      </div>
-    </template>
-
-    <template v-else>
       <datalist id="departments-list">
         <option v-for="dep in Object.keys(groupedContacts)" :key="dep" :value="dep" />
       </datalist>
@@ -418,8 +387,8 @@ const uniqueDepartments = computed(() => {
             </button>
           </template>
           <a href="/" :class="styles.link" style="margin-left: 1rem">Voltar ao Site</a>
-          <button @click="currentUser = null" :class="styles.btnDanger" style="margin-left: auto">
-            Sair ({{ currentUser.username }})
+          <button @click="handleLogout" :class="styles.btnDanger" style="margin-left: auto">
+            Sair ({{ currentUser?.username }})
           </button>
         </div>
       </header>
@@ -676,6 +645,5 @@ const uniqueDepartments = computed(() => {
           </table>
         </div>
       </section>
-    </template>
   </main>
 </template>

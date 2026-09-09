@@ -1,7 +1,9 @@
 const express = require('express');
 const db = require('../data');
+const { requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
+router.use(requireAdmin);
 
 router.get('/', async (req, res) => {
   res.json(await db.getUsers());

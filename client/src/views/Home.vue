@@ -1,5 +1,6 @@
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import styles from '../styles/page.module.css';
 import TeamsButton from '../components/TeamsButton.vue';
 import UnderlineText from '../components/UnderlineText.vue';
@@ -11,8 +12,13 @@ import Aurora from '../components/Aurora.vue';
 import TrueFocus from '../components/TrueFocus.vue';
 import {
   getContacts, getLastUpdated, getDepartmentDescriptions,
-  submitReport, registerVisit, authenticateUser, getTeamsContacts,
+  submitReport, registerVisit, getTeamsContacts,
 } from '../api';
+import { useAuth } from '../auth';
+
+const router = useRouter();
+const { state: auth, logout } = useAuth();
+const currentUser = computed(() => auth.user);
 
 function getDepartmentDescription(dept, descriptions) {
   const normalized = dept.toLowerCase().replace(/–/g, '-').trim();
@@ -80,12 +86,6 @@ const reportRamal = ref('');
 const reportMessage = ref('');
 const isSubmittingReport = ref(false);
 
-const currentUser = ref(null);
-const loginUsername = ref('');
-const loginPassword = ref('');
-const loginLoading = ref(false);
-const isCheckingAuth = ref(true);
-
 const contacts = ref([]);
 const lastUpdated = ref('');
 const descriptions = ref({});
@@ -107,33 +107,11 @@ async function handleReportSubmit(e) {
   }
 }
 
-async function handleLogin(e) {
-  e.preventDefault();
-  loginLoading.value = true;
-  const result = await authenticateUser(loginUsername.value, loginPassword.value);
-  loginLoading.value = false;
-  if (result.success && result.user) {
-    currentUser.value = result.user;
-    sessionStorage.setItem('clientAuth', JSON.stringify(result.user));
-  } else {
-    alert(result.error || 'Credenciais incorretas!');
-  }
-}
-
 function toggleTheme() {
   theme.value = theme.value === 'dark' ? 'light' : 'dark';
 }
 
 onMounted(async () => {
-  const savedAuth = sessionStorage.getItem('clientAuth');
-  if (savedAuth) {
-    try {
-      currentUser.value = JSON.parse(savedAuth);
-    } catch (e) {
-      sessionStorage.removeItem('clientAuth');
-    }
-  }
-
   const savedTheme = localStorage.getItem('theme');
   if (savedTheme) {
     theme.value = savedTheme;
@@ -155,8 +133,12 @@ onMounted(async () => {
   descriptions.value = descriptionsData || {};
   teamsContacts.value = teamsData || [];
 
-  isCheckingAuth.value = false;
 });
+
+async function handleLogout() {
+  await logout();
+  await router.replace({ name: 'login' });
+}
 
 watch(theme, (value) => {
   document.documentElement.setAttribute('data-theme', value);
@@ -256,58 +238,6 @@ function shouldGroupDepartment(department) {
     <Aurora :color-stops="['#000B18', '#0047AB', '#000B18']" :blend="0.8" :amplitude="1.5" :speed="0.5" />
   </div>
   <main :class="styles.main" style="min-height: 100vh; display: flex; flex-direction: column;">
-    <template v-if="isCheckingAuth">
-      <div :class="styles.skeletonHeader"></div>
-      <div :class="styles.skeletonTabs"></div>
-      <div :class="styles.skeletonGrid">
-        <div v-for="i in 6" :key="i" :class="styles.skeletonCard">
-          <div :class="styles.skeletonLine" style="width: 60%; height: 24px; margin-bottom: 1.5rem"></div>
-          <div v-for="j in 3" :key="j" style="display: flex; justify-content: space-between; margin-bottom: 1rem">
-            <div :class="styles.skeletonLine" style="width: 40%"></div>
-            <div :class="styles.skeletonLine" style="width: 30%"></div>
-          </div>
-        </div>
-      </div>
-    </template>
-
-    <template v-else-if="!currentUser">
-      <div style="max-width: 320px; margin: 40px auto; background: var(--card-bg); padding: 1.5rem 1.5rem; border-radius: 12px; border: 1px solid var(--card-border); box-shadow: 0 10px 25px rgba(0,0,0,0.1)">
-        <div style="text-align: center; margin-bottom: 1.5rem">
-          <div style="display: flex; justify-content: center; width: 100%; margin-bottom: 1rem">
-            <img src="/logo.png" alt="New Life Logo" width="220" height="75" style="object-fit: contain; filter: var(--logo-filter); max-height: 75px; width: auto" />
-          </div>
-          <h2 style="color: var(--primary-color); margin-top: 0; margin-bottom: 0.5rem; font-size: 1.25rem">Acesso Interno</h2>
-          <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.4">
-            Diretório de <strong>Ramais</strong> internos das Unidades <strong>São Gabriel</strong>, <strong>Bagé</strong> e <strong>Passo Fundo</strong>
-          </p>
-        </div>
-        <form @submit="handleLogin" style="display: flex; flex-direction: column; gap: 1rem">
-          <input
-            type="text"
-            placeholder="Usuário"
-            v-model="loginUsername"
-            style="padding: 0.8rem; border-radius: 6px; border: 1px solid var(--card-border); background: transparent; color: var(--text-main)"
-            required
-          />
-          <input
-            type="password"
-            placeholder="Senha"
-            v-model="loginPassword"
-            style="padding: 0.8rem; border-radius: 6px; border: 1px solid var(--card-border); background: transparent; color: var(--text-main)"
-            required
-          />
-          <button
-            type="submit"
-            :disabled="loginLoading"
-            style="padding: 0.8rem; border-radius: 6px; border: none; background: var(--primary-color); color: #fff; font-weight: bold; cursor: pointer"
-          >
-            {{ loginLoading ? 'Entrando...' : 'Entrar' }}
-          </button>
-        </form>
-      </div>
-    </template>
-
-    <template v-else>
       <header :class="styles.header">
         <div :class="styles.logoContainer">
           <a href="https://minhanewlife.com.br/" target="_blank" rel="noopener noreferrer" style="display: inline-block">
@@ -351,6 +281,9 @@ function shouldGroupDepartment(department) {
             :title="theme === 'dark' ? 'Mudar para Tema Claro' : 'Mudar para Tema Escuro'"
           >
             {{ theme === 'dark' ? '☀️' : '🌙' }}
+          </button>
+          <button @click="handleLogout" :class="styles.themeToggle" :title="`Sair (${currentUser?.username || ''})`">
+            Sair
           </button>
         </div>
       </header>
@@ -651,8 +584,6 @@ function shouldGroupDepartment(department) {
           </form>
         </div>
       </div>
-    </template>
-
     <div v-if="activeTooltip" :class="styles.modalOverlay" @click="activeTooltip = null" style="z-index: 99999">
       <div :class="styles.modalContent" style="max-width: 500px" @click.stop>
         <div :class="styles.modalHeader">
