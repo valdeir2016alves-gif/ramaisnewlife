@@ -129,6 +129,58 @@ test('secure authentication lifecycle and API access', { skip: !databaseUrl }, a
     }
   });
 
+  await t.test('admin configures sector memberships, managers and features', async () => {
+    const createResponse = await request('/api/admin/sectors', {
+      method: 'POST',
+      body: JSON.stringify({ name: 'Comercial', city: 'sao_gabriel' }),
+    }, adminCookie);
+    assert.equal(createResponse.status, 201);
+    const commercial = (await createResponse.json()).sector;
+    assert.equal(commercial.slug, 'comercial');
+
+    const editor = (await pool.query("SELECT id FROM users WHERE username = 'editor-test'")).rows[0];
+    const viewer = (await pool.query("SELECT id FROM users WHERE username = 'viewer-test'")).rows[0];
+    const editorLogin = await login('editor-test', 'editor-password');
+    const editorCookie = editorLogin.cookie.split(';', 1)[0];
+    assert.equal((await request('/api/admin/sectors', {}, editorCookie)).status, 403);
+
+    assert.equal((await request(`/api/admin/sectors/${commercial.id}/members/${viewer.id}`, {
+      method: 'PUT',
+    }, adminCookie)).status, 200);
+    assert.equal((await request(`/api/admin/sectors/${commercial.id}/managers/${viewer.id}`, {
+      method: 'PUT',
+    }, adminCookie)).status, 400);
+
+    assert.equal((await request(`/api/admin/sectors/${commercial.id}/members/${editor.id}`, {
+      method: 'PUT',
+    }, adminCookie)).status, 200);
+    assert.equal((await request(`/api/admin/sectors/${commercial.id}/managers/${editor.id}`, {
+      method: 'PUT',
+    }, adminCookie)).status, 200);
+    assert.equal((await request(`/api/admin/sectors/${commercial.id}/features/schedule`, {
+      method: 'PUT',
+      body: JSON.stringify({ enabled: true }),
+    }, adminCookie)).status, 200);
+    assert.equal((await request(`/api/admin/sectors/${commercial.id}/features/unknown`, {
+      method: 'PUT',
+      body: JSON.stringify({ enabled: true }),
+    }, adminCookie)).status, 400);
+
+    const updateResponse = await request(`/api/admin/sectors/${commercial.id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ name: 'Comercial e Vendas' }),
+    }, adminCookie);
+    assert.equal(updateResponse.status, 200);
+    assert.equal((await updateResponse.json()).sector.slug, 'comercial');
+
+    const listResponse = await request('/api/admin/sectors', {}, adminCookie);
+    const listed = (await listResponse.json()).sectors[0];
+    assert.equal(listed.name, 'Comercial e Vendas');
+    assert.equal(listed.members.length, 2);
+    assert.equal(listed.managers[0].role, 'editor');
+    assert.deepEqual(listed.features, { schedule: true });
+  });
+
   await t.test('invalidates logout and expired sessions', async () => {
     const logout = await request('/api/auth/logout', { method: 'POST' }, adminCookie);
     assert.equal(logout.status, 200);

@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const pool = require('./db/pool');
-const { isValidUserRole, normalizeRole } = require('./users/roles');
+const { isValidUserRole, normalizeRole, USER_ROLES } = require('./users/roles');
 
 function rowToContact(row) {
   return {
@@ -218,6 +218,9 @@ async function updateUser(id, username, password, role) {
       'UPDATE users SET username = $1, password_hash = $2, role = $3 WHERE id = $4',
       [username, passwordHash, nextRole, id]
     );
+    if (nextRole !== USER_ROLES.EDITOR) {
+      await client.query('DELETE FROM sector_managers WHERE user_id = $1', [id]);
+    }
     if (password) {
       await client.query('DELETE FROM user_sessions WHERE user_id = $1', [id]);
     }

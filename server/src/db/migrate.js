@@ -72,6 +72,48 @@ async function createSchema(client) {
     CREATE INDEX IF NOT EXISTS user_sessions_user_id_idx ON user_sessions(user_id);
     CREATE INDEX IF NOT EXISTS user_sessions_expires_at_idx ON user_sessions(expires_at);
 
+    CREATE TABLE IF NOT EXISTS sectors (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      slug TEXT UNIQUE NOT NULL,
+      city TEXT,
+      active BOOLEAN NOT NULL DEFAULT true,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      CONSTRAINT sectors_name_not_blank CHECK (btrim(name) <> ''),
+      CONSTRAINT sectors_slug_not_blank CHECK (btrim(slug) <> '')
+    );
+
+    CREATE TABLE IF NOT EXISTS user_sectors (
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      sector_id INTEGER NOT NULL REFERENCES sectors(id),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      PRIMARY KEY (user_id, sector_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS user_sectors_sector_id_idx ON user_sectors(sector_id);
+
+    CREATE TABLE IF NOT EXISTS sector_managers (
+      user_id INTEGER NOT NULL,
+      sector_id INTEGER NOT NULL,
+      created_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      PRIMARY KEY (user_id, sector_id),
+      FOREIGN KEY (user_id, sector_id)
+        REFERENCES user_sectors(user_id, sector_id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS sector_managers_sector_id_idx ON sector_managers(sector_id);
+
+    CREATE TABLE IF NOT EXISTS sector_features (
+      sector_id INTEGER NOT NULL REFERENCES sectors(id),
+      feature_key TEXT NOT NULL,
+      enabled BOOLEAN NOT NULL DEFAULT false,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      PRIMARY KEY (sector_id, feature_key),
+      CONSTRAINT sector_features_key_not_blank CHECK (btrim(feature_key) <> '')
+    );
+
     CREATE TABLE IF NOT EXISTS reports (
       id SERIAL PRIMARY KEY,
       date TIMESTAMPTZ NOT NULL DEFAULT now(),
