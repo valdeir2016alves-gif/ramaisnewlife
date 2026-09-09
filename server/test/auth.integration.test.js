@@ -345,6 +345,42 @@ test('secure authentication lifecycle and API access', { skip: !databaseUrl }, a
     }, adminCookie)).status, 404);
   });
 
+  await t.test('manages schedule domain only for enabled and authorized sectors', async () => {
+    const commercial = (await pool.query("SELECT id FROM sectors WHERE slug = 'comercial'")).rows[0];
+    const finance = (await pool.query("SELECT id FROM sectors WHERE slug = 'financeiro'")).rows[0];
+    const editorLogin = await login('editor-test', 'editor-password');
+    const editorCookie = editorLogin.cookie.split(';', 1)[0];
+    const viewerLogin = await login('viewer-test', 'viewer-password');
+    const viewerCookie = viewerLogin.cookie.split(';', 1)[0];
+
+    assert.equal((await request(`/api/sectors/${commercial.id}/schedule/members`, {
+      method: 'POST', body: JSON.stringify({ name: 'Bloqueado' }),
+    }, viewerCookie)).status, 403);
+    const memberResponse = await request(`/api/sectors/${commercial.id}/schedule/members`, {
+      method: 'POST', body: JSON.stringify({ name: 'João da Escala', city: 'sao_gabriel' }),
+    }, editorCookie);
+    assert.equal(memberResponse.status, 201);
+    const member = (await memberResponse.json()).member;
+    assert.equal((await request(`/api/sectors/${commercial.id}/schedule/entries`, {
+      method: 'PUT', body: JSON.stringify({ entries: [
+        { member_id: member.id, date: '2026-09-13', status: 'PLANTAO', note: 'Domingo' },
+        { member_id: member.id, date: '2026-09-15', status: 'FOLGA' },
+      ] }),
+    }, editorCookie)).status, 200);
+    const schedule = await request(`/api/sectors/${commercial.id}/schedule?from=2026-09-07&to=2026-09-20`, {}, viewerCookie);
+    const scheduleBody = await schedule.json();
+    assert.equal(schedule.status, 200);
+    assert.equal(scheduleBody.members[0].name, 'João da Escala');
+    assert.equal(scheduleBody.entries.length, 2);
+    assert.equal((await request(`/api/sectors/${finance.id}/schedule?from=2026-09-07&to=2026-09-20`, {}, editorCookie)).status, 403);
+    assert.equal((await request('/api/admin/holidays', {
+      method: 'POST', body: JSON.stringify({ date: '2026-09-20', name: 'Feriado Municipal', city: 'sao_gabriel' }),
+    }, editorCookie)).status, 403);
+    assert.equal((await request('/api/admin/holidays', {
+      method: 'POST', body: JSON.stringify({ date: '2026-09-20', name: 'Feriado Municipal', city: 'sao_gabriel' }),
+    }, adminCookie)).status, 201);
+  });
+
   await t.test('invalidates logout and expired sessions', async () => {
     const logout = await request('/api/auth/logout', { method: 'POST' }, adminCookie);
     assert.equal(logout.status, 200);

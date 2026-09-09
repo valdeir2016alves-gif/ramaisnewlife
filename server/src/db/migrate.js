@@ -168,6 +168,44 @@ async function createSchema(client) {
       ON sector_notes(sector_id, pinned DESC, updated_at DESC);
     CREATE INDEX IF NOT EXISTS sector_notes_expiry_idx ON sector_notes(expires_at);
 
+    CREATE TABLE IF NOT EXISTS schedule_members (
+      id SERIAL PRIMARY KEY,
+      sector_id INTEGER NOT NULL REFERENCES sectors(id),
+      name TEXT NOT NULL,
+      city TEXT,
+      active BOOLEAN NOT NULL DEFAULT true,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      CONSTRAINT schedule_members_name_not_blank CHECK (btrim(name) <> '')
+    );
+    CREATE INDEX IF NOT EXISTS schedule_members_sector_idx
+      ON schedule_members(sector_id, active, sort_order, id);
+
+    CREATE TABLE IF NOT EXISTS schedule_entries (
+      id SERIAL PRIMARY KEY,
+      member_id INTEGER NOT NULL REFERENCES schedule_members(id),
+      date DATE NOT NULL,
+      status TEXT NOT NULL CHECK (status IN ('PLANTAO', 'FOLGA')),
+      note TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      UNIQUE (member_id, date)
+    );
+    CREATE INDEX IF NOT EXISTS schedule_entries_date_idx ON schedule_entries(date);
+
+    CREATE TABLE IF NOT EXISTS holidays (
+      id SERIAL PRIMARY KEY,
+      date DATE NOT NULL,
+      name TEXT NOT NULL,
+      city TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      CONSTRAINT holidays_name_not_blank CHECK (btrim(name) <> '')
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS holidays_date_city_unique_idx
+      ON holidays(date, COALESCE(city, ''));
+
     CREATE TABLE IF NOT EXISTS reports (
       id SERIAL PRIMARY KEY,
       date TIMESTAMPTZ NOT NULL DEFAULT now(),
