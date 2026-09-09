@@ -56,3 +56,13 @@ O nível global de acesso de cada usuário é um destes três valores:
 Na atualização de uma base existente, a role legada `readonly` é convertida para
 `viewer`. Qualquer outro valor desconhecido também é convertido para `viewer` e
 registrado no log da migration, evitando promoção acidental de privilégios.
+
+## Segurança das migrations
+
+O schema é aplicado de forma aditiva e idempotente durante o boot, dentro de uma
+transação protegida por advisory lock do PostgreSQL. Assim, duas instâncias não
+executam importações simultâneas. Setores não possuem exclusão pela API e suas
+notas, atalhos e históricos de escala usam foreign keys restritivas; a exclusão
+de um setor com histórico falha até que exista uma decisão explícita sobre esses
+dados. Ao excluir um usuário, autoria de notas setoriais é preservada como nula,
+enquanto sessões e dados estritamente pessoais são removidos em cascata.

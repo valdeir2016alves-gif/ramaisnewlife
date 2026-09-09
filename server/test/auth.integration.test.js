@@ -55,6 +55,15 @@ test('secure authentication lifecycle and API access', { skip: !databaseUrl }, a
     ),
     (error) => error.code === '23514'
   );
+  const deleteRules = Object.fromEntries((await pool.query(
+    `SELECT conname, confdeltype FROM pg_constraint
+     WHERE conname IN ('sector_notes_sector_id_fkey', 'schedule_entries_member_id_fkey',
+       'sector_notes_author_user_id_fkey', 'user_sessions_user_id_fkey')`
+  )).rows.map((row) => [row.conname, row.confdeltype]));
+  assert.equal(deleteRules.sector_notes_sector_id_fkey, 'a');
+  assert.equal(deleteRules.schedule_entries_member_id_fkey, 'a');
+  assert.equal(deleteRules.sector_notes_author_user_id_fkey, 'n');
+  assert.equal(deleteRules.user_sessions_user_id_fkey, 'c');
 
   const server = app.listen(0, '127.0.0.1');
   await new Promise((resolve) => server.once('listening', resolve));

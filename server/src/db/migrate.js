@@ -388,6 +388,10 @@ async function importAnalytics(client) {
 async function migrate() {
   const client = await pool.connect();
   try {
+    await client.query('BEGIN');
+    // Prevent two application instances from changing/importing the schema at
+    // the same time during a rolling deployment.
+    await client.query("SELECT pg_advisory_xact_lock(hashtext('ramais_schema_migration'))");
     await createSchema(client);
     await migrateUserRoles(client);
     await importContacts(client);
@@ -395,6 +399,10 @@ async function migrate() {
     await importReports(client);
     await importDescriptions(client);
     await importAnalytics(client);
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
   } finally {
     client.release();
   }
