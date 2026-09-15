@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 const pool = require('./pool');
+const { normalizeLegacyRole } = require('../users/roles');
 
 // Mirrors the legacy file locations from the JSON-based server/src/data.js,
 // which this migration reads from once to seed Postgres.
@@ -60,6 +61,151 @@ async function createSchema(client) {
       role TEXT NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS user_sessions (
+      token_hash TEXT PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      expires_at TIMESTAMPTZ NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      last_seen_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+
+    CREATE INDEX IF NOT EXISTS user_sessions_user_id_idx ON user_sessions(user_id);
+    CREATE INDEX IF NOT EXISTS user_sessions_expires_at_idx ON user_sessions(expires_at);
+
+    CREATE TABLE IF NOT EXISTS sectors (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      slug TEXT UNIQUE NOT NULL,
+      city TEXT,
+      active BOOLEAN NOT NULL DEFAULT true,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      CONSTRAINT sectors_name_not_blank CHECK (btrim(name) <> ''),
+      CONSTRAINT sectors_slug_not_blank CHECK (btrim(slug) <> '')
+    );
+
+    CREATE TABLE IF NOT EXISTS user_sectors (
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      sector_id INTEGER NOT NULL REFERENCES sectors(id),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      PRIMARY KEY (user_id, sector_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS user_sectors_sector_id_idx ON user_sectors(sector_id);
+
+    CREATE TABLE IF NOT EXISTS sector_managers (
+      user_id INTEGER NOT NULL,
+      sector_id INTEGER NOT NULL,
+      created_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      PRIMARY KEY (user_id, sector_id),
+      FOREIGN KEY (user_id, sector_id)
+        REFERENCES user_sectors(user_id, sector_id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS sector_managers_sector_id_idx ON sector_managers(sector_id);
+
+    CREATE TABLE IF NOT EXISTS sector_features (
+      sector_id INTEGER NOT NULL REFERENCES sectors(id),
+      feature_key TEXT NOT NULL,
+      enabled BOOLEAN NOT NULL DEFAULT false,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      PRIMARY KEY (sector_id, feature_key),
+      CONSTRAINT sector_features_key_not_blank CHECK (btrim(feature_key) <> '')
+    );
+
+    CREATE TABLE IF NOT EXISTS personal_favorites (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      title TEXT NOT NULL,
+      url TEXT NOT NULL,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+    CREATE INDEX IF NOT EXISTS personal_favorites_user_order_idx
+      ON personal_favorites(user_id, sort_order, id);
+
+    CREATE TABLE IF NOT EXISTS sector_shortcuts (
+      id SERIAL PRIMARY KEY,
+      sector_id INTEGER NOT NULL REFERENCES sectors(id),
+      title TEXT NOT NULL,
+      url TEXT NOT NULL,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+    CREATE INDEX IF NOT EXISTS sector_shortcuts_sector_order_idx
+      ON sector_shortcuts(sector_id, sort_order, id);
+
+    CREATE TABLE IF NOT EXISTS personal_notes (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      content TEXT NOT NULL,
+      pinned BOOLEAN NOT NULL DEFAULT false,
+      completed BOOLEAN NOT NULL DEFAULT false,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      CONSTRAINT personal_notes_content_not_blank CHECK (btrim(content) <> '')
+    );
+    CREATE INDEX IF NOT EXISTS personal_notes_user_idx
+      ON personal_notes(user_id, pinned DESC, updated_at DESC);
+
+    CREATE TABLE IF NOT EXISTS sector_notes (
+      id SERIAL PRIMARY KEY,
+      sector_id INTEGER NOT NULL REFERENCES sectors(id),
+      author_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      title TEXT,
+      content TEXT NOT NULL,
+      pinned BOOLEAN NOT NULL DEFAULT false,
+      expires_at TIMESTAMPTZ,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      CONSTRAINT sector_notes_content_not_blank CHECK (btrim(content) <> '')
+    );
+    CREATE INDEX IF NOT EXISTS sector_notes_sector_idx
+      ON sector_notes(sector_id, pinned DESC, updated_at DESC);
+    CREATE INDEX IF NOT EXISTS sector_notes_expiry_idx ON sector_notes(expires_at);
+
+    CREATE TABLE IF NOT EXISTS schedule_members (
+      id SERIAL PRIMARY KEY,
+      sector_id INTEGER NOT NULL REFERENCES sectors(id),
+      name TEXT NOT NULL,
+      city TEXT,
+      active BOOLEAN NOT NULL DEFAULT true,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      CONSTRAINT schedule_members_name_not_blank CHECK (btrim(name) <> '')
+    );
+    CREATE INDEX IF NOT EXISTS schedule_members_sector_idx
+      ON schedule_members(sector_id, active, sort_order, id);
+
+    CREATE TABLE IF NOT EXISTS schedule_entries (
+      id SERIAL PRIMARY KEY,
+      member_id INTEGER NOT NULL REFERENCES schedule_members(id),
+      date DATE NOT NULL,
+      status TEXT NOT NULL CHECK (status IN ('PLANTAO', 'FOLGA')),
+      note TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      UNIQUE (member_id, date)
+    );
+    CREATE INDEX IF NOT EXISTS schedule_entries_date_idx ON schedule_entries(date);
+
+    CREATE TABLE IF NOT EXISTS holidays (
+      id SERIAL PRIMARY KEY,
+      date DATE NOT NULL,
+      name TEXT NOT NULL,
+      city TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      CONSTRAINT holidays_name_not_blank CHECK (btrim(name) <> '')
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS holidays_date_city_unique_idx
+      ON holidays(date, COALESCE(city, ''));
+
     CREATE TABLE IF NOT EXISTS reports (
       id SERIAL PRIMARY KEY,
       date TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -86,6 +232,38 @@ async function createSchema(client) {
       sort_order INTEGER NOT NULL DEFAULT 0,
       created_at TIMESTAMPTZ NOT NULL DEFAULT now()
     );
+  `);
+}
+
+async function migrateUserRoles(client) {
+  const { rows } = await client.query(
+    'SELECT role, COUNT(*)::int AS count FROM users GROUP BY role ORDER BY role'
+  );
+
+  for (const row of rows) {
+    const normalized = normalizeLegacyRole(row.role);
+    if (!normalized.recognized) {
+      console.warn(
+        `[migrate] Role legada desconhecida "${row.role}" em ${row.count} usuário(s); convertida para viewer.`
+      );
+    }
+    if (row.role !== normalized.role) {
+      await client.query('UPDATE users SET role = $1 WHERE role = $2', [normalized.role, row.role]);
+    }
+  }
+
+  await client.query("ALTER TABLE users ALTER COLUMN role SET DEFAULT 'viewer'");
+  await client.query(`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint
+        WHERE conname = 'users_role_check' AND conrelid = 'users'::regclass
+      ) THEN
+        ALTER TABLE users
+          ADD CONSTRAINT users_role_check CHECK (role IN ('admin', 'editor', 'viewer'));
+      END IF;
+    END $$;
   `);
 }
 
@@ -136,10 +314,16 @@ async function importUsers(client) {
   for (const u of users) {
     maxId = Math.max(maxId, u.id);
     const passwordHash = bcrypt.hashSync(u.password, 10);
+    const normalizedRole = normalizeLegacyRole(u.role);
+    if (!normalizedRole.recognized) {
+      console.warn(
+        `[migrate] Role legada desconhecida "${u.role}" do usuário "${u.username}"; convertida para viewer.`
+      );
+    }
     await client.query(
       `INSERT INTO users (id, username, password_hash, role) VALUES ($1, $2, $3, $4)
        ON CONFLICT (id) DO NOTHING`,
-      [u.id, u.username, passwordHash, u.role]
+      [u.id, u.username, passwordHash, normalizedRole.role]
     );
   }
   await client.query(`SELECT setval(pg_get_serial_sequence('users', 'id'), $1)`, [maxId]);
@@ -204,12 +388,21 @@ async function importAnalytics(client) {
 async function migrate() {
   const client = await pool.connect();
   try {
+    await client.query('BEGIN');
+    // Prevent two application instances from changing/importing the schema at
+    // the same time during a rolling deployment.
+    await client.query("SELECT pg_advisory_xact_lock(hashtext('ramais_schema_migration'))");
     await createSchema(client);
+    await migrateUserRoles(client);
     await importContacts(client);
     await importUsers(client);
     await importReports(client);
     await importDescriptions(client);
     await importAnalytics(client);
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
   } finally {
     client.release();
   }

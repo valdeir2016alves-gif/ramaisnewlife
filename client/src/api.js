@@ -1,11 +1,28 @@
 const BASE = '/api';
 
-async function request(url, options) {
+export class ApiError extends Error {
+  constructor(message, status, data) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.data = data;
+  }
+}
+
+async function request(url, options = {}) {
   const res = await fetch(url, {
+    credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     ...options,
   });
-  return res.json();
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    if (res.status === 401 && !url.startsWith(`${BASE}/auth/`)) {
+      window.dispatchEvent(new Event('auth:unauthorized'));
+    }
+    throw new ApiError(data.error || 'Falha na comunicação com o servidor.', res.status, data);
+  }
+  return data;
 }
 
 // Contacts
@@ -67,6 +84,11 @@ export const authenticateUser = (username, password) =>
     body: JSON.stringify({ username, password }),
   });
 
+export const getCurrentUser = () => request(`${BASE}/auth/me`);
+
+export const endSession = () =>
+  request(`${BASE}/auth/logout`, { method: 'POST' });
+
 export const getUsers = () => request(`${BASE}/users`);
 
 export const addUser = (username, password, role) =>
@@ -119,3 +141,38 @@ export const updateTeamsContact = (id, department, name, email) =>
 
 export const deleteTeamsContact = (id) =>
   request(`${BASE}/teams/${id}`, { method: 'DELETE' });
+
+// Sectors available to the authenticated user
+export const getSectors = () => request(`${BASE}/sectors`).then((result) => result.sectors);
+
+export const getSector = (id) =>
+  request(`${BASE}/sectors/${id}`).then((result) => result.sector);
+
+export const getPersonalFavorites = () => request(`${BASE}/favorites`).then((result) => result.favorites);
+export const createPersonalFavorite = (data) => request(`${BASE}/favorites`, { method: 'POST', body: JSON.stringify(data) });
+export const updatePersonalFavorite = (id, data) => request(`${BASE}/favorites/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+export const deletePersonalFavorite = (id) => request(`${BASE}/favorites/${id}`, { method: 'DELETE' });
+export const reorderPersonalFavorites = (ids) => request(`${BASE}/favorites/order/all`, { method: 'PUT', body: JSON.stringify({ ids }) });
+export const getSectorShortcuts = (sectorId) => request(`${BASE}/sectors/${sectorId}/shortcuts`).then((result) => result.shortcuts);
+export const createSectorShortcut = (sectorId, data) => request(`${BASE}/sectors/${sectorId}/shortcuts`, { method: 'POST', body: JSON.stringify(data) });
+export const updateSectorShortcut = (sectorId, id, data) => request(`${BASE}/sectors/${sectorId}/shortcuts/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+export const deleteSectorShortcut = (sectorId, id) => request(`${BASE}/sectors/${sectorId}/shortcuts/${id}`, { method: 'DELETE' });
+export const getPersonalNotes = () => request(`${BASE}/notes`).then((result) => result.notes);
+export const createPersonalNote = (data) => request(`${BASE}/notes`, { method: 'POST', body: JSON.stringify(data) });
+export const updatePersonalNote = (id, data) => request(`${BASE}/notes/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+export const deletePersonalNote = (id) => request(`${BASE}/notes/${id}`, { method: 'DELETE' });
+export const getSectorNotes = (sectorId) => request(`${BASE}/sectors/${sectorId}/notes`).then((result) => result.notes);
+export const createSectorNote = (sectorId, data) => request(`${BASE}/sectors/${sectorId}/notes`, { method: 'POST', body: JSON.stringify(data) });
+export const updateSectorNote = (sectorId, id, data) => request(`${BASE}/sectors/${sectorId}/notes/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+export const deleteSectorNote = (sectorId, id) => request(`${BASE}/sectors/${sectorId}/notes/${id}`, { method: 'DELETE' });
+export const getSchedule = (sectorId, from, to) => request(`${BASE}/sectors/${sectorId}/schedule?from=${from}&to=${to}`);
+export const createScheduleMember = (sectorId, data) => request(`${BASE}/sectors/${sectorId}/schedule/members`, { method: 'POST', body: JSON.stringify(data) });
+export const updateScheduleMember = (sectorId, memberId, data) => request(`${BASE}/sectors/${sectorId}/schedule/members/${memberId}`, { method: 'PATCH', body: JSON.stringify(data) });
+export const saveScheduleEntries = (sectorId, entries) => request(`${BASE}/sectors/${sectorId}/schedule/entries`, { method: 'PUT', body: JSON.stringify({ entries }) });
+export const getScheduleSummary = (sectorId, from) => request(`${BASE}/sectors/${sectorId}/schedule/summary${from ? `?from=${from}` : ''}`);
+export const getAdminSectors = () => request(`${BASE}/admin/sectors`).then((result) => result.sectors);
+export const createAdminSector = (data) => request(`${BASE}/admin/sectors`, { method: 'POST', body: JSON.stringify(data) });
+export const updateAdminSector = (id, data) => request(`${BASE}/admin/sectors/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+export const setSectorMember = (sectorId, userId, enabled) => request(`${BASE}/admin/sectors/${sectorId}/members/${userId}`, { method: enabled ? 'PUT' : 'DELETE' });
+export const setSectorManager = (sectorId, userId, enabled) => request(`${BASE}/admin/sectors/${sectorId}/managers/${userId}`, { method: enabled ? 'PUT' : 'DELETE' });
+export const setSectorFeature = (sectorId, feature, enabled) => request(`${BASE}/admin/sectors/${sectorId}/features/${feature}`, { method: 'PUT', body: JSON.stringify({ enabled }) });
