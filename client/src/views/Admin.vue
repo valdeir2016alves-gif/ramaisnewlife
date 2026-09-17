@@ -420,7 +420,7 @@ const uniqueDepartments = computed(() => {
             Contatos
           </button>
           <button :class="activeTab === 'atas' ? styles.btnPrimary : styles.btnSecondary" @click="activeTab = 'atas'">
-            Controle de ATAs 📟
+            Controle de ATAs
           </button>
           <button :class="activeTab === 'reports' ? styles.btnPrimary : styles.btnSecondary" @click="activeTab = 'reports'">
             Relatórios de Erro {{ reports.length > 0 ? `(${reports.length})` : '' }}
