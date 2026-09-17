@@ -86,6 +86,31 @@ async function createSchema(client) {
       sort_order INTEGER NOT NULL DEFAULT 0,
       created_at TIMESTAMPTZ NOT NULL DEFAULT now()
     );
+
+    CREATE TABLE IF NOT EXISTS atas (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      ip TEXT NOT NULL,
+      model TEXT NOT NULL DEFAULT 'Intelbras ATA 200',
+      city TEXT NOT NULL DEFAULT 'sao_gabriel',
+      department TEXT NOT NULL DEFAULT '',
+      ramais TEXT NOT NULL DEFAULT '',
+      notes TEXT NOT NULL DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'unknown',
+      latency_ms INTEGER,
+      last_checked TIMESTAMPTZ,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
+
+    CREATE TABLE IF NOT EXISTS noc_tickets (
+      id SERIAL PRIMARY KEY,
+      date TIMESTAMPTZ NOT NULL DEFAULT now(),
+      name TEXT NOT NULL,
+      department TEXT NOT NULL,
+      subject TEXT NOT NULL,
+      description TEXT NOT NULL
+    );
   `);
 }
 

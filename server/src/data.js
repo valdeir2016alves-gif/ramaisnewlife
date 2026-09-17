@@ -147,6 +147,47 @@ async function deleteReport(id) {
   return { success: true };
 }
 
+async function submitNocTicket(name, department, subject, description) {
+  await pool.query(
+    'INSERT INTO noc_tickets (name, department, subject, description) VALUES ($1, $2, $3, $4)',
+    [name, department, subject, description]
+  );
+
+  const telegramToken = process.env.TELEGRAM_BOT_TOKEN;
+  const telegramChatId = process.env.TELEGRAM_CHAT_ID;
+
+  if (telegramToken && telegramChatId) {
+    try {
+      const text = `🛠️ *Novo Chamado NOC*\n\n*Nome:* ${name}\n*Setor:* ${department}\n*Assunto:* ${subject}\n*Descrição:* ${description}`;
+      const url = `https://api.telegram.org/bot${telegramToken}/sendMessage`;
+
+      await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: telegramChatId,
+          text: text,
+          parse_mode: 'Markdown'
+        })
+      });
+    } catch (e) {
+      console.error('Erro ao enviar chamado do NOC para o Telegram:', e);
+    }
+  }
+
+  return { success: true };
+}
+
+async function getNocTickets() {
+  const { rows } = await pool.query('SELECT * FROM noc_tickets ORDER BY date DESC');
+  return rows.map((r) => ({ id: r.id, date: r.date.toISOString(), name: r.name, department: r.department, subject: r.subject, description: r.description }));
+}
+
+async function deleteNocTicket(id) {
+  await pool.query('DELETE FROM noc_tickets WHERE id = $1', [id]);
+  return { success: true };
+}
+
 async function authenticateUser(username, password) {
   const { rows } = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
   const user = rows[0];
@@ -287,6 +328,147 @@ async function deleteTeamsContact(id) {
   return { success: true };
 }
 
+function rowToAta(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    ip: row.ip,
+    model: row.model,
+    city: row.city,
+    department: row.department,
+    ramais: row.ramais,
+    notes: row.notes,
+    status: row.status,
+    latencyMs: row.latency_ms,
+    lastChecked: row.last_checked,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+async function getAtas(filters = {}) {
+  const conditions = [];
+  const params = [];
+
+  if (filters.q) {
+    params.push(`%${filters.q}%`);
+    conditions.push(`(name ILIKE $${params.length} OR ip ILIKE $${params.length} OR ramais ILIKE $${params.length} OR department ILIKE $${params.length})`);
+  }
+
+  if (filters.status && filters.status !== 'all') {
+    params.push(filters.status);
+    conditions.push(`status = $${params.length}`);
+  }
+
+  if (filters.city && filters.city !== 'all') {
+    params.push(filters.city);
+    conditions.push(`city = $${params.length}`);
+  }
+
+  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+  const { rows } = await pool.query(`SELECT * FROM atas ${whereClause} ORDER BY id ASC`, params);
+  return rows.map(rowToAta);
+}
+
+async function getAtaById(id) {
+  const { rows } = await pool.query('SELECT * FROM atas WHERE id = $1', [id]);
+  return rows.length > 0 ? rowToAta(rows[0]) : null;
+}
+
+async function addAta({ name, ip, model = 'Intelbras ATA 200', city = 'sao_gabriel', department = '', ramais = '', notes = '' }) {
+  const cleanIp = (ip || '').trim();
+  const cleanName = (name || '').trim();
+  const cleanModel = (model || 'Intelbras ATA 200').trim();
+
+  if (!cleanName || !cleanIp) {
+    return { success: false, error: 'Nome e IP são obrigatórios' };
+  }
+
+  const { rows } = await pool.query(
+    `INSERT INTO atas (name, ip, model, city, department, ramais, notes, status)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, 'unknown')
+     RETURNING *`,
+    [cleanName, cleanIp, cleanModel, city || 'sao_gabriel', department || '', ramais || '', notes || '']
+  );
+  return { success: true, ata: rowToAta(rows[0]) };
+}
+
+async function updateAta(id, { name, ip, model, city, department, ramais, notes }) {
+  const cleanIp = (ip || '').trim();
+  const cleanName = (name || '').trim();
+  const cleanModel = (model || 'Intelbras ATA 200').trim();
+
+  if (!cleanName || !cleanIp) {
+    return { success: false, error: 'Nome e IP são obrigatórios' };
+  }
+
+  const result = await pool.query(
+    `UPDATE atas
+     SET name = $1, ip = $2, model = $3, city = $4, department = $5, ramais = $6, notes = $7, updated_at = now()
+     WHERE id = $8
+     RETURNING *`,
+    [cleanName, cleanIp, cleanModel, city || 'sao_gabriel', department || '', ramais || '', notes || '', id]
+  );
+
+  if (result.rowCount === 0) {
+    return { success: false, error: 'Equipamento ATA não encontrado' };
+  }
+  return { success: true, ata: rowToAta(result.rows[0]) };
+}
+
+async function deleteAta(id) {
+  const result = await pool.query('DELETE FROM atas WHERE id = $1', [id]);
+  if (result.rowCount === 0) {
+    return { success: false, error: 'Equipamento ATA não encontrado' };
+  }
+  return { success: true };
+}
+
+async function updateAtaPingResult(id, status, latencyMs = null) {
+  const { rows } = await pool.query(
+    `UPDATE atas
+     SET status = $1, latency_ms = $2, last_checked = now(), updated_at = now()
+     WHERE id = $3
+     RETURNING *`,
+    [status, latencyMs, id]
+  );
+  return rows.length > 0 ? rowToAta(rows[0]) : null;
+}
+
+async function importAtasFromContacts() {
+  const { rows: contactRows } = await pool.query(
+    "SELECT name, phone, department, ip, city, phone_model FROM contacts WHERE ip <> '' OR phone_model ILIKE '%ATA%'"
+  );
+
+  const { rows: existingAtas } = await pool.query("SELECT ip FROM atas");
+  const existingIps = new Set(existingAtas.map(a => a.ip.trim()));
+
+  let importedCount = 0;
+  for (const c of contactRows) {
+    const ip = (c.ip || '').trim();
+    if (!ip || existingIps.has(ip)) continue;
+
+    const model = (c.phone_model && c.phone_model.trim() !== '') ? c.phone_model : 'Intelbras ATA 200';
+    await pool.query(
+      `INSERT INTO atas (name, ip, model, city, department, ramais, notes, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 'unknown')`,
+      [
+        `ATA - ${c.name}`,
+        ip,
+        model,
+        c.city || 'sao_gabriel',
+        c.department || '',
+        c.phone || '',
+        'Importado automaticamente dos Contatos'
+      ]
+    );
+    existingIps.add(ip);
+    importedCount++;
+  }
+
+  return { success: true, importedCount };
+}
+
 module.exports = {
   getLastUpdated,
   getContacts,
@@ -313,4 +495,15 @@ module.exports = {
   addTeamsContact,
   updateTeamsContact,
   deleteTeamsContact,
+  getAtas,
+  getAtaById,
+  addAta,
+  updateAta,
+  deleteAta,
+  updateAtaPingResult,
+  importAtasFromContacts,
+  submitNocTicket,
+  getNocTickets,
+  deleteNocTicket,
 };
+

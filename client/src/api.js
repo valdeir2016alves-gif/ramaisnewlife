@@ -119,3 +119,49 @@ export const updateTeamsContact = (id, department, name, email) =>
 
 export const deleteTeamsContact = (id) =>
   request(`${BASE}/teams/${id}`, { method: 'DELETE' });
+
+// ATAs Management & Monitoring
+export const getAtas = (filters = {}) => {
+  const params = new URLSearchParams();
+  if (filters.q) params.set('q', filters.q);
+  if (filters.status && filters.status !== 'all') params.set('status', filters.status);
+  if (filters.city && filters.city !== 'all') params.set('city', filters.city);
+  const qs = params.toString();
+  return request(`${BASE}/atas${qs ? `?${qs}` : ''}`);
+};
+
+export const addAta = (data) =>
+  request(`${BASE}/atas`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+
+export const updateAta = (id, data) =>
+  request(`${BASE}/atas/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+
+export const deleteAta = (id) =>
+  request(`${BASE}/atas/${id}`, { method: 'DELETE' });
+
+export const pingAta = (id) =>
+  request(`${BASE}/atas/${id}/ping`, { method: 'POST' });
+
+export const pingAllAtas = () =>
+  request(`${BASE}/atas/ping-all`, { method: 'POST' });
+
+export const importAtasFromContacts = () =>
+  request(`${BASE}/atas/import-contacts`, { method: 'POST' });
+
+// NOC Tickets
+export const getNocTickets = () => request(`${BASE}/noc-tickets`);
+
+export const submitNocTicket = (data) =>
+  request(`${BASE}/noc-tickets`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+
+export const deleteNocTicket = (id) =>
+  request(`${BASE}/noc-tickets/${id}`, { method: 'DELETE' });

@@ -59,14 +59,18 @@ async function sendTelegramAlert(contact, isDown) {
   }
 }
 
+const { pingDevice } = require('./utils/ping');
+
 async function checkIPs() {
   try {
+    // 1. Monitor contacts
     const { rows } = await pool.query("SELECT id, name, department, ip, phone FROM contacts WHERE ip <> ''");
 
     for (const contact of rows) {
       if (!contact.ip) continue;
 
-      const isOnline = await pingIp(contact.ip);
+      const pingRes = await pingDevice(contact.ip);
+      const isOnline = pingRes.online;
 
       if (!isOnline && !offlineIPs.has(contact.id)) {
         console.log(`[Monitor] Ramal ${contact.name} (${contact.ip}) caiu!`);
@@ -78,22 +82,33 @@ async function checkIPs() {
         await sendTelegramAlert(contact, false);
       }
     }
+
+    // 2. Monitor ATAs table
+    const { rows: ataRows } = await pool.query("SELECT id, name, ip, status FROM atas WHERE ip <> ''");
+    for (const ata of ataRows) {
+      const pingRes = await pingDevice(ata.ip);
+      const status = pingRes.online ? 'online' : 'offline';
+      await pool.query(
+        "UPDATE atas SET status = $1, latency_ms = $2, last_checked = now(), updated_at = now() WHERE id = $3",
+        [status, pingRes.latencyMs, ata.id]
+      );
+    }
   } catch (error) {
     console.error('[Monitor] Erro na verificação:', error);
   }
 }
 
-async function waitForContactsTable() {
+async function waitForTables() {
   for (let attempt = 0; attempt < 30; attempt++) {
-    const { rows } = await pool.query("SELECT to_regclass('public.contacts') AS reg");
-    if (rows[0].reg) return;
+    const { rows } = await pool.query("SELECT to_regclass('public.contacts') AS c_reg, to_regclass('public.atas') AS a_reg");
+    if (rows[0].c_reg && rows[0].a_reg) return;
     await new Promise((resolve) => setTimeout(resolve, 1000));
   }
-  console.error('[Monitor] Tabela contacts não apareceu a tempo; seguindo mesmo assim.');
+  console.error('[Monitor] Tabelas contacts/atas não apareceram a tempo; seguindo mesmo assim.');
 }
 
-console.log('[Monitor] Iniciando monitoramento de IP...');
-waitForContactsTable().then(() => {
+console.log('[Monitor] Iniciando monitoramento de IP e ATAs...');
+waitForTables().then(() => {
   setInterval(checkIPs, 3 * 60 * 1000);
   checkIPs();
 });

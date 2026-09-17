@@ -25,6 +25,7 @@ ENV HOSTNAME=0.0.0.0
 # Kept for parity with the previous image (no USER switch below, same as
 # before) so the existing production named volume — created while the
 # container ran as root — keeps working without a permissions migration.
+RUN apt-get update && apt-get install -y --no-install-recommends iputils-ping && rm -rf /var/lib/apt/lists/*
 RUN groupadd --system --gid 1001 nodejs
 RUN useradd --system --uid 1001 nodeuser
 

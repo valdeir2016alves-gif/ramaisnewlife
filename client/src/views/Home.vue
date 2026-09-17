@@ -12,6 +12,7 @@ import TrueFocus from '../components/TrueFocus.vue';
 import {
   getContacts, getLastUpdated, getDepartmentDescriptions,
   submitReport, registerVisit, authenticateUser, getTeamsContacts,
+  submitNocTicket
 } from '../api';
 
 function getDepartmentDescription(dept, descriptions) {
@@ -74,11 +75,19 @@ const mapDots = [
     end: { lat: -31.3285, lng: -54.1068, label: "Bagé" }
   }
 ];
+
 const showReportModal = ref(false);
 const reportName = ref('');
 const reportRamal = ref('');
 const reportMessage = ref('');
 const isSubmittingReport = ref(false);
+
+const showNocTicketModal = ref(false);
+const nocTicketName = ref('');
+const nocTicketDept = ref('');
+const nocTicketSubject = ref('');
+const nocTicketDesc = ref('');
+const isSubmittingNocTicket = ref(false);
 
 const currentUser = ref(null);
 const loginUsername = ref('');
@@ -104,6 +113,28 @@ async function handleReportSubmit(e) {
     reportMessage.value = '';
   } else {
     alert('Erro ao enviar o relato. Tente novamente mais tarde.');
+  }
+}
+
+async function handleNocTicketSubmit(e) {
+  e.preventDefault();
+  isSubmittingNocTicket.value = true;
+  const result = await submitNocTicket({
+    name: nocTicketName.value,
+    department: nocTicketDept.value,
+    subject: nocTicketSubject.value,
+    description: nocTicketDesc.value
+  });
+  isSubmittingNocTicket.value = false;
+  if (result.success) {
+    alert('Chamado aberto com sucesso! O NOC foi notificado no Telegram.');
+    showNocTicketModal.value = false;
+    nocTicketName.value = '';
+    nocTicketDept.value = '';
+    nocTicketSubject.value = '';
+    nocTicketDesc.value = '';
+  } else {
+    alert('Erro ao enviar o chamado. Tente novamente.');
   }
 }
 
@@ -379,14 +410,11 @@ function shouldGroupDepartment(department) {
             <div :class="styles.contactList">
               <template v-for="person in groupContactsByName(regionalContacts)" :key="person.name">
                 <div v-if="person.phones.length > 1" style="margin-bottom: 0.25rem;">
-                  <div @click="togglePerson('Regional-' + person.name)" style="display: flex; align-items: center; cursor: pointer; user-select: none;">
-                    <span :class="styles.chevron" :style="{ width: '16px', marginRight: '6px', transform: expandedPersons.includes('Regional-' + person.name) ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease', display: 'inline-flex', justifyContent: 'center' }">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-                    </span>
+                  <div style="display: flex; align-items: center; user-select: none;">
                     <span :class="styles.contactName" style="margin: 0;">{{ person.name }}</span>
                   </div>
                   
-                  <div v-if="expandedPersons.includes('Regional-' + person.name)" style="padding-left: 22px; display: flex; flex-direction: column; gap: 4px; margin-top: 6px;">
+                  <div style="padding-left: 16px; display: flex; flex-direction: column; gap: 4px; margin-top: 6px;">
                     <div v-for="contact in person.phones" :key="contact.id" :class="styles.contactItem" style="margin-bottom: 2px;">
                       <span :class="styles.chevron" style="width: 16px;">
                         <img v-if="isWhatsAppNumber(contact)" src="/whatsapp-icon.svg" alt="WhatsApp" width="14" height="14" style="vertical-align: middle" />
@@ -463,14 +491,11 @@ function shouldGroupDepartment(department) {
                 
                 <!-- Modo agrupado: se a pessoa tiver + de 1 número OU se for um departamento forçado -->
                 <div v-if="person.phones.length > 1 || shouldGroupDepartment(department)" style="margin-bottom: 0.25rem;">
-                  <div @click="togglePerson(department + '-' + person.name)" style="display: flex; align-items: center; cursor: pointer; user-select: none;">
-                    <span :class="styles.chevron" :style="{ width: '16px', marginRight: '6px', transform: expandedPersons.includes(department + '-' + person.name) ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease', display: 'inline-flex', justifyContent: 'center' }">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-                    </span>
+                  <div style="display: flex; align-items: center; user-select: none;">
                     <span :class="styles.contactName" style="margin: 0;">{{ person.name }}</span>
                   </div>
                   
-                  <div v-if="expandedPersons.includes(department + '-' + person.name)" style="padding-left: 22px; display: flex; flex-direction: column; gap: 4px; margin-top: 6px;">
+                  <div style="padding-left: 16px; display: flex; flex-direction: column; gap: 4px; margin-top: 6px;">
                     <div v-for="contact in person.phones" :key="contact.id" :class="styles.contactItem" style="margin-bottom: 2px;">
                       <span :class="styles.chevron" style="width: 16px;">
                         <img v-if="isWhatsAppNumber(contact)" src="/whatsapp-icon.svg" alt="WhatsApp" width="14" height="14" style="vertical-align: middle" />
@@ -507,11 +532,11 @@ function shouldGroupDepartment(department) {
         
         <!-- Esquerda: Info e Erros -->
         <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start;">
-          <button @click="showReportModal = true" :class="styles.reportLinkBtn" style="padding: 0; background: transparent; border: none; font-family: inherit; cursor: pointer;">
-            Encontrou um contato errado? Avise aqui!
+          <button @click="showNocTicketModal = true" :class="styles.reportLinkBtn" style="padding: 0; background: transparent; border: none; font-family: inherit; cursor: pointer; color: #38bdf8;">
+            🛠️ Precisa de auxílio do NOC? Abra um chamado aqui!
           </button>
-          
-          <div style="display: flex; justify-content: flex-start; align-items: center; gap: 6px; flex-wrap: wrap;">
+
+          <div style="display: flex; justify-content: flex-start; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 0.5rem;">
             <UnderlineText :text="`Atualizado em: ${lastUpdated} - NOC`" />
             
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="var(--primary-color)" style="margin-bottom: 2px;">
@@ -647,6 +672,36 @@ function shouldGroupDepartment(department) {
             </div>
             <button type="submit" :class="styles.btnPrimary" :disabled="isSubmittingReport">
               {{ isSubmittingReport ? 'Enviando...' : 'Enviar Relato' }}
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div v-if="showNocTicketModal" :class="styles.modalOverlay" @click="showNocTicketModal = false">
+        <div :class="styles.modalContent" @click.stop>
+          <div :class="styles.modalHeader">
+            <h3>Abertura de Chamado - NOC</h3>
+            <button :class="styles.closeButton" @click="showNocTicketModal = false">✕</button>
+          </div>
+          <form @submit="handleNocTicketSubmit" :class="styles.modalBody">
+            <div :class="styles.formGroup">
+              <label>Seu Nome *</label>
+              <input type="text" v-model="nocTicketName" :class="styles.modalInput" placeholder="Ex: Maria" required />
+            </div>
+            <div :class="styles.formGroup">
+              <label>Seu Setor *</label>
+              <input type="text" v-model="nocTicketDept" :class="styles.modalInput" placeholder="Ex: Financeiro" required />
+            </div>
+            <div :class="styles.formGroup">
+              <label>Assunto *</label>
+              <input type="text" v-model="nocTicketSubject" :class="styles.modalInput" placeholder="Ex: Queda de link" required />
+            </div>
+            <div :class="styles.formGroup">
+              <label>Descrição do Problema *</label>
+              <textarea v-model="nocTicketDesc" :class="styles.modalInput" placeholder="Ex: Estamos sem acesso à internet na filial de Passo Fundo..." rows="4" required></textarea>
+            </div>
+            <button type="submit" :class="styles.btnPrimary" :disabled="isSubmittingNocTicket">
+              {{ isSubmittingNocTicket ? 'Enviando...' : 'Abrir Chamado' }}
             </button>
           </form>
         </div>

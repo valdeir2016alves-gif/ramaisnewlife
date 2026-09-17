@@ -1,17 +1,19 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import styles from '../styles/admin.module.css';
 import GlareCard from '../components/GlareCard.vue';
 import EditableRow from '../components/EditableRow.vue';
 import DescriptionRow from '../components/DescriptionRow.vue';
 import StatsChart from '../components/StatsChart.vue';
 import Aurora from '../components/Aurora.vue';
+import AtaDashboard from '../components/AtaDashboard.vue';
 import {
   getContacts, addContact, deleteContact, updateContact, renameDepartment,
   getReports, deleteReport, authenticateUser, getUsers as fetchUsers,
   addUser as createUser, updateUser as editUser, deleteUser as removeUser,
   getAnalytics, reorderContact, toggleContactVisibility, getDepartmentDescriptions, updateDepartmentDescription,
   getTeamsContacts, addTeamsContact, updateTeamsContact, deleteTeamsContact,
+  getNocTickets, deleteNocTicket
 } from '../api';
 
 const departmentEmojis = {
@@ -46,7 +48,7 @@ const ip = ref('');
 const phoneModel = ref('');
 const newCity = ref('sao_gabriel');
 const adminCity = ref('sao_gabriel');
-const activeTab = ref('ramais');
+const activeTab = ref(new URLSearchParams(window.location.search).get('tab') || 'ramais');
 const reports = ref([]);
 const systemUsers = ref([]);
 const expandedDeps = ref({});
@@ -83,15 +85,18 @@ async function loadStats() {
   stats.value = await getAnalytics();
 }
 
+const nocTickets = ref([]);
+
 async function loadContacts() {
   loading.value = true;
   try {
-    const [data, reportsData, descData] = await Promise.all([
-      getContacts(), getReports(), getDepartmentDescriptions(),
+    const [data, reportsData, descData, nocData] = await Promise.all([
+      getContacts(), getReports(), getDepartmentDescriptions(), getNocTickets()
     ]);
     contacts.value = data || [];
     reports.value = reportsData || [];
     descriptions.value = descData || {};
+    nocTickets.value = nocData || [];
   } catch (error) {
     console.error('Failed to load data', error);
     contacts.value = [];
@@ -192,6 +197,17 @@ async function handleDeleteReportRow(id) {
       await loadContacts();
     } else {
       alert('Erro ao excluir relato: ' + result.error);
+    }
+  }
+}
+
+async function handleDeleteNocTicket(id) {
+  if (confirm('Marcar este chamado NOC como resolvido/excluído?')) {
+    const result = await deleteNocTicket(id);
+    if (result.success) {
+      await loadContacts();
+    } else {
+      alert('Erro ao excluir chamado: ' + result.error);
     }
   }
 }
@@ -403,8 +419,14 @@ const uniqueDepartments = computed(() => {
           <button :class="activeTab === 'ramais' ? styles.btnPrimary : styles.btnSecondary" @click="activeTab = 'ramais'">
             Contatos
           </button>
+          <button :class="activeTab === 'atas' ? styles.btnPrimary : styles.btnSecondary" @click="activeTab = 'atas'">
+            Controle de ATAs 📟
+          </button>
           <button :class="activeTab === 'reports' ? styles.btnPrimary : styles.btnSecondary" @click="activeTab = 'reports'">
             Relatórios de Erro {{ reports.length > 0 ? `(${reports.length})` : '' }}
+          </button>
+          <button :class="activeTab === 'noc_tickets' ? styles.btnPrimary : styles.btnSecondary" @click="activeTab = 'noc_tickets'">
+            Chamados NOC {{ nocTickets.length > 0 ? `(${nocTickets.length})` : '' }}
           </button>
           <button v-if="canEdit" :class="activeTab === 'descriptions' ? styles.btnPrimary : styles.btnSecondary" @click="activeTab = 'descriptions'">
             Balões de Informação
@@ -506,6 +528,10 @@ const uniqueDepartments = computed(() => {
         </section>
       </template>
 
+      <section v-else-if="activeTab === 'atas'" :class="styles.listSection">
+        <AtaDashboard :can-edit="canEdit" :departments="uniqueDepartments" />
+      </section>
+
       <section v-else-if="activeTab === 'reports'" :class="styles.listSection">
         <h2>Relatórios de Contatos com Problema</h2>
         <p v-if="reports.length === 0">Nenhum relato encontrado. Tudo certo por aqui!</p>
@@ -528,6 +554,39 @@ const uniqueDepartments = computed(() => {
                 <td>{{ r.message }}</td>
                 <td v-if="canEdit">
                   <button @click="handleDeleteReportRow(r.id)" :class="styles.btnDanger">
+                    Resolver / Excluir
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section v-else-if="activeTab === 'noc_tickets'" :class="styles.listSection">
+        <h2>Chamados do NOC</h2>
+        <p v-if="nocTickets.length === 0">Nenhum chamado aberto. Tudo tranquilo!</p>
+        <div v-else :class="styles.tableContainer">
+          <table :class="styles.table">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Nome</th>
+                <th>Setor</th>
+                <th>Assunto</th>
+                <th>Descrição</th>
+                <th v-if="canEdit">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="t in nocTickets" :key="t.id">
+                <td>{{ new Date(t.date).toLocaleString('pt-BR') }}</td>
+                <td>{{ t.name }}</td>
+                <td>{{ t.department }}</td>
+                <td><strong>{{ t.subject }}</strong></td>
+                <td>{{ t.description }}</td>
+                <td v-if="canEdit">
+                  <button @click="handleDeleteNocTicket(t.id)" :class="styles.btnDanger">
                     Resolver / Excluir
                   </button>
                 </td>

@@ -10,6 +10,8 @@ const authRouter = require('./routes/auth');
 const analyticsRouter = require('./routes/analytics');
 const descriptionsRouter = require('./routes/descriptions');
 const teamsRouter = require('./routes/teams');
+const atasRouter = require('./routes/atas');
+const nocTicketsRouter = require('./routes/noc-tickets');
 
 const app = express();
 // Note: uses SERVER_PORT (not PORT) so it doesn't collide with a PORT env
@@ -27,6 +29,8 @@ app.use('/api/auth', authRouter);
 app.use('/api/analytics', analyticsRouter);
 app.use('/api/descriptions', descriptionsRouter);
 app.use('/api/teams', teamsRouter);
+app.use('/api/atas', atasRouter);
+app.use('/api/noc-tickets', nocTicketsRouter);
 
 const clientDist = path.join(__dirname, '..', 'public');
 app.use(express.static(clientDist));
