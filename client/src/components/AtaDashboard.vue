@@ -9,12 +9,34 @@ import {
   pingAta,
   pingAllAtas,
   importAtasFromContacts,
+  getContacts,
 } from '../api';
 
 const props = defineProps({
   canEdit: { type: Boolean, default: false },
   departments: { type: Array, default: () => [] },
+  contacts: { type: Array, default: () => [] },
 });
+
+const localContacts = ref([]);
+
+const contactsList = computed(() => {
+  if (props.contacts && props.contacts.length > 0) {
+    return props.contacts;
+  }
+  return localContacts.value;
+});
+
+async function ensureContacts() {
+  if (!props.contacts || props.contacts.length === 0) {
+    try {
+      const data = await getContacts();
+      localContacts.value = data || [];
+    } catch (e) {
+      console.error('Erro ao buscar contatos:', e);
+    }
+  }
+}
 
 const atas = ref([]);
 const loading = ref(false);
@@ -79,6 +101,107 @@ const uptimePercent = computed(() => {
   const tested = onlineCount.value + offlineCount.value;
   if (tested === 0) return 100;
   return Math.round((onlineCount.value / tested) * 100);
+});
+
+// Quantitativo de equipamentos agrupado (Telefone IP, ATA 200, MicroSIP, etc.)
+// considerando que ATAs possuem 2 portas FXS e 2 ramais podem compartilhar o mesmo IP físico
+const equipmentQuantities = computed(() => {
+  let filteredContacts = (contactsList.value || []).filter(c => !c.hidden);
+  if (cityFilter.value && cityFilter.value !== 'all') {
+    filteredContacts = filteredContacts.filter(c => c.city === cityFilter.value);
+  }
+
+  let filteredAtas = atas.value || [];
+  if (cityFilter.value && cityFilter.value !== 'all') {
+    filteredAtas = filteredAtas.filter(a => a.city === cityFilter.value);
+  }
+
+  const groups = {
+    'Telefone IP': { ips: new Set(), withoutIp: 0, submodels: {} },
+    'ATA 200': { ips: new Set(), withoutIp: 0, submodels: {}, ramaisCount: 0 },
+    'MicroSIP': { ips: new Set(), withoutIp: 0, submodels: {} },
+    'Telefone Sem Fio': { ips: new Set(), withoutIp: 0, submodels: {} },
+    'Outros': { ips: new Set(), withoutIp: 0, submodels: {} },
+  };
+
+  function getCategory(rawModel) {
+    if (!rawModel) return null;
+    const m = rawModel.trim().toLowerCase();
+    if (m.includes('ata')) return 'ATA 200';
+    if (m.includes('tip') || m.includes('telefone ip')) return 'Telefone IP';
+    if (m.includes('microsip') || m.includes('softphone')) return 'MicroSIP';
+    if (m.includes('sem fio') || m.includes('ts 2510')) return 'Telefone Sem Fio';
+    return 'Outros';
+  }
+
+  // 1. Processa os ramais cadastrados na lista de contatos
+  for (const c of filteredContacts) {
+    const rawModel = (c.phoneModel || c.phone_model || '').trim();
+    if (!rawModel) continue;
+
+    const cat = getCategory(rawModel);
+    if (!cat) continue;
+
+    const ip = (c.ip || '').trim().toLowerCase();
+    groups[cat].submodels[rawModel] = (groups[cat].submodels[rawModel] || 0) + 1;
+
+    if (cat === 'ATA 200') {
+      groups[cat].ramaisCount++;
+    }
+
+    if (ip) {
+      groups[cat].ips.add(ip);
+    } else {
+      groups[cat].withoutIp++;
+    }
+  }
+
+  // 2. Inclui equipamentos da tabela de ATAs com IPs que não estavam na lista de contatos
+  for (const a of filteredAtas) {
+    const rawModel = (a.model || '').trim();
+    const cat = getCategory(rawModel) || 'ATA 200';
+    const ip = (a.ip || '').trim().toLowerCase();
+
+    if (ip) {
+      if (!groups[cat].ips.has(ip)) {
+        groups[cat].ips.add(ip);
+        const modelLabel = rawModel || 'ATA 200';
+        groups[cat].submodels[modelLabel] = (groups[cat].submodels[modelLabel] || 0) + 1;
+        if (cat === 'ATA 200') {
+          const countR = a.ramais ? a.ramais.split(',').length : 1;
+          groups[cat].ramaisCount += countR;
+        }
+      }
+    }
+  }
+
+  const results = [];
+  for (const [name, data] of Object.entries(groups)) {
+    const count = data.ips.size + data.withoutIp;
+    if (count > 0) {
+      let tooltip = '';
+      if (name === 'ATA 200' && data.ramaisCount > count) {
+        tooltip = `${count} aparelhos ATA atendendo ${data.ramaisCount} ramais (portas duplas)`;
+      } else {
+        const subList = Object.entries(data.submodels).map(([subName, subCount]) => `${subCount}x ${subName}`);
+        if (subList.length > 1) {
+          tooltip = subList.join(', ');
+        }
+      }
+
+      results.push({
+        name,
+        count,
+        tooltip,
+      });
+    }
+  }
+
+  return results;
+});
+
+const totalPhysicalDevices = computed(() => {
+  return equipmentQuantities.value.reduce((acc, curr) => acc + curr.count, 0);
 });
 
 async function handleAdd(e) {
@@ -242,6 +365,7 @@ function formatLastChecked(dateStr) {
 
 onMounted(() => {
   loadAtas();
+  ensureContacts();
 });
 </script>
 
@@ -282,6 +406,30 @@ onMounted(() => {
           <span class="metric-label">Latência Média (Ping)</span>
           <span class="metric-value">{{ avgLatency !== null ? `${avgLatency} ms` : '-' }}</span>
           <span class="metric-sub">Tempo de resposta ICMP/TCP</span>
+        </div>
+      </div>
+
+      <div class="metric-card glass card-quantities">
+        <div class="metric-icon">🖧</div>
+        <div class="metric-content" style="width: 100%;">
+          <span class="metric-label">Quantitativo de Equipamentos</span>
+          <div class="equipment-breakdown">
+            <span
+              v-for="item in equipmentQuantities"
+              :key="item.name"
+              class="equip-tag"
+              :title="item.tooltip || ''"
+            >
+              <strong class="equip-count">{{ item.count }}</strong>
+              <span class="equip-name">{{ item.name }}</span>
+            </span>
+            <span v-if="equipmentQuantities.length === 0" class="metric-sub">
+              Nenhum equipamento cadastrado
+            </span>
+          </div>
+          <span v-if="totalPhysicalDevices > 0" class="metric-sub" style="margin-top: 6px; font-size: 0.72rem;">
+            Total: {{ totalPhysicalDevices }} aparelhos / softphones
+          </span>
         </div>
       </div>
     </div>
@@ -387,6 +535,7 @@ onMounted(() => {
               <option value="Telefone IP Intelbras TIP 125i">Telefone IP Intelbras TIP 125i</option>
               <option value="Telefone IP Intelbras TIP 200">Telefone IP Intelbras TIP 200</option>
               <option value="Telefone Sem Fio TS 2510">Telefone Sem Fio TS 2510</option>
+              <option value="MicroSIP">MicroSIP</option>
               <option value="Outro Modelo">Outro Modelo</option>
             </select>
           </div>
@@ -723,6 +872,48 @@ onMounted(() => {
 .text-offline {
   color: #ef4444 !important;
   text-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
+}
+
+.card-quantities {
+  min-width: 250px;
+}
+
+.equipment-breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.5rem;
+  margin-top: 0.45rem;
+}
+
+.equip-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: #e2e8f0;
+  cursor: default;
+  transition: all 0.2s ease;
+}
+
+.equip-tag:hover {
+  background: rgba(56, 189, 248, 0.22);
+  border-color: rgba(56, 189, 248, 0.5);
+  transform: translateY(-1px);
+}
+
+.equip-count {
+  font-weight: 700;
+  color: #38bdf8;
+  font-size: 0.95rem;
+}
+
+.equip-name {
+  color: #cbd5e1;
+  font-weight: 500;
 }
 
 /* Toolbar */

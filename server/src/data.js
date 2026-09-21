@@ -446,7 +446,24 @@ async function importAtasFromContacts() {
   let importedCount = 0;
   for (const c of contactRows) {
     const ip = (c.ip || '').trim();
-    if (!ip || existingIps.has(ip)) continue;
+    if (!ip) continue;
+
+    if (existingIps.has(ip)) {
+      if (c.phone && c.phone.trim()) {
+        const phoneTrim = c.phone.trim();
+        await pool.query(
+          `UPDATE atas 
+           SET ramais = CASE 
+             WHEN ramais IS NULL OR ramais = '' THEN $1 
+             WHEN ramais NOT LIKE '%' || $1 || '%' THEN ramais || ', ' || $1 
+             ELSE ramais 
+           END
+           WHERE ip = $2`,
+          [phoneTrim, ip]
+        );
+      }
+      continue;
+    }
 
     const model = (c.phone_model && c.phone_model.trim() !== '') ? c.phone_model : 'Intelbras ATA 200';
     await pool.query(

@@ -529,7 +529,7 @@ const uniqueDepartments = computed(() => {
       </template>
 
       <section v-else-if="activeTab === 'atas'" :class="styles.listSection">
-        <AtaDashboard :can-edit="canEdit" :departments="uniqueDepartments" />
+        <AtaDashboard :can-edit="canEdit" :departments="uniqueDepartments" :contacts="contacts" />
       </section>
 
       <section v-else-if="activeTab === 'reports'" :class="styles.listSection">
