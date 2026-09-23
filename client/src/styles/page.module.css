@@ -158,12 +158,6 @@
   }
 }
 
-@media (min-width: 1600px) {
-  .content {
-    column-count: 4;
-  }
-}
-
 .departmentSection {
   break-inside: avoid;
   page-break-inside: avoid;
