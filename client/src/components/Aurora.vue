@@ -1,5 +1,5 @@
 <template>
-  <div v-show="!isLightMode" ref="ctnDom" class="aurora-container" />
+  <div ref="ctnDom" class="aurora-container" />
 </template>
 
 <script setup lang="ts">
@@ -133,114 +133,97 @@ let animateId = 0;
 let renderer: InstanceType<typeof Renderer> | null = null;
 let program: InstanceType<typeof Program> | null = null;
 let resizeHandler: (() => void) | null = null;
-let observer: MutationObserver | null = null;
-
-const isLightMode = ref(false);
 
 onMounted(() => {
-  isLightMode.value = document.documentElement.getAttribute('data-theme') === 'light' || localStorage.getItem('theme') === 'light';
-  
-  observer = new MutationObserver(() => {
-    isLightMode.value = document.documentElement.getAttribute('data-theme') === 'light';
-  });
-  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-
   const ctn = ctnDom.value;
   if (!ctn) return;
 
-  renderer = new Renderer({
-    alpha: true,
-    premultipliedAlpha: true,
-    antialias: true
-  });
+  try {
+    renderer = new Renderer({
+      alpha: true,
+      premultipliedAlpha: true,
+      antialias: true
+    });
 
-  const gl = renderer.gl;
-  gl.clearColor(0, 0, 0, 0);
-  gl.enable(gl.BLEND);
-  gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-  gl.canvas.style.backgroundColor = 'transparent';
+    const gl = renderer.gl;
+    gl.clearColor(0, 0, 0, 0);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    gl.canvas.style.backgroundColor = 'transparent';
 
-  resizeHandler = () => {
-    if (!ctn || !renderer) return;
-    const width = ctn.offsetWidth;
-    const height = ctn.offsetHeight;
-    renderer.setSize(width, height);
-    if (program) {
-      program.uniforms.uResolution.value = [width, height];
+    const initialWidth = Math.max(ctn.offsetWidth, window.innerWidth || 1);
+    const initialHeight = Math.max(ctn.offsetHeight, window.innerHeight || 1);
+
+    resizeHandler = () => {
+      if (!ctn || !renderer) return;
+      const width = ctn.offsetWidth || window.innerWidth || 1;
+      const height = ctn.offsetHeight || window.innerHeight || 1;
+      renderer.setSize(width, height);
+      if (program) {
+        program.uniforms.uResolution.value = [width, height];
+      }
+    };
+
+    window.addEventListener('resize', resizeHandler);
+
+    const geometry = new Triangle(gl);
+    if (geometry.attributes.uv) {
+      delete geometry.attributes.uv;
     }
-  };
 
-  window.addEventListener('resize', resizeHandler);
+    const colorStopsArray = props.colorStops.map((hex: string) => {
+      const c = new Color(hex);
+      return [c.r, c.g, c.b];
+    });
 
-  const geometry = new Triangle(gl);
-  if (geometry.attributes.uv) {
-    delete geometry.attributes.uv;
-  }
+    program = new Program(gl, {
+      vertex: VERT,
+      fragment: FRAG,
+      uniforms: {
+        uTime: { value: 0 },
+        uAmplitude: { value: props.amplitude },
+        uColorStops: { value: colorStopsArray },
+        uResolution: { value: [initialWidth, initialHeight] },
+        uBlend: { value: props.blend }
+      }
+    });
 
-  const colorStopsArray = props.colorStops.map((hex: string) => {
-    const c = new Color(hex);
-    return [c.r, c.g, c.b];
-  });
+    const mesh = new Mesh(gl, { geometry, program });
+    ctn.appendChild(gl.canvas);
 
-  program = new Program(gl, {
-    vertex: VERT,
-    fragment: FRAG,
-    uniforms: {
-      uTime: { value: 0 },
-      uAmplitude: { value: props.amplitude },
-      uColorStops: { value: colorStopsArray },
-      uResolution: { value: [ctn.offsetWidth, ctn.offsetHeight] },
-      uBlend: { value: props.blend }
-    }
-  });
+    const update = (t: number) => {
+      animateId = requestAnimationFrame(update);
+      const time = props.time ?? t * 0.01;
+      const speed = props.speed ?? 1.0;
 
-  const mesh = new Mesh(gl, { geometry, program });
-  ctn.appendChild(gl.canvas);
+      if (program && renderer) {
+        program.uniforms.uTime.value = time * speed * 0.1;
+        program.uniforms.uAmplitude.value = props.amplitude ?? 1.0;
+        program.uniforms.uBlend.value = props.blend ?? 0.5;
 
-  const update = (t: number) => {
+        renderer.render({ scene: mesh });
+      }
+    };
+
     animateId = requestAnimationFrame(update);
-    if (isLightMode.value) {
-      return;
-    }
-    const time = props.time ?? t * 0.01;
-    const speed = props.speed ?? 1.0;
-
-    if (program && renderer) {
-      program.uniforms.uTime.value = time * speed * 0.1;
-      program.uniforms.uAmplitude.value = props.amplitude ?? 1.0;
-      program.uniforms.uBlend.value = props.blend ?? 0.5;
-      
-      const colorsToUse = props.colorStops ?? ['#171D22', '#7cff67', '#171D22'];
-
-      program.uniforms.uColorStops.value = colorsToUse.map(
-        (hex: string) => {
-          const c = new Color(hex);
-          return [c.r, c.g, c.b];
-        }
-      );
-      renderer.render({ scene: mesh });
-    }
-  };
-
-  animateId = requestAnimationFrame(update);
-  resizeHandler();
+    resizeHandler();
+  } catch (err) {
+    console.warn('Aurora WebGL not available:', err);
+  }
 });
 
 onUnmounted(() => {
   cancelAnimationFrame(animateId);
-  if (observer) {
-    observer.disconnect();
-  }
   if (resizeHandler) {
     window.removeEventListener('resize', resizeHandler);
   }
   if (renderer) {
     const ctn = ctnDom.value;
-    const canvas = renderer.gl.canvas;
-    if (ctn && canvas.parentNode === ctn) {
+    const canvas = renderer.gl?.canvas;
+    if (ctn && canvas && canvas.parentNode === ctn) {
       ctn.removeChild(canvas);
     }
-    renderer.gl.getExtension('WEBGL_lose_context')?.loseContext();
+    renderer.gl?.getExtension('WEBGL_lose_context')?.loseContext();
   }
 });
 </script>
@@ -249,9 +232,5 @@ onUnmounted(() => {
 .aurora-container {
   width: 100%;
   height: 100%;
-}
-
-:global([data-theme="light"]) .aurora-container {
-  display: none !important;
 }
 </style>
