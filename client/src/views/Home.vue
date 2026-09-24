@@ -280,6 +280,18 @@ function shouldGroupDepartment(department) {
     'recuperação de crédito - (valoriza)'
   ].includes(d);
 }
+
+function openOfficialWebPlayer() {
+  const w = 480;
+  const h = 740;
+  const left = (window.screen.width - w) / 2;
+  const top = (window.screen.height - h) / 2;
+  window.open(
+    'https://www.metropolitana.com.br/radios/radio-metropolitana-sao-paulo-ao-vivo',
+    'MetropolitanaPlayer',
+    `width=${w},height=${h},top=${top},left=${left},scrollbars=yes,status=no,toolbar=no,menubar=no,location=no`
+  );
+}
 </script>
 
 <template>
@@ -375,6 +387,23 @@ function shouldGroupDepartment(department) {
               ❓ Instruções
             </button>
           </GlowBorder>
+
+          <!-- Botão Rádio Metropolitana 98.5 FM -->
+          <button
+            @click="openOfficialWebPlayer"
+            :class="styles.radioBtn"
+            title="Ouvir Rádio Metropolitana 98.5 FM Ao Vivo"
+          >
+            <span :class="styles.radioLedLive"></span>
+            <span>Rádio 98.5 FM</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/>
+              <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/>
+              <circle cx="12" cy="12" r="2"/>
+              <path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/>
+              <path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/>
+            </svg>
+          </button>
 
           <button
             @click="toggleTheme"
