@@ -295,7 +295,7 @@ function openOfficialWebPlayer() {
 </script>
 
 <template>
-  <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;">
+  <div v-show="theme === 'dark'" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;">
     <Aurora :color-stops="['#000B18', '#0047AB', '#000B18']" :blend="0.8" :amplitude="1.5" :speed="0.5" />
   </div>
   <main :class="styles.main" style="min-height: 100vh; display: flex; flex-direction: column;">

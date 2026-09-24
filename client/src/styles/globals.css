@@ -23,9 +23,9 @@
   --primary-color: #1e3a8a;
   --primary-hover: #1e40af;
   --sector-title-color: #1e3a8a;
-  --bg-color: #eff6ff; /* Fundo azul bem claro */
+  --bg-color: #f1f5f9; /* Fundo cinza claro */
   --card-bg: #ffffff;
-  --card-border: #bfdbfe;
+  --card-border: #e2e8f0;
   --card-border-hover: #3b82f6;
   --text-main: #0f172a;
   --text-muted: #475569;
@@ -34,8 +34,8 @@
   --logo-filter: none;
   --header-bg: transparent;
 
-  --glow-color: rgba(30, 58, 138, 0.3); /* Suave no tema claro */
-  --glow-color-faint: rgba(30, 58, 138, 0.05);
+  --glow-color: rgba(30, 58, 138, 0.2); /* Suave no tema claro */
+  --glow-color-faint: rgba(30, 58, 138, 0.04);
 }
 
 * {

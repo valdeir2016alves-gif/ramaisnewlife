@@ -1,5 +1,5 @@
 <template>
-  <div ref="ctnDom" class="aurora-container" />
+  <div v-show="!isLightMode" ref="ctnDom" class="aurora-container" />
 </template>
 
 <script setup lang="ts">
@@ -199,6 +199,9 @@ onMounted(() => {
 
   const update = (t: number) => {
     animateId = requestAnimationFrame(update);
+    if (isLightMode.value) {
+      return;
+    }
     const time = props.time ?? t * 0.01;
     const speed = props.speed ?? 1.0;
 
@@ -207,9 +210,7 @@ onMounted(() => {
       program.uniforms.uAmplitude.value = props.amplitude ?? 1.0;
       program.uniforms.uBlend.value = props.blend ?? 0.5;
       
-      const colorsToUse = isLightMode.value 
-        ? ['#EFF6FF', '#93C5FD', '#EFF6FF'] // Cores claras pro tema branco (azuis e brancos suaves)
-        : (props.colorStops ?? ['#171D22', '#7cff67', '#171D22']);
+      const colorsToUse = props.colorStops ?? ['#171D22', '#7cff67', '#171D22'];
 
       program.uniforms.uColorStops.value = colorsToUse.map(
         (hex: string) => {
@@ -248,5 +249,9 @@ onUnmounted(() => {
 .aurora-container {
   width: 100%;
   height: 100%;
+}
+
+:global([data-theme="light"]) .aurora-container {
+  display: none !important;
 }
 </style>
