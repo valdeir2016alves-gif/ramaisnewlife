@@ -372,6 +372,29 @@
   box-shadow: 0 0 12px rgba(72, 202, 228, 0.2);
 }
 
+.cityTabHasMatches {
+  border-color: rgba(72, 202, 228, 0.5);
+  box-shadow: 0 0 8px rgba(72, 202, 228, 0.15);
+}
+
+.cityTabMatchBadge {
+  margin-left: 6px;
+  background: var(--primary-color);
+  color: #051622;
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 10px;
+  line-height: 1.2;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+[data-theme="light"] .cityTabMatchBadge {
+  background: #0284c7;
+  color: #ffffff;
+}
+
 .cityBadge {
   font-size: 0.65rem;
   font-weight: 700;

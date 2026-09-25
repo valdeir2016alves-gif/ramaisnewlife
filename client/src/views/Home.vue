@@ -72,7 +72,9 @@ const { isPlaying, isLoading: isRadioLoading, currentStation, togglePlay: toggle
 
 function selectCity(newCity) {
   city.value = newCity;
-  previousCity.value = newCity;
+  if (!search.value.trim()) {
+    previousCity.value = newCity;
+  }
 }
 
 function normalizeText(text) {
@@ -96,16 +98,51 @@ function getCityBadgeClass(cityKey) {
   return styles.cityBadgeSaoGabriel;
 }
 
-watch(search, (newVal, oldVal) => {
-  const isSearching = (newVal || '').trim() !== '';
-  const wasSearching = (oldVal || '').trim() !== '';
+const searchMatchesByCity = computed(() => {
+  const query = normalizeText(search.value.trim());
+  if (!query) return { sao_gabriel: 0, bage: 0, passo_fundo: 0 };
 
-  if (isSearching && !wasSearching) {
-    if (city.value !== 'all') {
-      previousCity.value = city.value;
-      city.value = 'all';
+  const counts = { sao_gabriel: 0, bage: 0, passo_fundo: 0 };
+  (contacts.value || []).forEach(c => {
+    if (c.hidden) return;
+    const cCity = c.city || 'sao_gabriel';
+    const matches = normalizeText(c.name).includes(query) ||
+                    normalizeText(c.department).includes(query) ||
+                    (c.phone && c.phone.includes(query)) ||
+                    normalizeText(getCityLabel(cCity)).includes(query);
+    if (matches) {
+      if (counts[cCity] !== undefined) {
+        counts[cCity]++;
+      } else if (cCity === 'all') {
+        counts.sao_gabriel++;
+        counts.bage++;
+        counts.passo_fundo++;
+      }
     }
-  } else if (!isSearching && wasSearching) {
+  });
+  return counts;
+});
+
+watch(search, (newVal, oldVal) => {
+  const query = normalizeText((newVal || '').trim());
+  const wasSearching = normalizeText((oldVal || '').trim()) !== '';
+
+  if (!wasSearching && query) {
+    previousCity.value = city.value;
+  }
+
+  if (query) {
+    const counts = searchMatchesByCity.value;
+    // Se a cidade selecionada atualmente não possui resultados para a busca,
+    // mas outra cidade possui, seleciona automaticamente a cidade onde o colaborador foi encontrado (ex: Bagé ao buscar Jampierre)
+    if (counts[city.value] === 0) {
+      const targetCity = ['sao_gabriel', 'bage', 'passo_fundo'].find(c => counts[c] > 0);
+      if (targetCity) {
+        city.value = targetCity;
+      }
+    }
+  } else if (wasSearching && !query) {
+    // Ao limpar a busca, restaura a cidade onde o usuário estava
     if (previousCity.value) {
       city.value = previousCity.value;
     }
@@ -257,10 +294,7 @@ const groupedContacts = computed(() => {
 
     if (!matchesSearch) return false;
 
-    // Se estiver em 'all' (Todas as Unidades), inclui todas as unidades
-    if (city.value === 'all') return true;
-
-    // Se uma unidade específica estiver selecionada
+    // Respeita a cidade selecionada no card de cidade ativo
     return cCity === city.value || cCity === 'all';
   });
 
@@ -289,7 +323,7 @@ const otherDepartments = computed(() => {
 });
 const showNoResults = computed(() => otherDepartments.value.length === 0 && !regionalContacts.value);
 const noResultsText = computed(() =>
-  search.value.trim() !== '' || (city.value !== 'passo_fundo' && city.value !== 'all') ? 'Nenhum contato encontrado.' : 'Em breve'
+  search.value.trim() !== '' || city.value !== 'passo_fundo' ? 'Nenhum contato encontrado.' : 'Em breve'
 );
 
 const teamsContactsByDept = computed(() => {
@@ -558,17 +592,46 @@ function shouldGroupDepartment(department) {
       </section>
 
       <div :class="styles.cityTabs">
-        <button :class="[styles.cityTab, city === 'all' ? styles.cityTabActive : '']" @click="selectCity('all')">
-          Todas as Unidades
-        </button>
-        <button :class="[styles.cityTab, city === 'sao_gabriel' ? styles.cityTabActive : '']" @click="selectCity('sao_gabriel')">
+        <button
+          :class="[
+            styles.cityTab,
+            city === 'sao_gabriel' ? styles.cityTabActive : '',
+            search.trim() && searchMatchesByCity.sao_gabriel > 0 ? styles.cityTabHasMatches : ''
+          ]"
+          @click="selectCity('sao_gabriel')"
+        >
           São Gabriel
+          <span v-if="search.trim() && searchMatchesByCity.sao_gabriel > 0" :class="styles.cityTabMatchBadge">
+            {{ searchMatchesByCity.sao_gabriel }}
+          </span>
         </button>
-        <button :class="[styles.cityTab, city === 'bage' ? styles.cityTabActive : '']" @click="selectCity('bage')">
+
+        <button
+          :class="[
+            styles.cityTab,
+            city === 'bage' ? styles.cityTabActive : '',
+            search.trim() && searchMatchesByCity.bage > 0 ? styles.cityTabHasMatches : ''
+          ]"
+          @click="selectCity('bage')"
+        >
           Bagé
+          <span v-if="search.trim() && searchMatchesByCity.bage > 0" :class="styles.cityTabMatchBadge">
+            {{ searchMatchesByCity.bage }}
+          </span>
         </button>
-        <button :class="[styles.cityTab, city === 'passo_fundo' ? styles.cityTabActive : '']" @click="selectCity('passo_fundo')">
+
+        <button
+          :class="[
+            styles.cityTab,
+            city === 'passo_fundo' ? styles.cityTabActive : '',
+            search.trim() && searchMatchesByCity.passo_fundo > 0 ? styles.cityTabHasMatches : ''
+          ]"
+          @click="selectCity('passo_fundo')"
+        >
           Passo Fundo
+          <span v-if="search.trim() && searchMatchesByCity.passo_fundo > 0" :class="styles.cityTabMatchBadge">
+            {{ searchMatchesByCity.passo_fundo }}
+          </span>
         </button>
       </div>
 
