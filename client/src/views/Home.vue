@@ -62,12 +62,55 @@ function waLink(contact) {
 
 const search = ref('');
 const city = ref('sao_gabriel');
+const previousCity = ref('sao_gabriel');
 const theme = ref('dark');
 const activeTooltip = ref(null);
 const showInstructions = ref(false);
 const showMap = ref(false);
 const showRadioModal = ref(false);
 const { isPlaying, isLoading: isRadioLoading, currentStation, togglePlay: toggleRadioPlay } = useRadio();
+
+function selectCity(newCity) {
+  city.value = newCity;
+  previousCity.value = newCity;
+}
+
+function normalizeText(text) {
+  return (text || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+function getCityLabel(cityKey) {
+  if (cityKey === 'bage') return 'Bagé';
+  if (cityKey === 'passo_fundo') return 'Passo Fundo';
+  if (cityKey === 'all') return 'Geral';
+  return 'São Gabriel';
+}
+
+function getCityBadgeClass(cityKey) {
+  if (cityKey === 'bage') return styles.cityBadgeBage;
+  if (cityKey === 'passo_fundo') return styles.cityBadgePassoFundo;
+  if (cityKey === 'all') return styles.cityBadgeAll;
+  return styles.cityBadgeSaoGabriel;
+}
+
+watch(search, (newVal, oldVal) => {
+  const isSearching = (newVal || '').trim() !== '';
+  const wasSearching = (oldVal || '').trim() !== '';
+
+  if (isSearching && !wasSearching) {
+    if (city.value !== 'all') {
+      previousCity.value = city.value;
+      city.value = 'all';
+    }
+  } else if (!isSearching && wasSearching) {
+    if (previousCity.value) {
+      city.value = previousCity.value;
+    }
+  }
+});
 
 const mapDots = [
   {
@@ -199,15 +242,26 @@ watch(theme, (value) => {
 }, { immediate: true });
 
 const groupedContacts = computed(() => {
+  const query = normalizeText(search.value.trim());
+  const isSearching = query.length > 0;
+
   const filtered = contacts.value.filter((c) => {
     if (c.hidden) return false;
     const cCity = c.city || 'sao_gabriel';
-    const matchesSearch = c.name.toLowerCase().includes(search.value.toLowerCase()) ||
-                          c.department.toLowerCase().includes(search.value.toLowerCase()) ||
-                          c.phone.includes(search.value);
-    const matchesCity = cCity === city.value;
-    if (cCity === 'all') return matchesSearch;
-    return matchesSearch && matchesCity;
+
+    const matchesSearch = !isSearching ||
+      normalizeText(c.name).includes(query) ||
+      normalizeText(c.department).includes(query) ||
+      (c.phone && c.phone.includes(query)) ||
+      normalizeText(getCityLabel(cCity)).includes(query);
+
+    if (!matchesSearch) return false;
+
+    // Se estiver em 'all' (Todas as Unidades), inclui todas as unidades
+    if (city.value === 'all') return true;
+
+    // Se uma unidade específica estiver selecionada
+    return cCity === city.value || cCity === 'all';
   });
 
   const groups = {};
@@ -235,7 +289,7 @@ const otherDepartments = computed(() => {
 });
 const showNoResults = computed(() => otherDepartments.value.length === 0 && !regionalContacts.value);
 const noResultsText = computed(() =>
-  search.value.trim() !== '' || city.value !== 'passo_fundo' ? 'Nenhum contato encontrado.' : 'Em breve'
+  search.value.trim() !== '' || (city.value !== 'passo_fundo' && city.value !== 'all') ? 'Nenhum contato encontrado.' : 'Em breve'
 );
 
 const teamsContactsByDept = computed(() => {
@@ -267,10 +321,19 @@ function groupContactsByName(deptContacts) {
   const groups = {};
   deptContacts.forEach(c => {
     const name = c.name.trim();
-    if (!groups[name]) groups[name] = [];
-    groups[name].push(c);
+    const cCity = c.city || 'sao_gabriel';
+    // Se estiver exibindo todas as unidades ou se for pesquisa, agrupa por nome + unidade para não misturar unidades diferentes
+    const key = (city.value === 'all' || search.value.trim() !== '') ? `${name}__${cCity}` : name;
+    if (!groups[key]) {
+      groups[key] = {
+        name,
+        city: cCity,
+        phones: []
+      };
+    }
+    groups[key].phones.push(c);
   });
-  return Object.entries(groups).map(([name, phones]) => ({ name, phones }));
+  return Object.values(groups);
 }
 
 function shouldGroupDepartment(department) {
@@ -361,11 +424,19 @@ function shouldGroupDepartment(department) {
           <div :class="styles.searchContainer">
             <input
               type="text"
-              placeholder="Pesquisar contato, nome ou setor..."
+              placeholder="Pesquisar contato, nome, setor ou unidade..."
               :class="styles.searchInput"
               v-model="search"
             />
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" :class="styles.searchIcon">
+            <button
+              v-if="search"
+              @click="search = ''"
+              :class="styles.searchClearBtn"
+              title="Limpar pesquisa"
+            >
+              ✕
+            </button>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" :class="styles.searchIcon">
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
@@ -443,10 +514,13 @@ function shouldGroupDepartment(department) {
               </div>
             </div>
             <div :class="styles.contactList">
-              <template v-for="person in groupContactsByName(regionalContacts)" :key="person.name">
+              <template v-for="person in groupContactsByName(regionalContacts)" :key="person.name + (person.city || '')">
                 <div v-if="person.phones.length > 1" style="margin-bottom: 0.25rem;">
                   <div style="display: flex; align-items: center; user-select: none;">
                     <span :class="styles.contactName" style="margin: 0;">{{ person.name }}</span>
+                    <span v-if="city === 'all' || search.trim() !== ''" :class="[styles.cityBadge, getCityBadgeClass(person.city)]">
+                      {{ getCityLabel(person.city) }}
+                    </span>
                   </div>
                   
                   <div style="padding-left: 16px; display: flex; flex-direction: column; gap: 4px; margin-top: 6px;">
@@ -469,6 +543,9 @@ function shouldGroupDepartment(department) {
                     <img v-else src="/phone-icon.svg" alt="Telefone" width="16" height="16" style="vertical-align: middle" />
                   </span>
                   <span :class="styles.contactName">{{ contact.name }}</span>
+                  <span v-if="city === 'all' || search.trim() !== ''" :class="[styles.cityBadge, getCityBadgeClass(contact.city || person.city)]">
+                    {{ getCityLabel(contact.city || person.city) }}
+                  </span>
                   <a v-if="isWhatsAppNumber(contact)" :href="waLink(contact)" target="_blank" rel="noopener noreferrer" :class="styles.whatsappLink">
                     {{ contact.phone }}
                   </a>
@@ -481,13 +558,16 @@ function shouldGroupDepartment(department) {
       </section>
 
       <div :class="styles.cityTabs">
-        <button :class="[styles.cityTab, city === 'sao_gabriel' ? styles.cityTabActive : '']" @click="city = 'sao_gabriel'">
+        <button :class="[styles.cityTab, city === 'all' ? styles.cityTabActive : '']" @click="selectCity('all')">
+          Todas as Unidades
+        </button>
+        <button :class="[styles.cityTab, city === 'sao_gabriel' ? styles.cityTabActive : '']" @click="selectCity('sao_gabriel')">
           São Gabriel
         </button>
-        <button :class="[styles.cityTab, city === 'bage' ? styles.cityTabActive : '']" @click="city = 'bage'">
+        <button :class="[styles.cityTab, city === 'bage' ? styles.cityTabActive : '']" @click="selectCity('bage')">
           Bagé
         </button>
-        <button :class="[styles.cityTab, city === 'passo_fundo' ? styles.cityTabActive : '']" @click="city = 'passo_fundo'">
+        <button :class="[styles.cityTab, city === 'passo_fundo' ? styles.cityTabActive : '']" @click="selectCity('passo_fundo')">
           Passo Fundo
         </button>
       </div>
@@ -522,12 +602,15 @@ function shouldGroupDepartment(department) {
             </div>
 
             <div :class="styles.contactList">
-              <template v-for="person in groupContactsByName(deptContacts)" :key="person.name">
+              <template v-for="person in groupContactsByName(deptContacts)" :key="person.name + (person.city || '')">
                 
                 <!-- Modo agrupado: se a pessoa tiver + de 1 número OU se for um departamento forçado -->
                 <div v-if="person.phones.length > 1 || shouldGroupDepartment(department)" style="margin-bottom: 0.25rem;">
                   <div style="display: flex; align-items: center; user-select: none;">
                     <span :class="styles.contactName" style="margin: 0;">{{ person.name }}</span>
+                    <span v-if="city === 'all' || search.trim() !== ''" :class="[styles.cityBadge, getCityBadgeClass(person.city)]">
+                      {{ getCityLabel(person.city) }}
+                    </span>
                   </div>
                   
                   <div style="padding-left: 16px; display: flex; flex-direction: column; gap: 4px; margin-top: 6px;">
@@ -551,6 +634,9 @@ function shouldGroupDepartment(department) {
                     <img v-else src="/phone-icon.svg" alt="Telefone" width="16" height="16" style="vertical-align: middle" />
                   </span>
                   <span :class="styles.contactName">{{ contact.name }}</span>
+                  <span v-if="city === 'all' || search.trim() !== ''" :class="[styles.cityBadge, getCityBadgeClass(contact.city || person.city)]">
+                    {{ getCityLabel(contact.city || person.city) }}
+                  </span>
                   <a v-if="isWhatsAppNumber(contact)" :href="waLink(contact)" target="_blank" rel="noopener noreferrer" :class="styles.whatsappLink">
                     {{ contact.phone }}
                   </a>

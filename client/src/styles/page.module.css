@@ -292,6 +292,28 @@
   color: var(--text-muted);
 }
 
+.searchClearBtn {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+
+.searchClearBtn:hover {
+  color: var(--text-main);
+}
+
 .searchInput {
   width: 100%;
   padding: 0.55rem 0.85rem 0.55rem 2.3rem;
@@ -348,6 +370,67 @@
   border-color: var(--primary-color);
   color: var(--primary-color);
   box-shadow: 0 0 12px rgba(72, 202, 228, 0.2);
+}
+
+.cityBadge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 0.12rem 0.45rem;
+  border-radius: 4px;
+  margin-left: 0.5rem;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.2;
+}
+
+.cityBadgeSaoGabriel {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+.cityBadgeBage {
+  background: rgba(192, 132, 252, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(192, 132, 252, 0.35);
+}
+
+.cityBadgePassoFundo {
+  background: rgba(52, 211, 153, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.35);
+}
+
+.cityBadgeAll {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.35);
+}
+
+[data-theme="light"] .cityBadgeSaoGabriel {
+  background: #e0f2fe;
+  color: #0284c7;
+  border-color: #bae6fd;
+}
+
+[data-theme="light"] .cityBadgeBage {
+  background: #f3e8ff;
+  color: #7e22ce;
+  border-color: #e9d5ff;
+}
+
+[data-theme="light"] .cityBadgePassoFundo {
+  background: #dcfce7;
+  color: #15803d;
+  border-color: #bbf7d0;
+}
+
+[data-theme="light"] .cityBadgeAll {
+  background: #fef3c7;
+  color: #b45309;
+  border-color: #fde68a;
 }
 
 .content {
