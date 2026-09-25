@@ -9,6 +9,8 @@ import MapImage from '../components/MapImage.vue';
 import InfoButton from '../components/InfoButton.vue';
 import Aurora from '../components/Aurora.vue';
 import TrueFocus from '../components/TrueFocus.vue';
+import RadioBrowserModal from '../components/RadioBrowserModal.vue';
+import { useRadio } from '../composables/useRadio';
 import {
   getContacts, getLastUpdated, getDepartmentDescriptions,
   submitReport, registerVisit, authenticateUser, getTeamsContacts,
@@ -64,6 +66,8 @@ const theme = ref('dark');
 const activeTooltip = ref(null);
 const showInstructions = ref(false);
 const showMap = ref(false);
+const showRadioModal = ref(false);
+const { isPlaying, isLoading: isRadioLoading, currentStation, togglePlay: toggleRadioPlay } = useRadio();
 
 const mapDots = [
   {
@@ -280,18 +284,6 @@ function shouldGroupDepartment(department) {
     'recuperação de crédito - (valoriza)'
   ].includes(d);
 }
-
-function openOfficialWebPlayer() {
-  const w = 480;
-  const h = 740;
-  const left = (window.screen.width - w) / 2;
-  const top = (window.screen.height - h) / 2;
-  window.open(
-    'https://www.metropolitana.com.br/radios/radio-metropolitana-sao-paulo-ao-vivo',
-    'MetropolitanaPlayer',
-    `width=${w},height=${h},top=${top},left=${left},scrollbars=yes,status=no,toolbar=no,menubar=no,location=no`
-  );
-}
 </script>
 
 <template>
@@ -389,16 +381,35 @@ function openOfficialWebPlayer() {
             </button>
           </GlowBorder>
 
-          <!-- Botão Rádio Metropolitana 98.5 FM -->
-          <button
-            @click="openOfficialWebPlayer"
-            :class="styles.radioBtn"
-            title="Ouvir Rádio Metropolitana 98.5 FM Ao Vivo"
-          >
-            <span :class="styles.radioLedLive"></span>
-            <span>Rádio 98.5 FM</span>
-            <img src="/metropolitana-logo.png" alt="Metropolitana FM" :class="styles.radioLogo" />
-          </button>
+          <!-- Botão Rádio Online (Radio Browser API) -->
+          <div :class="[styles.radioBtnGroup, { [styles.radioBtnPlaying]: isPlaying }]">
+            <button
+              @click="showRadioModal = true"
+              :class="styles.radioBtn"
+              :title="isPlaying ? `Tocando: ${currentStation?.name || 'Rádio'}. Clique para trocar de estação` : 'Ouvir Rádios Online (Radio Browser)'"
+            >
+              <div v-if="isPlaying" :class="styles.equalizerMini">
+                <span :class="styles.eqBar"></span>
+                <span :class="styles.eqBar"></span>
+                <span :class="styles.eqBar"></span>
+              </div>
+              <span v-else :class="styles.radioLedLive"></span>
+              <span :class="styles.radioText">
+                {{ isPlaying && currentStation?.name ? currentStation.name : 'Rádios Online' }}
+              </span>
+              <span :class="styles.radioBadgeApi">FM</span>
+            </button>
+            <button
+              v-if="currentStation"
+              @click="toggleRadioPlay"
+              :class="styles.radioQuickBtn"
+              :title="isPlaying ? 'Pausar rádio' : 'Reproduzir rádio'"
+            >
+              <span v-if="isRadioLoading" :class="styles.radioMiniSpinner"></span>
+              <span v-else-if="isPlaying">⏸</span>
+              <span v-else>▶</span>
+            </button>
+          </div>
 
           <button
             @click="toggleTheme"
@@ -743,5 +754,8 @@ function openOfficialWebPlayer() {
         </div>
       </div>
     </div>
+
+    <!-- Modal Radio Browser API -->
+    <RadioBrowserModal :is-open="showRadioModal" @close="showRadioModal = false" />
   </main>
 </template>
