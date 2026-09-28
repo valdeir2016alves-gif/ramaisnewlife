@@ -10,6 +10,7 @@ import InfoButton from '../components/InfoButton.vue';
 import Aurora from '../components/Aurora.vue';
 import TrueFocus from '../components/TrueFocus.vue';
 import RadioBrowserModal from '../components/RadioBrowserModal.vue';
+import ExportContactsModal from '../components/ExportContactsModal.vue';
 import { useRadio } from '../composables/useRadio';
 import {
   getContacts, getLastUpdated, getDepartmentDescriptions,
@@ -68,6 +69,7 @@ const activeTooltip = ref(null);
 const showInstructions = ref(false);
 const showMap = ref(false);
 const showRadioModal = ref(false);
+const showExportModal = ref(false);
 const { isPlaying, isLoading: isRadioLoading, currentStation, togglePlay: toggleRadioPlay } = useRadio();
 
 function selectCity(newCity) {
@@ -720,6 +722,22 @@ function shouldGroupDepartment(department) {
             🛠️ Precisa de auxílio do NOC? Abra um chamado aqui!
           </button>
 
+          <!-- Botão com Ícone para Exportar Contatos das 3 Cidades -->
+          <button
+            type="button"
+            @click="showExportModal = true"
+            :class="styles.exportFooterBtn"
+            title="Exportar todos os ramais das 3 cidades (Excel, Relatório e PABX)"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            <span>Exportar Ramais (3 Cidades)</span>
+            <span v-if="contacts.length" :class="styles.exportBadgeCount">{{ contacts.length }}</span>
+          </button>
+
           <div style="display: flex; justify-content: flex-start; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 0.5rem;">
             <UnderlineText :text="`Atualizado em: ${lastUpdated} - NOC`" />
             
@@ -761,6 +779,15 @@ function shouldGroupDepartment(department) {
           <a href="#" @click.prevent="showMap = true" style="display: flex; align-items: center; gap: 8px; color: var(--text-muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s;" onmouseover="this.style.color='var(--text-main)'" onmouseout="this.style.color='var(--text-muted)'">
             <img src="/mapa-rs.png" alt="Mapa" height="16" style="height: 16px; width: auto; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));" />
             Presença no RS
+          </a>
+
+          <a href="#" @click.prevent="showExportModal = true" title="Exportar todos os ramais das 3 cidades" style="display: flex; align-items: center; gap: 8px; color: var(--text-muted); text-decoration: none; font-size: 0.85rem; margin-top: 0.25rem; transition: color 0.2s;" onmouseover="this.style.color='var(--text-main)'" onmouseout="this.style.color='var(--text-muted)'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Exportar Ramais (3 Cidades)
           </a>
         </div>
       </footer>
@@ -906,5 +933,13 @@ function shouldGroupDepartment(department) {
 
     <!-- Modal Radio Browser API -->
     <RadioBrowserModal :is-open="showRadioModal" @close="showRadioModal = false" />
+
+    <!-- Modal Exportar Contatos e Ramais das 3 Cidades -->
+    <ExportContactsModal
+      :is-open="showExportModal"
+      :contacts="contacts"
+      :last-updated="lastUpdated"
+      @close="showExportModal = false"
+    />
   </main>
 </template>

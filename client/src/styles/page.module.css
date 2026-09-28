@@ -897,6 +897,55 @@
   text-decoration: underline;
 }
 
+.exportFooterBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #10b981;
+  padding: 0.45rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 0.35rem;
+  text-decoration: none;
+}
+
+.exportFooterBtn:hover {
+  background: rgba(16, 185, 129, 0.22);
+  border-color: #10b981;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+[data-theme="light"] .exportFooterBtn {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #059669;
+}
+
+[data-theme="light"] .exportFooterBtn:hover {
+  background: rgba(16, 185, 129, 0.18);
+  border-color: #059669;
+}
+
+.exportBadgeCount {
+  background: #10b981;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.1rem 0.45rem;
+  border-radius: 10px;
+  line-height: 1.2;
+}
+
+[data-theme="light"] .exportBadgeCount {
+  background: #059669;
+}
+
 .formGroup {
   display: flex;
   flex-direction: column;
