@@ -722,22 +722,6 @@ function shouldGroupDepartment(department) {
             🛠️ Precisa de auxílio do NOC? Abra um chamado aqui!
           </button>
 
-          <!-- Botão com Ícone para Exportar Contatos das 3 Cidades -->
-          <button
-            type="button"
-            @click="showExportModal = true"
-            :class="styles.exportFooterBtn"
-            title="Exportar todos os ramais das 3 cidades (Excel, Relatório e PABX)"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="7 10 12 15 17 10"/>
-              <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-            <span>Exportar Ramais (3 Cidades)</span>
-            <span v-if="contacts.length" :class="styles.exportBadgeCount">{{ contacts.length }}</span>
-          </button>
-
           <div style="display: flex; justify-content: flex-start; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 0.5rem;">
             <UnderlineText :text="`Atualizado em: ${lastUpdated} - NOC`" />
             

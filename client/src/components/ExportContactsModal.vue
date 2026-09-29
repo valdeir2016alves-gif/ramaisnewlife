@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps({
   isOpen: {
@@ -19,8 +19,6 @@ const props = defineProps({
 const emit = defineEmits(['close']);
 
 const selectedCity = ref('all');
-const selectedType = ref('all');
-const includeHidden = ref(false);
 const searchQuery = ref('');
 const copiedToast = ref(false);
 let toastTimeout = null;
@@ -55,43 +53,15 @@ function getCityBadgeClass(cityKey) {
   return 'city-badge-sg';
 }
 
-function isWhatsAppNumber(contact) {
-  const onlyNumbers = (contact.phone || '').replace(/\D/g, '');
-  return (
-    onlyNumbers.length >= 11 ||
-    (onlyNumbers.length === 10 && onlyNumbers[2] === '9') ||
-    (contact.name || '').toLowerCase().includes('whatsapp') ||
-    (contact.name || '').toLowerCase().includes('whats')
-  );
-}
-
-function isInternalExtension(contact) {
-  const phone = (contact.phone || '').trim();
-  const digits = phone.replace(/\D/g, '');
-  // Ramal interno: tipicamente 3 a 5 dígitos puros (ex: 4049, 4026, 4000)
-  return digits.length >= 3 && digits.length <= 5 && !phone.includes('-') && !phone.includes('(');
-}
-
-function getContactType(contact) {
-  if (isInternalExtension(contact)) return 'Ramal Interno';
-  if (isWhatsAppNumber(contact)) return 'WhatsApp';
-  const digits = (contact.phone || '').replace(/\D/g, '');
-  if (digits.startsWith('0800')) return '0800';
-  return 'Telefone Fixo / Externo';
-}
-
-// Estatísticas globais (sempre baseadas em todos os contatos ativos)
+// Estatísticas executivas por cidade
 const stats = computed(() => {
-  const list = (props.contacts || []).filter(c => includeHidden.value || !c.hidden);
+  const list = (props.contacts || []).filter(c => !c.hidden);
   
   let total = 0;
   let saoGabriel = 0;
   let bage = 0;
   let passoFundo = 0;
   let geral = 0;
-  let ramaisInternos = 0;
-  let whatsapp = 0;
-  let fixos = 0;
 
   list.forEach(c => {
     total++;
@@ -100,10 +70,6 @@ const stats = computed(() => {
     else if (city === 'bage') bage++;
     else if (city === 'passo_fundo') passoFundo++;
     else if (city === 'all') geral++;
-
-    if (isInternalExtension(c)) ramaisInternos++;
-    else if (isWhatsAppNumber(c)) whatsapp++;
-    else fixos++;
   });
 
   return {
@@ -112,13 +78,10 @@ const stats = computed(() => {
     bage,
     passoFundo,
     geral,
-    ramaisInternos,
-    whatsapp,
-    fixos,
   };
 });
 
-// Contatos filtrados conforme seleção do usuário
+// Contatos filtrados (apenas contatos visíveis, nomes, contatos e cidades)
 const filteredContacts = computed(() => {
   const q = (searchQuery.value || '')
     .normalize('NFD')
@@ -128,38 +91,25 @@ const filteredContacts = computed(() => {
 
   return (props.contacts || [])
     .filter(c => {
-      if (!includeHidden.value && c.hidden) return false;
+      if (c.hidden) return false;
 
       const cCity = c.city || 'sao_gabriel';
-      if (selectedCity.value !== 'all') {
-        if (selectedCity.value === 'all_sedes') {
-          // Apenas as 3 sedes físicas principais
-          if (cCity === 'all') return false;
-        } else if (cCity !== selectedCity.value) {
-          return false;
-        }
+      if (selectedCity.value !== 'all' && cCity !== selectedCity.value) {
+        return false;
       }
-
-      const type = getContactType(c);
-      if (selectedType.value === 'ramais' && type !== 'Ramal Interno') return false;
-      if (selectedType.value === 'whats' && type !== 'WhatsApp') return false;
-      if (selectedType.value === 'fixo' && type !== 'Telefone Fixo / Externo' && type !== '0800') return false;
 
       if (q) {
         const normName = (c.name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
         const normDept = (c.department || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
         const phone = (c.phone || '').toLowerCase();
         const cityLabel = getCityLabel(cCity).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-        const model = (c.phoneModel || '').toLowerCase();
-        const ip = (c.ip || '').toLowerCase();
 
-        return normName.includes(q) || normDept.includes(q) || phone.includes(q) || cityLabel.includes(q) || model.includes(q) || ip.includes(q);
+        return normName.includes(q) || normDept.includes(q) || phone.includes(q) || cityLabel.includes(q);
       }
 
       return true;
     })
     .sort((a, b) => {
-      // Ordena por Cidade -> Departamento -> Nome
       const cityOrder = { sao_gabriel: 1, bage: 2, passo_fundo: 3, all: 4 };
       const cA = cityOrder[a.city || 'sao_gabriel'] || 99;
       const cB = cityOrder[b.city || 'sao_gabriel'] || 99;
@@ -172,7 +122,7 @@ const filteredContacts = computed(() => {
     });
 });
 
-// Geração de CSV compatível com Excel (UTF-8 com BOM e separador ;)
+// Geração de CSV para Excel (apenas Cidades, Nomes e Contatos)
 function exportToExcel() {
   const list = filteredContacts.value;
   if (!list.length) {
@@ -184,7 +134,6 @@ function exportToExcel() {
   const dateFormatted = now.toLocaleDateString('pt-BR');
   const timeFormatted = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
-  // Escape CSV para ponto-e-vírgula e aspas
   const clean = (val) => {
     if (val === null || val === undefined) return '""';
     const str = String(val).replace(/"/g, '""');
@@ -193,28 +142,23 @@ function exportToExcel() {
 
   const rows = [];
 
-  // Cabeçalho institucional / Resumo executivo no topo da planilha
-  rows.push([clean('RELATÓRIO OFICIAL DE RAMAIS E CONTATOS - NEW LIFE FIBRA')]);
+  // Cabeçalho institucional / Resumo quantitativo para chefe e operadora
+  rows.push([clean('RELATÓRIO DE CONTATOS E RAMAIS - NEW LIFE FIBRA')]);
   rows.push([clean(`Gerado em: ${dateFormatted} às ${timeFormatted}`), clean(`Total de Ramais: ${stats.value.total}`)]);
   rows.push([
     clean(`São Gabriel: ${stats.value.saoGabriel}`),
     clean(`Bagé: ${stats.value.bage}`),
     clean(`Passo Fundo: ${stats.value.passoFundo}`),
-    clean(`Geral / Todas: ${stats.value.geral}`),
-    clean(`Ramais Internos: ${stats.value.ramaisInternos}`),
-    clean(`WhatsApp: ${stats.value.whatsapp}`)
+    clean(`Geral / Todas: ${stats.value.geral}`)
   ]);
   rows.push([]); // Linha em branco
 
-  // Cabeçalho das Colunas
+  // Cabeçalho das Colunas (Apenas Cidade, Setor, Nome e Contato)
   rows.push([
-    clean('Cidade / Filial'),
+    clean('Cidade'),
     clean('Departamento / Setor'),
     clean('Colaborador / Nome'),
-    clean('Ramal / Telefone'),
-    clean('Tipo de Contato'),
-    clean('Modelo do Aparelho'),
-    clean('Endereço IP')
+    clean('Contato / Ramal')
   ]);
 
   // Linhas de dados
@@ -223,10 +167,7 @@ function exportToExcel() {
       clean(getCityLabel(c.city || 'sao_gabriel')),
       clean(c.department || 'Geral'),
       clean(c.name || ''),
-      clean(c.phone || ''),
-      clean(getContactType(c)),
-      clean(c.phoneModel || ''),
-      clean(c.ip || '')
+      clean(c.phone || '')
     ]);
   });
 
@@ -237,14 +178,14 @@ function exportToExcel() {
   const fileDate = now.toISOString().slice(0, 10);
   const link = document.createElement('a');
   link.setAttribute('href', url);
-  link.setAttribute('download', `ramais_newlife_3cidades_${fileDate}.csv`);
+  link.setAttribute('download', `contatos_ramais_newlife_${fileDate}.csv`);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
 
-// Geração de Resumo Formatado em Texto (para copiar e colar no WhatsApp / E-mail do chefe ou operadora)
+// Cópia do Relatório Formatado (WhatsApp / E-mail do chefe ou operadora)
 function copyFormattedSummary() {
   const list = filteredContacts.value;
   if (!list.length) {
@@ -259,22 +200,18 @@ function copyFormattedSummary() {
   let text = `📞 RELATÓRIO DE RAMAIS - NEW LIFE FIBRA\n`;
   text += `📅 Gerado em: ${dateFormatted} às ${timeFormatted}\n\n`;
 
-  text += `📊 RESUMO QUANTITATIVO (3 CIDADES):\n`;
-  text += `• Total Geral: ${stats.value.total} contatos/ramais\n`;
-  text += `  - São Gabriel: ${stats.value.saoGabriel} ramais\n`;
-  text += `  - Bagé: ${stats.value.bage} ramais\n`;
-  text += `  - Passo Fundo: ${stats.value.passoFundo} ramais\n`;
+  text += `📊 QUANTIDADE DE RAMAIS POR CIDADE:\n`;
+  text += `• Total Geral: ${stats.value.total} ramais/contatos\n`;
+  text += `  - São Gabriel: ${stats.value.saoGabriel}\n`;
+  text += `  - Bagé: ${stats.value.bage}\n`;
+  text += `  - Passo Fundo: ${stats.value.passoFundo}\n`;
   if (stats.value.geral > 0) {
-    text += `  - Geral / Todas as Sedes: ${stats.value.geral} contatos\n`;
+    text += `  - Geral / Todas: ${stats.value.geral}\n`;
   }
-  text += `• Ramais Internos (PABX): ${stats.value.ramaisInternos}\n`;
-  text += `• WhatsApp Corporativo: ${stats.value.whatsapp}\n`;
-  text += `• Fixos / Externos: ${stats.value.fixos}\n\n`;
-  text += `--------------------------------------------------\n`;
-  text += `📋 LISTA DETALHADA DE RAMAIS:\n`;
+  text += `\n--------------------------------------------------\n`;
+  text += `📋 LISTA DE CONTATOS:\n`;
   text += `--------------------------------------------------\n\n`;
 
-  // Agrupar por Cidade e depois por Departamento
   const grouped = {};
   list.forEach(c => {
     const cCity = getCityLabel(c.city || 'sao_gabriel');
@@ -289,15 +226,11 @@ function copyFormattedSummary() {
     for (const [deptName, contacts] of Object.entries(depts)) {
       text += `\n📁 ${deptName}:\n`;
       contacts.forEach(c => {
-        const type = getContactType(c);
-        const modelInfo = c.phoneModel ? ` [Modelo: ${c.phoneModel}]` : '';
-        text += `  • ${c.name}: ${c.phone} (${type})${modelInfo}\n`;
+        text += `  • ${c.name}: ${c.phone}\n`;
       });
     }
     text += `\n==================================================\n\n`;
   }
-
-  text += `Para mais informações, acesse o diretório interno de ramais New Life.\n`;
 
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(text).then(() => {
@@ -353,13 +286,13 @@ function printReport() {
             <span class="badge-cities">3 Cidades</span>
           </div>
           <p class="subtitle">
-            Relatório oficial para encaminhamento à diretoria, chefia ou operadoras de telefonia
+            Relatório de contatos das unidades São Gabriel, Bagé e Passo Fundo
           </p>
         </div>
         <button class="close-btn" @click="$emit('close')" title="Fechar (Esc)">✕</button>
       </div>
 
-      <!-- Resumo Executivo das 3 Cidades (Cards de Estatísticas) -->
+      <!-- Resumo Executivo das Cidades (Cards com quantidades) -->
       <div class="stats-grid">
         <div class="stat-card stat-total">
           <div class="stat-icon">🏢</div>
@@ -392,19 +325,11 @@ function printReport() {
             <span class="stat-label">Passo Fundo</span>
           </div>
         </div>
-
-        <div class="stat-card stat-types">
-          <div class="stat-icon">📞</div>
-          <div class="stat-info">
-            <span class="stat-number">{{ stats.ramaisInternos }}</span>
-            <span class="stat-label">Ramais PABX (Internos)</span>
-          </div>
-        </div>
       </div>
 
-      <!-- Barra de Ações Rápidas (Exportar Excel, Copiar Resumo, Imprimir) -->
+      <!-- Barra de Ações (Exportar Excel, Copiar, Imprimir) -->
       <div class="actions-bar">
-        <button class="btn-action btn-excel" @click="exportToExcel" title="Baixar planilha formatada para Microsoft Excel (.csv)">
+        <button class="btn-action btn-excel" @click="exportToExcel" title="Baixar planilha formatada para Excel (.CSV)">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
             <polyline points="14 2 14 8 20 8"/>
@@ -415,12 +340,12 @@ function printReport() {
           <span>Baixar Planilha Excel (.CSV)</span>
         </button>
 
-        <button class="btn-action btn-copy" @click="copyFormattedSummary" title="Copiar relatório formatado para colar no WhatsApp do chefe ou e-mail">
+        <button class="btn-action btn-copy" @click="copyFormattedSummary" title="Copiar resumo para enviar no WhatsApp ou E-mail">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
           </svg>
-          <span>Copiar Relatório Formatado</span>
+          <span>Copiar para WhatsApp / E-mail</span>
         </button>
 
         <button class="btn-action btn-print" @click="printReport" title="Imprimir ou Salvar como PDF">
@@ -465,34 +390,23 @@ function printReport() {
           </div>
         </div>
 
-        <div class="filter-row-secondary">
-          <div class="search-box">
-            <span class="search-icon">🔍</span>
-            <input
-              type="text"
-              v-model="searchQuery"
-              placeholder="Pesquisar por nome, ramal, setor ou modelo..."
-              class="search-input"
-            />
-            <button v-if="searchQuery" @click="searchQuery = ''" class="clear-search-btn">✕</button>
-          </div>
-
-          <div class="type-filter">
-            <select v-model="selectedType" class="type-select">
-              <option value="all">Todos os tipos de contato</option>
-              <option value="ramais">Apenas Ramais Internos (PABX)</option>
-              <option value="whats">Apenas WhatsApp</option>
-              <option value="fixo">Apenas Telefones Fixos / 0800</option>
-            </select>
-          </div>
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            v-model="searchQuery"
+            placeholder="Pesquisar por nome, contato, setor ou cidade..."
+            class="search-input"
+          />
+          <button v-if="searchQuery" @click="searchQuery = ''" class="clear-search-btn">✕</button>
         </div>
       </div>
 
-      <!-- Tabela de Pré-visualização dos Contatos a Exportar -->
+      <!-- Tabela de Prévia: Apenas Cidades, Setores, Nomes e Contatos -->
       <div class="preview-container">
         <div class="preview-header">
-          <span>Prévia da Exportação ({{ filteredContacts.length }} de {{ stats.total }} contatos)</span>
-          <span class="preview-hint">Clique em "Baixar Planilha Excel" para exportar a listagem completa</span>
+          <span>Contatos selecionados ({{ filteredContacts.length }} de {{ stats.total }})</span>
+          <span class="preview-hint">Clique em "Baixar Planilha Excel" para exportar o arquivo</span>
         </div>
 
         <div class="table-scroll">
@@ -500,17 +414,14 @@ function printReport() {
             <thead>
               <tr>
                 <th style="width: 140px;">Cidade</th>
-                <th style="width: 200px;">Departamento</th>
+                <th style="width: 220px;">Departamento / Setor</th>
                 <th>Colaborador / Nome</th>
-                <th style="width: 130px;">Ramal / Tel</th>
-                <th style="width: 140px;">Tipo</th>
-                <th style="width: 120px;">Modelo</th>
-                <th style="width: 110px;">IP</th>
+                <th style="width: 180px;">Contato / Ramal</th>
               </tr>
             </thead>
             <tbody>
               <tr v-if="filteredContacts.length === 0">
-                <td colspan="7" class="empty-row">Nenhum ramal ou contato encontrado com os filtros atuais.</td>
+                <td colspan="4" class="empty-row">Nenhum contato encontrado.</td>
               </tr>
               <tr v-for="c in filteredContacts" :key="c.id || (c.name + c.phone)">
                 <td>
@@ -523,13 +434,6 @@ function printReport() {
                 <td class="cell-phone">
                   <strong>{{ c.phone }}</strong>
                 </td>
-                <td>
-                  <span :class="['type-badge', isInternalExtension(c) ? 'type-ramal' : isWhatsAppNumber(c) ? 'type-whats' : 'type-fixo']">
-                    {{ getContactType(c) }}
-                  </span>
-                </td>
-                <td class="cell-sub">{{ c.phoneModel || '-' }}</td>
-                <td class="cell-sub">{{ c.ip || '-' }}</td>
               </tr>
             </tbody>
           </table>
@@ -583,7 +487,7 @@ function printReport() {
 
 .export-modal {
   width: 100%;
-  max-width: 950px;
+  max-width: 900px;
   max-height: 90vh;
   background: var(--bg-color);
   border: 1px solid var(--card-border);
@@ -683,7 +587,7 @@ function printReport() {
 /* Stats Cards */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 0.75rem;
   padding: 1.25rem 1.75rem 0.75rem 1.75rem;
 }
@@ -742,7 +646,7 @@ function printReport() {
 
 .btn-action {
   flex: 1;
-  min-width: 200px;
+  min-width: 180px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -785,7 +689,7 @@ function printReport() {
   color: var(--text-main);
   border-color: var(--card-border);
   flex: 0 0 auto;
-  min-width: 140px;
+  min-width: 130px;
 }
 
 .btn-print:hover {
@@ -850,15 +754,8 @@ function printReport() {
   color: #ffffff;
 }
 
-.filter-row-secondary {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
 .search-box {
-  flex: 1;
-  min-width: 250px;
+  width: 100%;
   position: relative;
   display: flex;
   align-items: center;
@@ -896,21 +793,6 @@ function printReport() {
   color: var(--text-muted);
   cursor: pointer;
   font-size: 0.85rem;
-}
-
-.type-select {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  color: var(--text-main);
-  border-radius: 8px;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.85rem;
-  outline: none;
-  cursor: pointer;
-}
-
-.type-select:focus {
-  border-color: var(--primary-color);
 }
 
 /* Preview Table */
@@ -1000,11 +882,6 @@ function printReport() {
   font-size: 0.88rem;
 }
 
-.cell-sub {
-  color: var(--text-muted);
-  font-size: 0.78rem;
-}
-
 .city-pill {
   display: inline-block;
   font-size: 0.7rem;
@@ -1035,29 +912,6 @@ function printReport() {
   background: rgba(168, 85, 247, 0.15);
   color: #c084fc;
   border: 1px solid rgba(168, 85, 247, 0.3);
-}
-
-.type-badge {
-  display: inline-block;
-  font-size: 0.7rem;
-  padding: 0.15rem 0.45rem;
-  border-radius: 4px;
-  font-weight: 500;
-}
-
-.type-ramal {
-  background: rgba(56, 189, 248, 0.15);
-  color: #38bdf8;
-}
-
-.type-whats {
-  background: rgba(34, 197, 94, 0.15);
-  color: #4ade80;
-}
-
-.type-fixo {
-  background: rgba(148, 163, 184, 0.15);
-  color: #cbd5e1;
 }
 
 /* Modal Footer */
