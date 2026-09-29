@@ -11,6 +11,7 @@ import Aurora from '../components/Aurora.vue';
 import TrueFocus from '../components/TrueFocus.vue';
 import RadioBrowserModal from '../components/RadioBrowserModal.vue';
 import ExportContactsModal from '../components/ExportContactsModal.vue';
+import RadioAnnouncementCard from '../components/RadioAnnouncementCard.vue';
 import { useRadio } from '../composables/useRadio';
 import {
   getContacts, getLastUpdated, getDepartmentDescriptions,
@@ -70,6 +71,18 @@ const showInstructions = ref(false);
 const showMap = ref(false);
 const showRadioModal = ref(false);
 const showExportModal = ref(false);
+const showRadioAnnouncement = ref(false);
+
+function closeRadioAnnouncement() {
+  showRadioAnnouncement.value = false;
+  localStorage.setItem('nl_radio_announcement_seen', 'true');
+}
+
+function openRadioFromAnnouncement() {
+  closeRadioAnnouncement();
+  showRadioModal.value = true;
+}
+
 const { isPlaying, isLoading: isRadioLoading, currentStation, togglePlay: toggleRadioPlay } = useRadio();
 
 function selectCity(newCity) {
@@ -273,6 +286,13 @@ onMounted(async () => {
   teamsContacts.value = teamsData || [];
 
   isCheckingAuth.value = false;
+
+  const seenRadioAnnouncement = localStorage.getItem('nl_radio_announcement_seen');
+  if (!seenRadioAnnouncement) {
+    setTimeout(() => {
+      showRadioAnnouncement.value = true;
+    }, 600);
+  }
 });
 
 watch(theme, (value) => {
@@ -924,6 +944,13 @@ function shouldGroupDepartment(department) {
       :contacts="contacts"
       :last-updated="lastUpdated"
       @close="showExportModal = false"
+    />
+
+    <!-- Card de Novidade: Rádios Online -->
+    <RadioAnnouncementCard
+      :is-open="showRadioAnnouncement"
+      @close="closeRadioAnnouncement"
+      @open-radio="openRadioFromAnnouncement"
     />
   </main>
 </template>
