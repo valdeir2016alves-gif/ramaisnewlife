@@ -267,10 +267,6 @@ function triggerCopiedToast() {
     copiedToast.value = false;
   }, 3000);
 }
-
-function printReport() {
-  window.print();
-}
 </script>
 
 <template>
@@ -346,15 +342,6 @@ function printReport() {
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
           </svg>
           <span>Copiar para WhatsApp / E-mail</span>
-        </button>
-
-        <button class="btn-action btn-print" @click="printReport" title="Imprimir ou Salvar como PDF">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="6 9 6 2 18 2 18 9"/>
-            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-            <rect x="6" y="14" width="12" height="8"/>
-          </svg>
-          <span>Imprimir / PDF</span>
         </button>
       </div>
 
@@ -684,20 +671,6 @@ function printReport() {
   transform: translateY(-1px);
 }
 
-.btn-print {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-main);
-  border-color: var(--card-border);
-  flex: 0 0 auto;
-  min-width: 130px;
-}
-
-.btn-print:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: var(--primary-color);
-  color: var(--primary-color);
-}
-
 /* Filters */
 .filters-container {
   padding: 0.5rem 1.75rem 0.75rem 1.75rem;
@@ -1004,48 +977,6 @@ function printReport() {
 .toast-fade-leave-to {
   opacity: 0;
   transform: translate(-50%, 10px);
-}
-
-/* Impressão / Print Styles */
-@media print {
-  body * {
-    visibility: hidden;
-  }
-  .modal-overlay,
-  .export-modal,
-  .export-modal * {
-    visibility: visible;
-  }
-  .modal-overlay {
-    position: absolute;
-    inset: 0;
-    background: #ffffff;
-    padding: 0;
-  }
-  .export-modal {
-    box-shadow: none;
-    border: none;
-    max-width: 100%;
-    max-height: none;
-    color: #000;
-    background: #fff;
-  }
-  .close-btn,
-  .actions-bar,
-  .filters-container,
-  .modal-footer {
-    display: none !important;
-  }
-  .table-scroll {
-    max-height: none;
-    overflow: visible;
-    border: 1px solid #ccc;
-  }
-  .contacts-table th,
-  .contacts-table td {
-    color: #000 !important;
-    border-bottom: 1px solid #eee;
-  }
 }
 
 /* Responsividade */
