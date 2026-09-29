@@ -3,8 +3,10 @@ Write-Host "  Atualizando Ramais New Life no Servidor " -ForegroundColor Cyan
 Write-Host "  Destino: 177.72.80.16 (/root/ramaisnewlife)" -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 
-Write-Host "`n[1/4] Enviando frontend (client/src)..." -ForegroundColor Yellow
+Write-Host "`n[1/4] Enviando frontend (client/src e package.json)..." -ForegroundColor Yellow
 scp -r client\src root@177.72.80.16:/root/ramaisnewlife/client/
+scp client\package.json root@177.72.80.16:/root/ramaisnewlife/client/
+scp client\package-lock.json root@177.72.80.16:/root/ramaisnewlife/client/
 
 Write-Host "`n[2/4] Enviando backend (server/src)..." -ForegroundColor Yellow
 scp -r server\src root@177.72.80.16:/root/ramaisnewlife/server/

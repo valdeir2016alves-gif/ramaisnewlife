@@ -5,9 +5,10 @@ echo   Atualizando Ramais New Life no Servidor
 echo   Destino: 177.72.80.16 (/root/ramaisnewlife)
 echo ==========================================
 
-echo.
-echo [1/4] Enviando frontend (client/src)...
+echo [1/4] Enviando frontend (client/src e package.json)...
 scp -r client\src root@177.72.80.16:/root/ramaisnewlife/client/
+scp client\package.json root@177.72.80.16:/root/ramaisnewlife/client/
+scp client\package-lock.json root@177.72.80.16:/root/ramaisnewlife/client/
 
 echo.
 echo [2/4] Enviando backend (server/src)...
