@@ -14,6 +14,7 @@ xcopy /E /I /Y client\dist\* server\public\ > nul
 echo.
 echo [2/5] Enviando frontend (código e arquivos compilados)...
 scp -r client\src\* root@177.72.80.16:/root/ramaisnewlife/client/src/
+scp -r client\public\* root@177.72.80.16:/root/ramaisnewlife/client/public/
 scp client\package.json root@177.72.80.16:/root/ramaisnewlife/client/
 scp client\package-lock.json root@177.72.80.16:/root/ramaisnewlife/client/
 scp -r server\public\* root@177.72.80.16:/root/ramaisnewlife/server/public/

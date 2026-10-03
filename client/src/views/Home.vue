@@ -428,8 +428,10 @@ function shouldGroupDepartment(department) {
     <template v-else-if="!currentUser">
       <div style="max-width: 320px; margin: 40px auto; background: var(--card-bg); padding: 1.5rem 1.5rem; border-radius: 12px; border: 1px solid var(--card-border); box-shadow: 0 10px 25px rgba(0,0,0,0.1)">
         <div style="text-align: center; margin-bottom: 1.5rem">
-          <div style="display: flex; justify-content: center; width: 100%; margin-bottom: 1rem">
-            <img src="/logo.png" alt="New Life Logo" width="220" height="75" style="object-fit: contain; filter: var(--logo-filter); max-height: 75px; width: auto" />
+          <div style="display: flex; justify-content: center; align-items: center; gap: 0.75rem; width: 100%; margin-bottom: 1rem">
+            <img src="/logo.png" alt="New Life Logo" width="160" height="55" style="object-fit: contain; filter: var(--logo-filter); max-height: 55px; width: auto" />
+            <div style="width: 1px; height: 32px; background: var(--card-border); opacity: 0.7"></div>
+            <img src="/logo-25anos.webp" alt="25 Anos New Life" width="55" height="48" style="object-fit: contain; filter: var(--anniversary-filter); max-height: 48px; width: auto" />
           </div>
           <h2 style="color: var(--primary-color); margin-top: 0; margin-bottom: 0.5rem; font-size: 1.25rem">Acesso Interno</h2>
           <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.4">
@@ -465,13 +467,27 @@ function shouldGroupDepartment(department) {
     <template v-else>
       <header :class="styles.header">
         <div :class="styles.logoContainer">
-          <a href="https://minhanewlife.com.br/" target="_blank" rel="noopener noreferrer" style="display: inline-block">
+          <a
+            href="https://minhanewlife.com.br/"
+            target="_blank"
+            rel="noopener noreferrer"
+            :class="styles.logoLink"
+            title="New Life - 25 Anos"
+          >
             <img
               src="/logo.png"
               alt="New Life"
-              width="320"
-              height="128"
-              style="object-fit: contain; filter: var(--logo-filter); max-width: 100%; height: auto; max-height: 110px"
+              width="240"
+              height="96"
+              :class="styles.mainLogo"
+            />
+            <div :class="styles.logoDivider"></div>
+            <img
+              src="/logo-25anos.webp"
+              alt="25 Anos New Life"
+              width="90"
+              height="75"
+              :class="styles.anniversaryLogo"
             />
           </a>
         </div>
