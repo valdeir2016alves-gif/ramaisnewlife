@@ -429,9 +429,9 @@ function shouldGroupDepartment(department) {
       <div style="max-width: 320px; margin: 40px auto; background: var(--card-bg); padding: 1.5rem 1.5rem; border-radius: 12px; border: 1px solid var(--card-border); box-shadow: 0 10px 25px rgba(0,0,0,0.1)">
         <div style="text-align: center; margin-bottom: 1.5rem">
           <div style="display: flex; justify-content: center; align-items: center; gap: 0.75rem; width: 100%; margin-bottom: 1rem">
-            <img src="/logo.png" alt="New Life Logo" width="160" height="55" style="object-fit: contain; filter: var(--logo-filter); max-height: 55px; width: auto" />
+            <img src="/logo.png" alt="New Life Logo" width="88" height="50" style="object-fit: contain; filter: var(--logo-filter); height: 50px; width: auto" />
             <div style="width: 1px; height: 32px; background: var(--card-border); opacity: 0.7"></div>
-            <img src="/logo-25anos.webp" alt="25 Anos New Life" width="55" height="48" style="object-fit: contain; filter: var(--anniversary-filter); max-height: 48px; width: auto" />
+            <img src="/logo-25anos.webp" alt="25 Anos New Life" width="57" height="48" style="object-fit: contain; filter: var(--anniversary-filter); height: 48px; width: auto" />
           </div>
           <h2 style="color: var(--primary-color); margin-top: 0; margin-bottom: 0.5rem; font-size: 1.25rem">Acesso Interno</h2>
           <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.4">
