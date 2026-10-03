@@ -1,6 +1,6 @@
 <template>
   <div class="cyber-map-wrapper">
-    <!-- Header / Status Bar -->
+    <!-- Header / Status Bar Superior -->
     <div class="cyber-status-bar">
       <div class="status-left">
         <span class="blinking-dot"></span>
@@ -8,15 +8,7 @@
         <span class="status-badge">3 NÓS OPERACIONAIS</span>
       </div>
       <div class="status-right">
-        <button 
-          class="view-toggle-btn" 
-          :class="{ active: is3DView }" 
-          @click="is3DView = !is3DView"
-          :title="is3DView ? 'Alternar para visão 2D Plana' : 'Alternar para visão 3D Holográfica'"
-        >
-          <span class="toggle-icon">{{ is3DView ? '⬡' : '◻' }}</span>
-          {{ is3DView ? 'VISÃO 3D HOLOGRÁFICA' : 'VISÃO 2D PLANA' }}
-        </button>
+        <span class="system-coord-tag">COORDENADAS GEODÉSICAS OFICIAIS IBGE // ALTA DISPONIBILIDADE</span>
       </div>
     </div>
 
@@ -108,17 +100,9 @@
         </a>
       </div>
 
-      <!-- Lado Direito: Mapa Cyber Holográfico -->
-      <div 
-        class="map-stage-viewport"
-        :class="{ 'view-3d': is3DView }"
-        @mousemove="handleMouseMove"
-        @mouseleave="handleMouseLeave"
-      >
-        <div 
-          class="cyber-map-container"
-          :style="is3DView ? stageTransformStyle : ''"
-        >
+      <!-- Lado Direito: Mapa Cyber Amplo em Visão Plana -->
+      <div class="map-stage-viewport">
+        <div class="cyber-map-container">
           <svg 
             class="cyber-svg-stage" 
             viewBox="0 0 600 600" 
@@ -158,24 +142,24 @@
 
               <!-- Gradiente do Território do RS -->
               <linearGradient id="rsStateGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#072942" stop-opacity="0.82" />
-                <stop offset="50%" stop-color="#041628" stop-opacity="0.9" />
-                <stop offset="100%" stop-color="#020d18" stop-opacity="0.95" />
+                <stop offset="0%" stop-color="#072942" stop-opacity="0.85" />
+                <stop offset="50%" stop-color="#041628" stop-opacity="0.92" />
+                <stop offset="100%" stop-color="#020d18" stop-opacity="0.96" />
               </linearGradient>
 
               <!-- Padrão de Circuito Interno do RS -->
               <pattern id="circuitPattern" width="40" height="40" patternUnits="userSpaceOnUse">
-                <path d="M 0 20 L 15 20 L 25 30 L 40 30" fill="none" stroke="rgba(0, 240, 255, 0.12)" stroke-width="0.8" />
-                <path d="M 20 0 L 20 12 L 30 22 L 30 40" fill="none" stroke="rgba(0, 240, 255, 0.08)" stroke-width="0.8" />
-                <circle cx="15" cy="20" r="1.5" fill="rgba(0, 240, 255, 0.3)" />
-                <circle cx="25" cy="30" r="1.5" fill="rgba(0, 240, 255, 0.25)" />
-                <circle cx="20" cy="12" r="1.2" fill="rgba(0, 240, 255, 0.2)" />
+                <path d="M 0 20 L 15 20 L 25 30 L 40 30" fill="none" stroke="rgba(0, 240, 255, 0.14)" stroke-width="0.8" />
+                <path d="M 20 0 L 20 12 L 30 22 L 30 40" fill="none" stroke="rgba(0, 240, 255, 0.1)" stroke-width="0.8" />
+                <circle cx="15" cy="20" r="1.5" fill="rgba(0, 240, 255, 0.35)" />
+                <circle cx="25" cy="30" r="1.5" fill="rgba(0, 240, 255, 0.3)" />
+                <circle cx="20" cy="12" r="1.2" fill="rgba(0, 240, 255, 0.25)" />
               </pattern>
 
               <!-- Padrão de Grade Cyber do Fundo -->
               <pattern id="cyberGrid" width="30" height="30" patternUnits="userSpaceOnUse">
-                <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(0, 220, 255, 0.045)" stroke-width="0.7" />
-                <circle cx="0" cy="0" r="1" fill="rgba(0, 240, 255, 0.1)" />
+                <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(0, 220, 255, 0.05)" stroke-width="0.7" />
+                <circle cx="0" cy="0" r="1" fill="rgba(0, 240, 255, 0.12)" />
               </pattern>
 
               <!-- Gradientes das Linhas de Conexão Laser -->
@@ -222,7 +206,7 @@
             <rect width="600" height="600" fill="url(#cyberGrid)" />
 
             <!-- Trilhas de Circuito no Solo -->
-            <g class="cyber-ground-circuits" opacity="0.4">
+            <g class="cyber-ground-circuits" opacity="0.45">
               <path d="M 60 120 L 140 120 L 170 150 L 260 150" fill="none" stroke="rgba(0, 240, 255, 0.2)" stroke-width="1" />
               <circle cx="260" cy="150" r="2.5" fill="rgba(0, 240, 255, 0.4)" />
               <path d="M 450 480 L 520 480 L 550 510 L 580 510" fill="none" stroke="rgba(0, 240, 255, 0.2)" stroke-width="1" />
@@ -258,19 +242,19 @@
             <path d="M 580 565 L 580 580 L 565 580" fill="none" stroke="rgba(0, 240, 255, 0.4)" stroke-width="1.2" />
 
             <!-- 3. TERRITÓRIO DO RIO GRANDE DO SUL (IBGE OFICIAL) -->
-            <!-- Camada Base / Relevo Holográfico (Sombra e Profundidade 3D) -->
-            <g transform="translate(5, 9)">
+            <!-- Camada de Relevo Suave / Sombra Holográfica -->
+            <g transform="translate(4, 6)">
               <path 
                 :d="RS_PATH_D" 
                 fill="none" 
-                stroke="rgba(0, 200, 255, 0.25)" 
-                stroke-width="3" 
+                stroke="rgba(0, 200, 255, 0.2)" 
+                stroke-width="2.5" 
                 filter="url(#neonBloomCyan)"
               />
               <path 
                 :d="RS_PATH_D" 
                 fill="#020914" 
-                opacity="0.8" 
+                opacity="0.75" 
               />
             </g>
 
@@ -456,7 +440,7 @@
               <!-- Etiqueta Cyber HUD: PASSO FUNDO -->
               <g class="hud-label-box" transform="translate(455, 74)">
                 <!-- Fundo Vidro Cyber -->
-                <rect x="0" y="0" width="130" height="42" rx="4" fill="rgba(4, 18, 32, 0.9)" stroke="#00f0ff" stroke-width="1.2" filter="url(#neonBloomCyan)" />
+                <rect x="0" y="0" width="130" height="42" rx="4" fill="rgba(4, 18, 32, 0.92)" stroke="#00f0ff" stroke-width="1.2" filter="url(#neonBloomCyan)" />
                 <!-- Cantos Decorativos HUD -->
                 <path d="M 0 6 L 6 0" stroke="#00f0ff" stroke-width="1.5" fill="none" />
                 <path d="M 130 36 L 124 42" stroke="#00f0ff" stroke-width="1.5" fill="none" />
@@ -501,7 +485,7 @@
               <!-- Etiqueta Cyber HUD: SÃO GABRIEL -->
               <g class="hud-label-box" transform="translate(35, 239)">
                 <!-- Fundo Vidro Cyber -->
-                <rect x="0" y="0" width="130" height="42" rx="4" fill="rgba(26, 4, 30, 0.9)" stroke="#e879f9" stroke-width="1.2" filter="url(#neonBloomMagenta)" />
+                <rect x="0" y="0" width="130" height="42" rx="4" fill="rgba(26, 4, 30, 0.92)" stroke="#e879f9" stroke-width="1.2" filter="url(#neonBloomMagenta)" />
                 <!-- Cantos Decorativos HUD -->
                 <path d="M 0 6 L 6 0" stroke="#e879f9" stroke-width="1.5" fill="none" />
                 <path d="M 130 36 L 124 42" stroke="#e879f9" stroke-width="1.5" fill="none" />
@@ -546,7 +530,7 @@
               <!-- Etiqueta Cyber HUD: BAGÉ -->
               <g class="hud-label-box" transform="translate(45, 384)">
                 <!-- Fundo Vidro Cyber -->
-                <rect x="0" y="0" width="130" height="42" rx="4" fill="rgba(3, 24, 18, 0.9)" stroke="#34d399" stroke-width="1.2" filter="url(#neonBloomGreen)" />
+                <rect x="0" y="0" width="130" height="42" rx="4" fill="rgba(3, 24, 18, 0.92)" stroke="#34d399" stroke-width="1.2" filter="url(#neonBloomGreen)" />
                 <!-- Cantos Decorativos HUD -->
                 <path d="M 0 6 L 6 0" stroke="#34d399" stroke-width="1.5" fill="none" />
                 <path d="M 130 36 L 124 42" stroke="#34d399" stroke-width="1.5" fill="none" />
@@ -565,41 +549,11 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { RS_PATH_D } from './rsPathData.js';
-
-// Estado de visualização 3D ou 2D
-const is3DView = ref(true);
 
 // Unidade atualmente destacada (hover no card ou no mapa)
 const activeUnit = ref(null);
-
-// Parallax sutil com o mouse
-const mouseX = ref(0);
-const mouseY = ref(0);
-
-const handleMouseMove = (e) => {
-  if (!is3DView.value) return;
-  const rect = e.currentTarget.getBoundingClientRect();
-  const x = (e.clientX - rect.left) / rect.width - 0.5;
-  const y = (e.clientY - rect.top) / rect.height - 0.5;
-  mouseX.value = x;
-  mouseY.value = y;
-};
-
-const handleMouseLeave = () => {
-  mouseX.value = 0;
-  mouseY.value = 0;
-};
-
-const stageTransformStyle = computed(() => {
-  const rotX = 18 - mouseY.value * 12;
-  const rotY = -4 + mouseX.value * 14;
-  const rotZ = -1.5 + mouseX.value * 2;
-  return {
-    transform: `rotateX(${rotX}deg) rotateY(${rotY}deg) rotateZ(${rotZ}deg)`
-  };
-});
 
 const openMap = (url) => {
   window.open(url, '_blank', 'noopener,noreferrer');
@@ -624,7 +578,7 @@ const openMap = (url) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.65rem 1.25rem;
+  padding: 0.7rem 1.4rem;
   background: rgba(3, 12, 22, 0.85);
   border-bottom: 1px solid rgba(0, 240, 255, 0.15);
   backdrop-filter: blur(8px);
@@ -664,30 +618,11 @@ const openMap = (url) => {
   letter-spacing: 0.5px;
 }
 
-.view-toggle-btn {
-  background: rgba(0, 240, 255, 0.08);
-  border: 1px solid rgba(0, 240, 255, 0.3);
-  color: #00f0ff;
-  font-size: 0.7rem;
+.system-coord-tag {
+  font-size: 0.68rem;
   font-family: monospace;
-  padding: 4px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  transition: all 0.25s ease;
-  letter-spacing: 0.5px;
-}
-
-.view-toggle-btn:hover {
-  background: rgba(0, 240, 255, 0.2);
-  box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
-}
-
-.view-toggle-btn.active {
-  background: rgba(0, 240, 255, 0.15);
-  border-color: #00f0ff;
+  color: rgba(0, 240, 255, 0.6);
+  letter-spacing: 0.8px;
 }
 
 /* Layout Principal */
@@ -695,20 +630,20 @@ const openMap = (url) => {
   display: flex;
   flex: 1;
   width: 100%;
-  height: calc(100% - 40px);
-  gap: 1.25rem;
-  padding: 1rem 1.25rem;
+  height: calc(100% - 44px);
+  gap: 1.5rem;
+  padding: 1.25rem 1.4rem;
   align-items: stretch;
   overflow: hidden;
 }
 
 /* Lado Esquerdo: Cards */
 .addresses-container {
-  width: 320px;
+  width: 285px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: 0.95rem;
   justify-content: center;
   z-index: 10;
 }
@@ -717,10 +652,10 @@ const openMap = (url) => {
   position: relative;
   display: flex;
   text-decoration: none;
-  background: rgba(6, 17, 30, 0.75);
+  background: rgba(6, 17, 30, 0.8);
   border: 1px solid rgba(0, 240, 255, 0.15);
   border-radius: 10px;
-  padding: 0.85rem 1rem;
+  padding: 0.9rem 1.1rem;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
   backdrop-filter: blur(8px);
@@ -729,7 +664,7 @@ const openMap = (url) => {
 .cyber-unit-card:hover,
 .cyber-unit-card.card-active {
   transform: translateX(6px);
-  background: rgba(9, 26, 46, 0.9);
+  background: rgba(9, 26, 46, 0.92);
 }
 
 .card-glow-bar {
@@ -773,7 +708,6 @@ const openMap = (url) => {
   font-family: monospace;
   font-size: 0.65rem;
   letter-spacing: 1px;
-  color: var(--text-muted, #718096);
 }
 
 .unit-pf .unit-code-tag { color: #00f0ff; }
@@ -830,23 +764,20 @@ const openMap = (url) => {
   transform: translateX(3px);
 }
 
-/* Lado Direito: Viewport 3D do Mapa */
+/* Lado Direito: Viewport Amplo do Mapa */
 .map-stage-viewport {
   flex: 1;
   height: 100%;
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
   overflow: hidden;
-  border-radius: 10px;
-  background: rgba(2, 8, 16, 0.6);
-  border: 1px solid rgba(0, 240, 255, 0.1);
-}
-
-.map-stage-viewport.view-3d {
-  perspective: 1100px;
-  perspective-origin: 50% 50%;
+  border-radius: 12px;
+  background: rgba(2, 8, 16, 0.65);
+  border: 1px solid rgba(0, 240, 255, 0.12);
+  box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.7);
 }
 
 .cyber-map-container {
@@ -855,15 +786,11 @@ const openMap = (url) => {
   display: flex;
   justify-content: center;
   align-items: center;
-  transform-style: preserve-3d;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .cyber-svg-stage {
   width: 100%;
   height: 100%;
-  max-width: 580px;
-  max-height: 580px;
   filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.8));
   user-select: none;
 }
