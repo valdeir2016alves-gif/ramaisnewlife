@@ -838,12 +838,15 @@ function shouldGroupDepartment(department) {
       </div>
 
       <div v-if="showMap" :class="styles.modalOverlay" @click="showMap = false">
-        <div :class="styles.modalContent" style="max-width: 900px" @click.stop>
-          <div :class="styles.modalHeader">
-            <h3 style="text-transform: uppercase;">Presença no RS</h3>
+        <div :class="styles.modalContent" style="max-width: 1050px; width: 95vw; background: #040b15; border: 1px solid rgba(0, 240, 255, 0.25); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 240, 255, 0.1);" @click.stop>
+          <div :class="styles.modalHeader" style="border-bottom: 1px solid rgba(0, 240, 255, 0.15); background: rgba(3, 12, 22, 0.95); padding: 0.85rem 1.25rem;">
+            <h3 style="text-transform: uppercase; color: #00f0ff; letter-spacing: 1px; font-size: 1rem; display: flex; align-items: center; gap: 8px;">
+              <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #00f0ff; box-shadow: 0 0 8px #00f0ff;"></span>
+              Presença no RS
+            </h3>
             <button :class="styles.closeButton" @click="showMap = false">✕</button>
           </div>
-          <div :class="styles.modalBody" style="padding: 1rem; width: 100%; min-height: 450px; height: 60vh; max-height: 600px; display: flex; justify-content: center; align-items: center; overflow-y: auto;">
+          <div :class="styles.modalBody" style="padding: 0.75rem; width: 100%; min-height: 520px; height: 72vh; max-height: 660px; display: flex; justify-content: center; align-items: stretch; overflow: hidden;">
             <MapImage />
           </div>
         </div>
