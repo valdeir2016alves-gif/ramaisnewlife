@@ -165,3 +165,16 @@ export const submitNocTicket = (data) =>
 
 export const deleteNocTicket = (id) =>
   request(`${BASE}/noc-tickets/${id}`, { method: 'DELETE' });
+
+// SIP / MicroSIP Configuration
+export const getSipConfig = () => request(`${BASE}/sip/config`);
+
+export const testSipExtension = (extension, password = '') =>
+  request(`${BASE}/sip/test`, {
+    method: 'POST',
+    body: JSON.stringify({ extension, password }),
+  });
+
+export const getMicroSipIniUrl = (extension, name = '', password = '') =>
+  `${BASE}/sip/microsip-ini/${extension}?name=${encodeURIComponent(name)}&password=${encodeURIComponent(password)}`;
+

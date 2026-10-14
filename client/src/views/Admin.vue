@@ -7,6 +7,7 @@ import DescriptionRow from '../components/DescriptionRow.vue';
 import StatsChart from '../components/StatsChart.vue';
 import Aurora from '../components/Aurora.vue';
 import AtaDashboard from '../components/AtaDashboard.vue';
+import MicroSipConfig from '../components/MicroSipConfig.vue';
 import {
   getContacts, addContact, deleteContact, updateContact, renameDepartment,
   getReports, deleteReport, authenticateUser, getUsers as fetchUsers,
@@ -419,6 +420,9 @@ const uniqueDepartments = computed(() => {
           <button :class="activeTab === 'ramais' ? styles.btnPrimary : styles.btnSecondary" @click="activeTab = 'ramais'">
             Contatos
           </button>
+          <button :class="activeTab === 'microsip' ? styles.btnPrimary : styles.btnSecondary" @click="activeTab = 'microsip'">
+            🎧 Configuração MicroSIP
+          </button>
           <button :class="activeTab === 'atas' ? styles.btnPrimary : styles.btnSecondary" @click="activeTab = 'atas'">
             Controle de ATAs
           </button>
@@ -527,6 +531,10 @@ const uniqueDepartments = computed(() => {
           </div>
         </section>
       </template>
+
+      <section v-else-if="activeTab === 'microsip'" :class="styles.listSection">
+        <MicroSipConfig :contacts="contacts" />
+      </section>
 
       <section v-else-if="activeTab === 'atas'" :class="styles.listSection">
         <AtaDashboard :can-edit="canEdit" :departments="uniqueDepartments" :contacts="contacts" />

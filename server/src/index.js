@@ -12,6 +12,7 @@ const descriptionsRouter = require('./routes/descriptions');
 const teamsRouter = require('./routes/teams');
 const atasRouter = require('./routes/atas');
 const nocTicketsRouter = require('./routes/noc-tickets');
+const sipRouter = require('./routes/sip');
 
 const app = express();
 // Note: uses SERVER_PORT (not PORT) so it doesn't collide with a PORT env
@@ -31,6 +32,7 @@ app.use('/api/descriptions', descriptionsRouter);
 app.use('/api/teams', teamsRouter);
 app.use('/api/atas', atasRouter);
 app.use('/api/noc-tickets', nocTicketsRouter);
+app.use('/api/sip', sipRouter);
 
 const clientDist = path.join(__dirname, '..', 'public');
 app.use(express.static(clientDist));
