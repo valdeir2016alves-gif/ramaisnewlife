@@ -16,15 +16,16 @@ try {
 
 // Configurações internas do PBX New Life (100% ocultas do usuário final)
 const PBX_DOMAIN = 'pabx.newlifefibra.com.br';
-// Usa o hostname oficial correspondente ao certificado SSL da operadora para evitar bloqueio no navegador
-const PBX_WSS_SERVER = 'wss://45-4-78-194.twsolutions.com.br:8089/ws';
-const PBX_WS_SERVER = 'ws://pabx.newlifefibra.com.br:8088/ws';
 
 function getWsUrl() {
-  if (typeof window !== 'undefined' && window.location.protocol === 'http:') {
-    return PBX_WS_SERVER;
+  if (typeof window !== 'undefined') {
+    const isHttps = window.location.protocol === 'https:';
+    const proto = isHttps ? 'wss:' : 'ws:';
+    // Utiliza o proxy WebSocket do próprio servidor da aplicação (/sip-ws),
+    // aproveitando o certificado SSL oficial do site (zero erros de certificado)
+    return `${proto}//${window.location.host}/sip-ws`;
   }
-  return PBX_WSS_SERVER;
+  return 'ws://pabx.newlifefibra.com.br:8088/ws';
 }
 
 const STORAGE_KEY_USER_EXT = 'nl_user_extension';
@@ -219,14 +220,18 @@ function connect() {
     const wsUrl = getWsUrl();
     const socket = new JsSIP.WebSocketInterface(wsUrl);
     const domain = PBX_DOMAIN;
+
+    // Na central TW Solutions / VirtPBX, a conta SIP dos ramais de 4 dígitos possui prefixo de tenant '2' (ex: 4001 -> 24001)
+    const authUser = ext.length === 4 && !ext.startsWith('2') ? ('2' + ext) : ext;
     const password = myPassword.value || `Ramal@${ext}`;
 
     const uaConfig = {
       sockets: [socket],
-      uri: `sip:${ext}@${domain}`,
+      uri: `sip:${authUser}@${domain}`,
       password: password,
+      realm: 'twsolutions',
       display_name: `Ramal ${ext}`,
-      authorization_user: ext,
+      authorization_user: authUser,
       register: true,
       session_timers: false,
       connection_recovery_min_interval: 2,
@@ -263,7 +268,11 @@ function connect() {
 
     ua.on('registrationFailed', (e) => {
       status.value = 'registrationFailed';
-      errorMessage.value = e?.cause ? `Falha no ramal: ${e.cause}` : 'Ramal não encontrado ou indisponível na central';
+      if (e?.cause === 'Authentication Error') {
+        errorMessage.value = 'Senha incorreta para este ramal.';
+      } else {
+        errorMessage.value = e?.cause ? `Falha no ramal: ${e.cause}` : 'Ramal não encontrado ou indisponível na central';
+      }
     });
 
     ua.on('newRTCSession', (data) => {
@@ -527,6 +536,14 @@ if (typeof window !== 'undefined' && isConfigured()) {
   }, 1000);
 }
 
+function openMicroSipCall(numberToCall) {
+  const dest = (numberToCall || targetNumber.value || '').toString().trim().replace(/[^\d*#+]/g, '');
+  if (!dest) return;
+  if (typeof window !== 'undefined') {
+    window.location.href = `sip:${dest}`;
+  }
+}
+
 export function useSipPhone() {
   return {
     myExtension,
@@ -556,6 +573,7 @@ export function useSipPhone() {
     sendDTMF,
     clearTargetNumber,
     backspaceTargetNumber,
-    openDialerWithNumber
+    openDialerWithNumber,
+    openMicroSipCall
   };
 }

@@ -40,9 +40,15 @@ app.get(/^(?!\/api\/).*/, (req, res) => {
   res.sendFile(path.join(clientDist, 'index.html'));
 });
 
+const http = require('http');
+const { setupSipProxy } = require('./sipProxy');
+
+const server = http.createServer(app);
+setupSipProxy(server);
+
 migrate()
   .then(() => {
-    app.listen(PORT, '0.0.0.0', () => {
+    server.listen(PORT, '0.0.0.0', () => {
       console.log(`Servidor rodando na porta ${PORT}`);
     });
   })
