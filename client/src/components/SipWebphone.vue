@@ -11,6 +11,7 @@ const props = defineProps({
 
 const {
   myExtension,
+  myPassword,
   status,
   callStatus,
   errorMessage,
@@ -36,6 +37,7 @@ const {
 } = useSipPhone();
 
 const inputExt = ref('');
+const inputPw = ref('');
 const selectedExt = ref('');
 const isEditingMyExt = ref(false);
 
@@ -60,15 +62,18 @@ function handleSaveMyExtension() {
 
   const targetToCall = pendingCallTarget.value;
   pendingCallTarget.value = '';
-  setMyExtension(ext, targetToCall);
+  const pw = inputPw.value.trim() || `Ramal@${ext}`;
+  setMyExtension(ext, pw, targetToCall);
   isEditingMyExt.value = false;
   inputExt.value = '';
+  inputPw.value = '';
   selectedExt.value = '';
 }
 
 function handleStartChangeExt() {
   isEditingMyExt.value = true;
   inputExt.value = myExtension.value || '';
+  inputPw.value = myPassword.value || '';
 }
 
 const dialpadKeys = [
@@ -232,6 +237,18 @@ function handleKeyDown(e) {
               maxlength="4"
               class="sip-input-number"
               @input="selectedExt = ''"
+              @keydown.enter="handleSaveMyExtension"
+            />
+          </div>
+
+          <!-- Campo de Senha do Ramal -->
+          <div class="sip-field-group" style="margin-top: 4px;">
+            <label class="sip-field-label">Senha do ramal (opcional se for padrão):</label>
+            <input
+              type="password"
+              v-model="inputPw"
+              :placeholder="`Padrão: Ramal@${selectedExt || inputExt || '4001'}`"
+              class="sip-input-password"
               @keydown.enter="handleSaveMyExtension"
             />
           </div>
@@ -704,6 +721,23 @@ function handleKeyDown(e) {
 }
 
 .sip-input-number:focus {
+  border-color: #38bdf8;
+}
+
+.sip-input-password {
+  width: 100%;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.95rem;
+  outline: none;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.sip-input-password:focus {
   border-color: #38bdf8;
 }
 

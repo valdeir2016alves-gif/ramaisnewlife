@@ -16,7 +16,8 @@ try {
 
 // Configurações internas do PBX New Life (100% ocultas do usuário final)
 const PBX_DOMAIN = 'pabx.newlifefibra.com.br';
-const PBX_WSS_SERVER = 'wss://pabx.newlifefibra.com.br:8089/ws';
+// Usa o hostname oficial correspondente ao certificado SSL da operadora para evitar bloqueio no navegador
+const PBX_WSS_SERVER = 'wss://45-4-78-194.twsolutions.com.br:8089/ws';
 const PBX_WS_SERVER = 'ws://pabx.newlifefibra.com.br:8088/ws';
 
 function getWsUrl() {
@@ -26,18 +27,13 @@ function getWsUrl() {
   return PBX_WSS_SERVER;
 }
 
-function getInternalPassword(ext) {
-  const clean = (ext || '').toString().trim().replace(/\D/g, '');
-  return clean ? `Ramal@${clean}` : '';
-}
-
 const STORAGE_KEY_USER_EXT = 'nl_user_extension';
+const STORAGE_KEY_USER_PW = 'nl_user_password';
 
 function loadStoredExtension() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY_USER_EXT);
     if (saved) return saved.trim();
-    // Fallback de chave antiga se existir
     const legacy = localStorage.getItem('nl_sip_config');
     if (legacy) {
       const parsed = JSON.parse(legacy);
@@ -47,8 +43,22 @@ function loadStoredExtension() {
   return '';
 }
 
+function loadStoredPassword() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY_USER_PW);
+    if (saved) return saved.trim();
+    const legacy = localStorage.getItem('nl_sip_config');
+    if (legacy) {
+      const parsed = JSON.parse(legacy);
+      if (parsed.password) return parsed.password.trim();
+    }
+  } catch (e) {}
+  return '';
+}
+
 // Estado compartilhado (Singleton)
 const myExtension = ref(loadStoredExtension());
+const myPassword = ref(loadStoredPassword());
 const status = ref('disconnected'); // unconfigured, disconnected, connecting, connected, registered, registrationFailed, error
 const callStatus = ref('idle'); // idle, calling (discando), ringing (recebendo), in-call (em chamada), ended, failed
 const errorMessage = ref('');
@@ -209,7 +219,7 @@ function connect() {
     const wsUrl = getWsUrl();
     const socket = new JsSIP.WebSocketInterface(wsUrl);
     const domain = PBX_DOMAIN;
-    const password = getInternalPassword(ext);
+    const password = myPassword.value || `Ramal@${ext}`;
 
     const uaConfig = {
       sockets: [socket],
@@ -301,13 +311,20 @@ function disconnect() {
   status.value = isConfigured() ? 'disconnected' : 'unconfigured';
 }
 
-function setMyExtension(ext, autoCallTarget = null) {
+function setMyExtension(ext, pw = '', autoCallTarget = null) {
   const clean = (ext || '').toString().trim().replace(/\D/g, '');
   if (!clean) return false;
 
   myExtension.value = clean;
+  myPassword.value = (pw || '').trim();
+
   try {
     localStorage.setItem(STORAGE_KEY_USER_EXT, clean);
+    if (myPassword.value) {
+      localStorage.setItem(STORAGE_KEY_USER_PW, myPassword.value);
+    } else {
+      localStorage.removeItem(STORAGE_KEY_USER_PW);
+    }
   } catch (e) {}
 
   connect();
@@ -322,8 +339,10 @@ function setMyExtension(ext, autoCallTarget = null) {
 
 function clearMyExtension() {
   myExtension.value = '';
+  myPassword.value = '';
   try {
     localStorage.removeItem(STORAGE_KEY_USER_EXT);
+    localStorage.removeItem(STORAGE_KEY_USER_PW);
   } catch (e) {}
   disconnect();
   status.value = 'unconfigured';
@@ -511,6 +530,7 @@ if (typeof window !== 'undefined' && isConfigured()) {
 export function useSipPhone() {
   return {
     myExtension,
+    myPassword,
     status,
     callStatus,
     errorMessage,
