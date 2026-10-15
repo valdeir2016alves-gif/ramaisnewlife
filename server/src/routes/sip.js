@@ -1,6 +1,7 @@
 const express = require('express');
 const JsSIP = require('jssip');
 const WebSocket = require('ws');
+const db = require('../data');
 global.WebSocket = WebSocket;
 
 // Silencia logs do JsSIP no backend
@@ -164,6 +165,40 @@ router.post('/test', async (req, res) => {
     console.error('[SIP Test] Erro:', err);
     res.status(500).json({ success: false, error: err.message });
   }
+});
+
+/**
+ * Telefones SIP cadastrados pelo administrador e disponibilizados no webphone
+ * da página principal. A senha precisa ir para o navegador porque o registro
+ * SIP (JsSIP) é feito no cliente.
+ */
+function parseSipPhone(body) {
+  const extension = (body?.extension || '').toString().trim().replace(/\D/g, '');
+  const label = (body?.label || '').toString().trim() || `Ramal ${extension}`;
+  const password = (body?.password || '').toString().trim();
+  const active = body?.active !== false;
+  return { label, extension, password, active };
+}
+
+router.get('/phones', async (req, res) => {
+  res.json(await db.getSipPhones());
+});
+
+router.post('/phones', async (req, res) => {
+  const { label, extension, password, active } = parseSipPhone(req.body);
+  if (!extension) return res.status(400).json({ success: false, error: 'Ramal inválido' });
+  res.json(await db.addSipPhone(label, extension, password, active));
+});
+
+router.put('/phones/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  const { label, extension, password, active } = parseSipPhone(req.body);
+  if (!extension) return res.status(400).json({ success: false, error: 'Ramal inválido' });
+  res.json(await db.updateSipPhone(id, label, extension, password, active));
+});
+
+router.delete('/phones/:id', async (req, res) => {
+  res.json(await db.deleteSipPhone(Number(req.params.id)));
 });
 
 module.exports = router;

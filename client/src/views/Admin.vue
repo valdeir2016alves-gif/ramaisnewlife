@@ -8,6 +8,7 @@ import StatsChart from '../components/StatsChart.vue';
 import Aurora from '../components/Aurora.vue';
 import AtaDashboard from '../components/AtaDashboard.vue';
 import MicroSipConfig from '../components/MicroSipConfig.vue';
+import SipPhonesManager from '../components/SipPhonesManager.vue';
 import {
   getContacts, addContact, deleteContact, updateContact, renameDepartment,
   getReports, deleteReport, authenticateUser, getUsers as fetchUsers,
@@ -533,6 +534,7 @@ const uniqueDepartments = computed(() => {
       </template>
 
       <section v-else-if="activeTab === 'microsip'" :class="styles.listSection">
+        <SipPhonesManager />
         <MicroSipConfig :contacts="contacts" />
       </section>
 

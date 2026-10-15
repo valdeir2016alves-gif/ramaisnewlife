@@ -328,6 +328,34 @@ async function deleteTeamsContact(id) {
   return { success: true };
 }
 
+async function getSipPhones() {
+  const { rows } = await pool.query('SELECT * FROM sip_phones ORDER BY label, extension');
+  return rows;
+}
+
+async function addSipPhone(label, extension, password, active) {
+  const { rows } = await pool.query(
+    `INSERT INTO sip_phones (label, extension, password, active)
+     VALUES ($1, $2, $3, $4) RETURNING *`,
+    [label, extension, password, active]
+  );
+  return { success: true, phone: rows[0] };
+}
+
+async function updateSipPhone(id, label, extension, password, active) {
+  const result = await pool.query(
+    'UPDATE sip_phones SET label = $1, extension = $2, password = $3, active = $4 WHERE id = $5',
+    [label, extension, password, active, id]
+  );
+  if (result.rowCount === 0) return { success: false, error: 'Telefone SIP não encontrado' };
+  return { success: true };
+}
+
+async function deleteSipPhone(id) {
+  await pool.query('DELETE FROM sip_phones WHERE id = $1', [id]);
+  return { success: true };
+}
+
 function rowToAta(row) {
   return {
     id: row.id,
@@ -512,6 +540,10 @@ module.exports = {
   addTeamsContact,
   updateTeamsContact,
   deleteTeamsContact,
+  getSipPhones,
+  addSipPhone,
+  updateSipPhone,
+  deleteSipPhone,
   getAtas,
   getAtaById,
   addAta,

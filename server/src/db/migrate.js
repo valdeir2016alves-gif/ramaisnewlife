@@ -111,6 +111,15 @@ async function createSchema(client) {
       subject TEXT NOT NULL,
       description TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS sip_phones (
+      id SERIAL PRIMARY KEY,
+      label TEXT NOT NULL,
+      extension TEXT NOT NULL,
+      password TEXT NOT NULL DEFAULT '',
+      active BOOLEAN NOT NULL DEFAULT true,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    );
   `);
 }
 

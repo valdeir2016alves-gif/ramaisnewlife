@@ -178,3 +178,20 @@ export const testSipExtension = (extension, password = '') =>
 export const getMicroSipIniUrl = (extension, name = '', password = '') =>
   `${BASE}/sip/microsip-ini/${extension}?name=${encodeURIComponent(name)}&password=${encodeURIComponent(password)}`;
 
+
+export const getSipPhones = () => request(`${BASE}/sip/phones`);
+
+export const addSipPhone = (data) =>
+  request(`${BASE}/sip/phones`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+
+export const updateSipPhone = (id, data) =>
+  request(`${BASE}/sip/phones/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+
+export const deleteSipPhone = (id) =>
+  request(`${BASE}/sip/phones/${id}`, { method: 'DELETE' });

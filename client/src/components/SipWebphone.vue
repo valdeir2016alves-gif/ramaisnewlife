@@ -1,6 +1,7 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useSipPhone } from '../composables/useSipPhone';
+import { getSipPhones } from '../api';
 
 const props = defineProps({
   contacts: {
@@ -41,6 +42,25 @@ const inputExt = ref('');
 const inputPw = ref('');
 const selectedExt = ref('');
 const isEditingMyExt = ref(false);
+
+// Telefones SIP cadastrados pelo administrador (aba MicroSIP do admin)
+const sipPhones = ref([]);
+
+onMounted(async () => {
+  try {
+    const data = await getSipPhones();
+    sipPhones.value = Array.isArray(data) ? data.filter(p => p.active) : [];
+  } catch (e) {
+    console.error('Erro ao carregar telefones SIP:', e);
+  }
+});
+
+function handleUseSipPhone(phone) {
+  const targetToCall = pendingCallTarget.value;
+  pendingCallTarget.value = '';
+  setMyExtension(phone.extension, phone.password || `Ramal@${phone.extension}`, targetToCall);
+  isEditingMyExt.value = false;
+}
 
 // Lista de ramais dos colaboradores a partir da lista do site
 const availableRamais = computed(() => {
@@ -211,6 +231,24 @@ function handleKeyDown(e) {
           <p class="sip-prompt-desc">
             Informe o número do seu ramal para poder realizar e receber ligações diretamente pelo site.
           </p>
+
+          <!-- Telefones cadastrados pelo administrador -->
+          <div v-if="sipPhones.length > 0" class="sip-field-group">
+            <label class="sip-field-label">Telefones disponíveis:</label>
+            <button
+              v-for="p in sipPhones"
+              :key="p.id"
+              type="button"
+              class="sip-phone-option"
+              :class="{ 'sip-phone-option-current': p.extension === myExtension }"
+              @click="handleUseSipPhone(p)"
+            >
+              <span>{{ p.label }}</span>
+              <span class="sip-phone-option-ext">{{ p.extension }}</span>
+            </button>
+          </div>
+
+          <div v-if="sipPhones.length > 0" class="sip-divider-text">ou use outro ramal</div>
 
           <!-- Opção 1: Selecionar na lista -->
           <div v-if="availableRamais.length > 0" class="sip-field-group">
@@ -707,6 +745,36 @@ function handleKeyDown(e) {
 .sip-select option {
   background: #0f172a;
   color: #fff;
+}
+
+.sip-phone-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 12px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sip-phone-option:hover {
+  background: rgba(16, 185, 129, 0.25);
+}
+
+.sip-phone-option-current {
+  border-color: #34d399;
+}
+
+.sip-phone-option-ext {
+  font-family: monospace;
+  color: #34d399;
 }
 
 .sip-divider-text {
