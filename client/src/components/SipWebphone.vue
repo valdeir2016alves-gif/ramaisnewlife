@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useSipPhone } from '../composables/useSipPhone';
 import { getSipPhones } from '../api';
 
@@ -52,6 +52,21 @@ onMounted(async () => {
     sipPhones.value = Array.isArray(data) ? data.filter(p => p.active) : [];
   } catch (e) {
     console.error('Erro ao carregar telefones SIP:', e);
+    return;
+  }
+
+  // Se o admin trocou a senha do telefone que este navegador usa, atualiza e reconecta
+  const current = sipPhones.value.find(p => p.extension === myExtension.value);
+  const currentPw = current && (current.password || `Ramal@${current.extension}`);
+  if (current && currentPw !== myPassword.value) {
+    setMyExtension(current.extension, currentPw);
+  }
+});
+
+// Com um único telefone cadastrado, usa ele direto, sem tela de escolha
+watch([isWebphoneOpen, sipPhones], ([open, phones]) => {
+  if (open && !isConfigured.value && !isEditingMyExt.value && phones.length === 1) {
+    handleUseSipPhone(phones[0]);
   }
 });
 
