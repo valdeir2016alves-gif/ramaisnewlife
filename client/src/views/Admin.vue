@@ -9,6 +9,7 @@ import Aurora from '../components/Aurora.vue';
 import AtaDashboard from '../components/AtaDashboard.vue';
 import MicroSipConfig from '../components/MicroSipConfig.vue';
 import SipPhonesManager from '../components/SipPhonesManager.vue';
+import SipWebphone from '../components/SipWebphone.vue';
 import {
   getContacts, addContact, deleteContact, updateContact, renameDepartment,
   getReports, deleteReport, authenticateUser, getUsers as fetchUsers,
@@ -745,6 +746,9 @@ const uniqueDepartments = computed(() => {
           </table>
         </div>
       </section>
+
+      <!-- Webphone SIP WebRTC Integrado (Apenas Admin) -->
+      <SipWebphone :contacts="contacts" />
     </template>
   </main>
 </template>
