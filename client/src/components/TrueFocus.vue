@@ -218,7 +218,8 @@ export function unregisterSyncGroup(group: string): void {
   position: relative;
   font-weight: inherit;
   font-size: inherit;
-  cursor: pointer;
+  cursor: default;
+  user-select: none;
 }
 
 .truefocus-focus {
